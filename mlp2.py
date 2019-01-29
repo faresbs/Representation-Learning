@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 
 np.random.seed(1) # set a seed so that the results are consistent
 
+#TO FIX
+
 class NN(object):
 
 	def __init__(self, hidden_dims=(1024, 2048), n_hidden=2, n_class=10, input_dim=784, mode='train', datapath=None, model_path=None):
@@ -104,7 +106,6 @@ class NN(object):
 		A = self.softmax(Z)
 			
 		#Save cache
-		#We don't need to cache the Z ?
 		cache.update({"Z"+str(self.n_hidden+1):Z, "A"+str(self.n_hidden+1):A})
 
 		#returns the last output as prediction + cache
@@ -124,6 +125,9 @@ class NN(object):
 
     #Compute the cross entropy cost
 	def loss(self, y_hat, y):
+		print y.shape[1]
+		m = y.shape[1]
+
 		#y_hat is the probability after softmax
 		log_likelihood = -np.log(y_hat[range(m),y])
 		loss = np.sum(log_likelihood) / m
@@ -141,17 +145,18 @@ class NN(object):
 
 	def backward(self, parameters, cache, labels, X):
 
-		#One hot encoding
-		labels = np.eye(self.n_class)[labels]
+		#print labels.shape
+		#print X.shape
 
-		print labels.shape
-		print X.shape
-
+		#Number of examples
 		m = len(labels)
 		
 		dZ3 = cache['A3'] - labels.T
 		dW3 = (1./m) * np.dot(dZ3, cache['A2'].T)
-		db3 = (1./m) * np.sum(dZ3, axis=0, keepdims=True)
+		db3 = (1./m) * np.sum(dZ3.T, axis=0, keepdims=True)
+		#print dZ3.shape
+		#print db3.shape
+		db3 = db3.T
 
 		# Derivation of relu
 		if (cache['Z2'].all >= 0):
@@ -162,7 +167,11 @@ class NN(object):
 		dZ2 = np.dot(dZ3.T, parameters['W3']) * drelu
 		dW2 = (1./m) * np.dot(dZ2.T, cache['A1'].T)
 		db2 = (1./m) * np.sum(dZ2, axis=0, keepdims=True)
-		
+		#print dZ2.shape
+		#print db2.shape
+		db2 = db2.T
+
+
 		# Derivation of relu
 		if (cache['Z1'].all >= 0):
 			drelu = 1
@@ -172,23 +181,67 @@ class NN(object):
 		dZ1 = np.dot(dZ2, parameters['W2']) * drelu
 		dW1 = (1./m) * np.dot(dZ1.T, X.T)
 		db1 = (1./m) * np.sum(dZ1, axis=0, keepdims=True)
+		db1 = db1.T
+
 
 		# gradients must have same dimension as the parameters
+		assert(dW3.shape == parameters['W3'].shape)
+		assert(db3.shape == parameters['b3'].shape)
 		assert(dW2.shape == parameters['W2'].shape)
 		assert(db2.shape == parameters['b2'].shape)
 		assert(dW1.shape == parameters['W1'].shape)
 		assert(db1.shape == parameters['b1'].shape)
 
-		grads = {"dW2":dW2, "db2":db2, "dW1":dW1, "db1":db1}
+		grads = {"dW3":dW3, "db3":db3, "dW2":dW2, "db2":db2, "dW1":dW1, "db1":db1}
 
 		return grads
 
 
-	def update(self,grads):
-		pass
+	#Update parameters using stochastic gradient descent
+	def update(self, grads, parameters, learning_rate):
 
-	def train(self):
-		pass
+		
+		for i in range(self.n_hidden+1):
+
+			# Retrieve parameters
+			W = parameters["W"+str(i+1)]
+			b = parameters["W"+str(i+1)]
+			
+			# Retrieve grads
+			dW = grads["dW"+str(i+1)]
+			db = grads["db"+str(i+1)]
+			
+			# Update parameters using gradient descent
+			W = dW - learning_rate * grads["dW"+str(i+1)]
+			b = db - learning_rate * grads["db"+str(i+1)]
+			
+			# Save updated parameters
+			parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
+		
+		return parameters
+
+	def train(self, iterations, init_method, learning_rate, X, labels):
+
+		#One hot encoding
+		labels = np.eye(self.n_class)[labels]
+
+		parameters = self.initialize_weights(init_method)
+
+		# Loop (gradient descent)
+		for i in range(iterations):
+			print str(i)+"/"+str(iterations)
+			#Forward pass
+			out, cache = self.forward(X, parameters)
+			#Backward pass
+			grads = self.backward(parameters, cache, labels, X)
+			#Update
+			parameters = self.update(grads, parameters, learning_rate)
+
+			#print out.shape
+			#print labels.shape
+			#print self.loss(out, labels.T)
+
+		return parameters
 
 	def test(self):
 		pass
@@ -199,15 +252,20 @@ if __name__ == '__main__':
 	nn = NN(hidden_dims=(20, 15), datapath='../datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
-	parameters = nn.initialize_weights(init_method='zeros')
+	#parameters = nn.initialize_weights(init_method='zeros')
 
 	#for key, value in parameters.iteritems() :
 	#	print key, value.shape
 
-	out, cache = nn.forward(nn.D_train[0], parameters)
+	#out, cache = nn.forward(nn.D_train[0], parameters)
 
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
+	#grads = nn.backward(parameters, cache, nn.D_train[1], nn.D_train[0])
 
-	grads = nn.backward(parameters, cache, nn.D_train[1], nn.D_train[0])
+	parameters = nn.train(10, 'zeros', 0.01, nn.D_train[0], nn.D_train[1])
+	out, cache = nn.forward(nn.D_train[0], parameters)
+
+	print nn.D_train[1][0]
+	print out[:, 0]
