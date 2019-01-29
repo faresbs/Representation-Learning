@@ -28,6 +28,13 @@ class NN(object):
 		self.D_val = self.data[1]
 		self.D_test = self.data[2]
 
+		#Reshape to (Mx, m) from (m, Mx) to simplify calculations
+		self.D_train[0] = self.D_train[0].T
+		self.D_val[0] = self.D_val[0].T
+		self.D_test[0] = self.D_test[0].T
+
+		print self.D_train[0].shape
+
 		#dim of datasets
 		self.dim_data = (self.D_train[1].shape[0], self.D_val[1].shape[0], self.D_test[1].shape[0])
 
@@ -48,7 +55,7 @@ class NN(object):
 			for i in range(self.n_hidden+1):
 
 				W = np.random.randn(self.dims[i+1], self.dims[i]) * 0.01
-				b = np.random.randn(1, self.dims[i+1]) * 0.01
+				b = np.random.randn(self.dims[i+1], 1) * 0.01
 
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
@@ -57,7 +64,7 @@ class NN(object):
 		if(init_method=='zeros'):
 			for i in range(self.n_hidden+1):
 				W = np.zeros((self.dims[i+1], self.dims[i]))
-				b = np.zeros((1, self.dims[i+1]))
+				b = np.zeros((self.dims[i+1], 1))
 
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
@@ -73,24 +80,31 @@ class NN(object):
 		#output of the last layer 
 		A = X
 		
-		for i in range(self.n_hidden+1):
+		for i in range(self.n_hidden):
 
 			# Retrieve parameters
 			W = parameters["W"+str(i+1)]
 			b = parameters["b"+str(i+1)]
 
 			# Forward pass in hidden layer
-			#CHECK MULTI ORDER
-			#print A.shape
-			#print W.shape
-			#print np.dot(A, W.T).shape
-			#print b.shape
-
-			Z = np.dot(A, W.T) + b
+			Z = np.dot(W, A) + b
 			A = self.activation(Z)
 			
 			#Save cache
 			cache.update({"Z"+str(i+1):Z, "A"+str(i+1):A}) 
+
+		#Apply softmax at the last layer
+		#Retrieve parameters
+		W = parameters["W"+str(self.n_hidden+1)]
+		b = parameters["b"+str(self.n_hidden+1)]
+
+		#logits
+		Z = np.dot(W, A) + b
+		#prob after softmax
+		A = self.softmax(Z)
+			
+		#Save cache
+		cache.update({"Z"+str(self.n_hidden+1):Z, "A"+str(self.n_hidden+1):A})
 
 		#returns the last output as prediction + cache
 		return A, cache
@@ -109,12 +123,26 @@ class NN(object):
 
     #Compute the cross entropy cost
 	def loss(self, y_hat, y):
-		pass
+		#y_hat is the probability after softmax
+		log_likelihood = -np.log(y_hat[range(m),y])
+		loss = np.sum(log_likelihood) / m
+		return loss
 
-	def softmax(self,input):
-		pass
+	#Measure prob with softmax
+	def softmax(self,inp):
+		exps = np.exp(inp)
+		return exps / np.sum(exps)
+
+    	#Stable softmax
+    	#exps = np.exp(inp - np.max(inp))
+    	#return exps / np.sum(exps)
+
 
 	def backward(self,cache,labels):
+
+		#Derivative of cross entropy + softmax
+		#dZ3 = 
+
 		pass
 
 	def update(self,grads):
@@ -138,4 +166,6 @@ if __name__ == '__main__':
 		print key, value.shape
 
 	out, cache = nn.forward(nn.D_train[0], parameters)
-	print out
+
+	for key, value in cache.iteritems() :
+		print key, value.shape
