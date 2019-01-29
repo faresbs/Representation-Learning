@@ -33,12 +33,12 @@ class NN(object):
 		self.D_val[0] = self.D_val[0].T
 		self.D_test[0] = self.D_test[0].T
 
-		print self.D_train[0].shape
-
 		#dim of datasets
 		self.dim_data = (self.D_train[1].shape[0], self.D_val[1].shape[0], self.D_test[1].shape[0])
 
 		self.model_path = model_path
+
+		self.n_class = n_class
 
 
 	#def initialize_weights(self, n_hidden, dims, init_method):
@@ -104,6 +104,7 @@ class NN(object):
 		A = self.softmax(Z)
 			
 		#Save cache
+		#We don't need to cache the Z ?
 		cache.update({"Z"+str(self.n_hidden+1):Z, "A"+str(self.n_hidden+1):A})
 
 		#returns the last output as prediction + cache
@@ -138,12 +139,50 @@ class NN(object):
     	#return exps / np.sum(exps)
 
 
-	def backward(self,cache,labels):
+	def backward(self, parameters, cache, labels, X):
 
-		#Derivative of cross entropy + softmax
-		#dZ3 = 
+		#One hot encoding
+		labels = np.eye(self.n_class)[labels]
 
-		pass
+		print labels.shape
+		print X.shape
+
+		m = len(labels)
+		
+		dZ3 = cache['A3'] - labels.T
+		dW3 = (1./m) * np.dot(dZ3, cache['A2'].T)
+		db3 = (1./m) * np.sum(dZ3, axis=0, keepdims=True)
+
+		# Derivation of relu
+		if (cache['Z2'].all >= 0):
+			drelu = 1
+		else:
+			drelu = 0
+
+		dZ2 = np.dot(dZ3.T, parameters['W3']) * drelu
+		dW2 = (1./m) * np.dot(dZ2.T, cache['A1'].T)
+		db2 = (1./m) * np.sum(dZ2, axis=0, keepdims=True)
+		
+		# Derivation of relu
+		if (cache['Z1'].all >= 0):
+			drelu = 1
+		else:
+			drelu = 0
+
+		dZ1 = np.dot(dZ2, parameters['W2']) * drelu
+		dW1 = (1./m) * np.dot(dZ1.T, X.T)
+		db1 = (1./m) * np.sum(dZ1, axis=0, keepdims=True)
+
+		# gradients must have same dimension as the parameters
+		assert(dW2.shape == parameters['W2'].shape)
+		assert(db2.shape == parameters['b2'].shape)
+		assert(dW1.shape == parameters['W1'].shape)
+		assert(db1.shape == parameters['b1'].shape)
+
+		grads = {"dW2":dW2, "db2":db2, "dW1":dW1, "db1":db1}
+
+		return grads
+
 
 	def update(self,grads):
 		pass
@@ -162,10 +201,13 @@ if __name__ == '__main__':
 
 	parameters = nn.initialize_weights(init_method='zeros')
 
-	for key, value in parameters.iteritems() :
-		print key, value.shape
+	#for key, value in parameters.iteritems() :
+	#	print key, value.shape
 
 	out, cache = nn.forward(nn.D_train[0], parameters)
 
-	for key, value in cache.iteritems() :
-		print key, value.shape
+	#for key, value in cache.iteritems() :
+	#	print key, value.shape
+
+
+	grads = nn.backward(parameters, cache, nn.D_train[1], nn.D_train[0])
