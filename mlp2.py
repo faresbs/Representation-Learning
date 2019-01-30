@@ -145,21 +145,53 @@ class NN(object):
 		return exps / np.sum(exps, axis=0)
 
 
-	def backward(self, parameters, cache, labels, X):
+	def backward(self, parameters, cache, y, X):
 
-		#print labels.shape
-		#print X.shape
+		#init dic for gradients
+		grads = {}
 
 		#Number of examples
-		m = len(labels)
-		
-		dZ3 = cache['A3'] - labels.T
-		dW3 = (1./m) * np.dot(dZ3, cache['A2'].T)
-		db3 = (1./m) * np.sum(dZ3.T, axis=0, keepdims=True)
-		#print dZ3.shape
-		#print db3.shape
-		db3 = db3.T
+		m = len(y)
 
+		dZ = cache["A"+str(self.n_hidden+1)] - y.T 
+		dW = (1./m) * np.dot(dZ, cache["A"+str(self.n_hidden)].T)
+		db = (1./m) * np.sum(dZ, axis=1, keepdims=True)
+
+		# Save updated grads
+		grads.update({"dW"+str(self.n_hidden+1):dW, "db"+str(self.n_hidden+1):db})
+
+		# gradients must have same dimension as the parameters
+		assert(dW.shape == parameters["W"+str(self.n_hidden+1)].shape)
+		assert(db.shape == parameters["b"+str(self.n_hidden+1)].shape)
+
+		for i in range(self.n_hidden, 0, -1):
+
+			print i
+
+			# Derivation of relu
+			drelu = cache["Z"+str(i)]
+			drelu[drelu<=0] = 0
+			drelu[drelu>0] = 1
+
+			dZ = np.dot(parameters["W"+str(i+1)].T, dZ) * drelu
+
+			dW = (1./m) * np.dot(dZ, cache["A"+str(i-1)].T)
+			db = (1./m) * np.sum(dZ, axis=1, keepdims=True)
+
+			# Save updated parameters
+			parameters.update({"dW"+str(i):dW, "db"+str(i):db})
+
+			# gradients must have same dimension as the parameters
+			assert(dW.shape == parameters["W"+str(i)].shape)
+			assert(db.shape == parameters["b"+str(i)].shape)
+
+		return grads
+
+		"""			
+		dZ3 = cache['A3'] - y.T
+		dW3 = (1./m) * np.dot(dZ3, cache['A2'].T)
+		db3 = (1./m) * np.sum(dZ3, axis=1, keepdims=True)
+		
 		# Derivation of relu
 		drelu = cache['Z2']
 		drelu[drelu<=0] = 0
@@ -189,9 +221,9 @@ class NN(object):
 		assert(db1.shape == parameters['b1'].shape)
 
 		grads = {"dW3":dW3, "db3":db3, "dW2":dW2, "db2":db2, "dW1":dW1, "db1":db1}
-
+		
 		return grads
-
+		"""
 
 	#Update parameters using stochastic gradient descent
 	def update(self, grads, parameters, learning_rate):
