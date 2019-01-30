@@ -102,6 +102,7 @@ class NN(object):
 
 		#logits
 		Z = np.dot(W, A) + b
+
 		#prob after softmax
 		A = self.softmax(Z)
 			
@@ -122,25 +123,26 @@ class NN(object):
 		#return a
 
 
-
     #Compute the cross entropy cost
 	def loss(self, y_hat, y):
-		print y.shape[1]
+		#number of examples
 		m = y.shape[1]
 
 		#y_hat is the probability after softmax
-		log_likelihood = -np.log(y_hat[range(m),y])
+		#y is one hot vector
+		log_likelihood = -np.log(y_hat)*y
 		loss = np.sum(log_likelihood) / m
 		return loss
 
+
 	#Measure prob with softmax
 	def softmax(self,inp):
-		exps = np.exp(inp)
-		return exps / np.sum(exps)
+		#exps = np.exp(inp)
+		#return exps / np.sum(exps)
 
-    	#Stable softmax
-    	#exps = np.exp(inp - np.max(inp))
-    	#return exps / np.sum(exps)
+		#Stable softmax
+		exps = np.exp(inp - np.max(inp, axis=0))
+		return exps / np.sum(exps, axis=0)
 
 
 	def backward(self, parameters, cache, labels, X):
@@ -158,25 +160,31 @@ class NN(object):
 		#print db3.shape
 		db3 = db3.T
 
+		print cache['Z2'].shape
+
 		# Derivation of relu
-		if (cache['Z2'].all >= 0):
-			drelu = 1
-		else:
-			drelu = 0
+		drelu = cache['Z2']
+		drelu[drelu<=0] = 0
+		drelu[drelu>0] = 1
+		
+		print np.dot(dZ3.T, parameters['W3']).shape
+		print drelu.shape
 
 		dZ2 = np.dot(dZ3.T, parameters['W3']) * drelu
+		print dZ2.shape
+		sd
 		dW2 = (1./m) * np.dot(dZ2.T, cache['A1'].T)
 		db2 = (1./m) * np.sum(dZ2, axis=0, keepdims=True)
 		#print dZ2.shape
 		#print db2.shape
 		db2 = db2.T
 
+		
 
 		# Derivation of relu
-		if (cache['Z1'].all >= 0):
-			drelu = 1
-		else:
-			drelu = 0
+		drelu = cache['Z2']
+		drelu[drelu<=0] = 0
+		drelu[drelu>0] = 1
 
 		dZ1 = np.dot(dZ2, parameters['W2']) * drelu
 		dW1 = (1./m) * np.dot(dZ1.T, X.T)
@@ -222,24 +230,27 @@ class NN(object):
 
 	def train(self, iterations, init_method, learning_rate, X, labels):
 
-		#One hot encoding
-		labels = np.eye(self.n_class)[labels]
+		#One hot encoding of labels
+		y = np.eye(self.n_class)[labels]
 
 		parameters = self.initialize_weights(init_method)
 
 		# Loop (gradient descent)
 		for i in range(iterations):
+
 			print str(i)+"/"+str(iterations)
+			
 			#Forward pass
 			out, cache = self.forward(X, parameters)
+
 			#Backward pass
-			grads = self.backward(parameters, cache, labels, X)
+			grads = self.backward(parameters, cache, y, X)
 			#Update
 			parameters = self.update(grads, parameters, learning_rate)
 
 			#print out.shape
 			#print labels.shape
-			#print self.loss(out, labels.T)
+			print self.loss(out, y.T)
 
 		return parameters
 
@@ -264,8 +275,8 @@ if __name__ == '__main__':
 
 	#grads = nn.backward(parameters, cache, nn.D_train[1], nn.D_train[0])
 
-	parameters = nn.train(10, 'zeros', 0.01, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(10, 'random', 0.01, nn.D_train[0], nn.D_train[1])
 	out, cache = nn.forward(nn.D_train[0], parameters)
 
-	print nn.D_train[1][0]
-	print out[:, 0]
+	#print nn.D_train[1][0]
+	#print out[:, 0]
