@@ -12,7 +12,7 @@ np.random.seed(1) # set a seed so that the results are consistent
 class NN(object):
 
 	def __init__(self, hidden_dims=(1024, 2048), n_hidden=2, n_class=10, input_dim=784, mode='train', datapath=None, model_path=None):
-		
+
 		self.hidden_dims = hidden_dims
 		self.n_hidden = n_hidden
 		self.input_dim = input_dim
@@ -58,7 +58,6 @@ class NN(object):
 
 				W = np.random.randn(self.dims[i+1], self.dims[i]) * 0.01
 				b = np.random.randn(self.dims[i+1], 1) * 0.01
-
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
@@ -70,18 +69,18 @@ class NN(object):
 
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
-			
-		return parameters 
+
+		return parameters
 
 
 	def forward(self, X, parameters):
 
-		#init dic to save cache of the forward 
+		#init dic to save cache of the forward
 		cache = {}
 
-		#output of the last layer 
+		#output of the last layer
 		A = X
-		
+
 		for i in range(self.n_hidden):
 
 			# Retrieve parameters
@@ -91,9 +90,9 @@ class NN(object):
 			# Forward pass in hidden layer
 			Z = np.dot(W, A) + b
 			A = self.activation(Z)
-			
+
 			#Save cache
-			cache.update({"Z"+str(i+1):Z, "A"+str(i+1):A}) 
+			cache.update({"Z"+str(i+1):Z, "A"+str(i+1):A})
 
 		#Apply softmax at the last layer
 		#Retrieve parameters
@@ -105,7 +104,7 @@ class NN(object):
 
 		#prob after softmax
 		A = self.softmax(Z)
-			
+
 		#Save cache
 		cache.update({"Z"+str(self.n_hidden+1):Z, "A"+str(self.n_hidden+1):A})
 
@@ -152,7 +151,7 @@ class NN(object):
 
 		#Number of examples
 		m = len(labels)
-		
+
 		dZ3 = cache['A3'] - labels.T
 		dW3 = (1./m) * np.dot(dZ3, cache['A2'].T)
 		db3 = (1./m) * np.sum(dZ3.T, axis=0, keepdims=True)
@@ -164,7 +163,7 @@ class NN(object):
 		drelu = cache['Z2']
 		drelu[drelu<=0] = 0
 		drelu[drelu>0] = 1
-		
+
 		dZ2 = np.dot(parameters['W3'].T, dZ3) * drelu
 
 		dW2 = (1./m) * np.dot(dZ2, cache['A1'].T)
@@ -196,24 +195,24 @@ class NN(object):
 	#Update parameters using stochastic gradient descent
 	def update(self, grads, parameters, learning_rate):
 
-		
+
 		for i in range(self.n_hidden+1):
 
 			# Retrieve parameters
 			W = parameters["W"+str(i+1)]
-			b = parameters["W"+str(i+1)]
-			
+			b = parameters["b"+str(i+1)]
+
 			# Retrieve grads
 			dW = grads["dW"+str(i+1)]
 			db = grads["db"+str(i+1)]
-			
+
 			# Update parameters using gradient descent
-			W = dW - learning_rate * grads["dW"+str(i+1)]
-			b = db - learning_rate * grads["db"+str(i+1)]
-			
+			W = W - learning_rate * grads["dW"+str(i+1)]
+			b = b - learning_rate * grads["db"+str(i+1)]
+
 			# Save updated parameters
 			parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
-		
+
 		return parameters
 
 	def train(self, iterations, init_method, learning_rate, X, labels):
@@ -227,7 +226,7 @@ class NN(object):
 		for i in range(iterations):
 
 			print str(i)+"/"+str(iterations)
-			
+
 			#Forward pass
 			out, cache = self.forward(X, parameters)
 
@@ -248,7 +247,7 @@ class NN(object):
 
 
 if __name__ == '__main__':
-	nn = NN(hidden_dims=(20, 15), datapath='../datasets/mnist.pkl.npy')
+	nn = NN(hidden_dims=(20, 15), datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
 	#parameters = nn.initialize_weights(init_method='zeros')
@@ -263,7 +262,7 @@ if __name__ == '__main__':
 
 	#grads = nn.backward(parameters, cache, nn.D_train[1], nn.D_train[0])
 
-	parameters = nn.train(10, 'random', 0.1, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(100, 'random', 0.5, nn.D_train[0], nn.D_train[1])
 	out, cache = nn.forward(nn.D_train[0], parameters)
 
 	#print nn.D_train[1][0]
