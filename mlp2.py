@@ -160,36 +160,24 @@ class NN(object):
 		#print db3.shape
 		db3 = db3.T
 
-		print cache['Z2'].shape
-
 		# Derivation of relu
 		drelu = cache['Z2']
 		drelu[drelu<=0] = 0
 		drelu[drelu>0] = 1
 		
-		print np.dot(dZ3.T, parameters['W3']).shape
-		print drelu.shape
+		dZ2 = np.dot(parameters['W3'].T, dZ3) * drelu
 
-		dZ2 = np.dot(dZ3.T, parameters['W3']) * drelu
-		print dZ2.shape
-		sd
-		dW2 = (1./m) * np.dot(dZ2.T, cache['A1'].T)
-		db2 = (1./m) * np.sum(dZ2, axis=0, keepdims=True)
-		#print dZ2.shape
-		#print db2.shape
-		db2 = db2.T
-
-		
+		dW2 = (1./m) * np.dot(dZ2, cache['A1'].T)
+		db2 = (1./m) * np.sum(dZ2, axis=1, keepdims=True)
 
 		# Derivation of relu
-		drelu = cache['Z2']
+		drelu = cache['Z1']
 		drelu[drelu<=0] = 0
 		drelu[drelu>0] = 1
 
-		dZ1 = np.dot(dZ2, parameters['W2']) * drelu
-		dW1 = (1./m) * np.dot(dZ1.T, X.T)
-		db1 = (1./m) * np.sum(dZ1, axis=0, keepdims=True)
-		db1 = db1.T
+		dZ1 = np.dot(parameters['W2'].T, dZ2) * drelu
+		dW1 = (1./m) * np.dot(dZ1, X.T)
+		db1 = (1./m) * np.sum(dZ1, axis=1, keepdims=True)
 
 
 		# gradients must have same dimension as the parameters
@@ -275,7 +263,7 @@ if __name__ == '__main__':
 
 	#grads = nn.backward(parameters, cache, nn.D_train[1], nn.D_train[0])
 
-	parameters = nn.train(10, 'random', 0.01, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(10, 'random', 0.1, nn.D_train[0], nn.D_train[1])
 	out, cache = nn.forward(nn.D_train[0], parameters)
 
 	#print nn.D_train[1][0]
