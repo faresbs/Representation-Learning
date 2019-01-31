@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 
 np.random.seed(1) # set a seed so that the results are consistent
 
-#TO FIX
 
 class NN(object):
 
@@ -52,12 +51,24 @@ class NN(object):
 		#if the dim of the network doesn't respect the n_hidden layers
 		assert len(self.dims) == (self.n_hidden + 2),"network dimensions are incoherent!"
 
-		#Random init of weights
-		if(init_method=='random'):
+		#Glarot distribution init of weights
+		if(init_method=='glarot'):
 			for i in range(self.n_hidden+1):
 
-				W = np.random.randn(self.dims[i+1], self.dims[i]) * 0.01
-				b = np.random.randn(self.dims[i+1], 1) * 0.01
+				W = np.random.rand((self.dims[i+1], self.dims[i]))*np.sqrt(2/self.dims[i])
+				b = np.random.rand((self.dims[i+1], 1))*np.sqrt(2/self.dims[i])
+
+				#Save weights
+				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
+
+
+		#normal distribution init of weights
+		#To break symmetry
+		if(init_method=='normal'):
+			for i in range(self.n_hidden+1):
+
+				W = np.random.randn(self.dims[i+1], self.dims[i])
+				b = np.random.randn(self.dims[i+1], 1)
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
@@ -69,6 +80,7 @@ class NN(object):
 
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
+
 
 		return parameters
 
@@ -131,6 +143,7 @@ class NN(object):
 		#y is one hot vector
 		log_likelihood = -np.log(y_hat)*y
 		loss = np.sum(log_likelihood) / m
+		
 		return loss
 
 
@@ -171,7 +184,6 @@ class NN(object):
 			drelu[drelu<=0] = 0
 			drelu[drelu>0] = 1
 
-			#parameters["W"+str(i+1)]
 			dZ = np.dot(dW.T, dZ) * drelu
 
 			if(i == 1):
@@ -232,7 +244,6 @@ class NN(object):
 	#Update parameters using stochastic gradient descent
 	def update(self, grads, parameters, learning_rate):
 
-
 		for i in range(self.n_hidden+1):
 
 			# Retrieve parameters
@@ -252,7 +263,7 @@ class NN(object):
 
 		return parameters
 
-	def train(self, iterations, init_method, learning_rate, X, labels):
+	def train(self, iterations, init_method, learning_rate, X, labels, mini_batches=100):
 
 		#One hot encoding of labels
 		y = np.eye(self.n_class)[labels]
@@ -285,7 +296,7 @@ class NN(object):
 
 
 if __name__ == '__main__':
-	nn = NN(hidden_dims=(20, 15), datapath='./datasets/mnist.pkl.npy')
+	nn = NN(hidden_dims=(512, 1024), datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
 	#parameters = nn.initialize_weights(init_method='zeros')
@@ -300,7 +311,8 @@ if __name__ == '__main__':
 
 	#grads = nn.backward(parameters, cache, nn.D_train[1], nn.D_train[0])
 
-	parameters = nn.train(100, 'random', 0.5, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
+
 	out, cache = nn.forward(nn.D_train[0], parameters)
 
 	#print nn.D_train[1][0]
