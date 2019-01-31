@@ -165,6 +165,7 @@ class NN(object):
 		#Number of examples
 		m = len(y)
 
+		#Derivative of cross entropy with respect to softmax
 		dZ = cache["A"+str(self.n_hidden+1)] - y.T 
 		dW = (1./m) * np.dot(dZ, cache["A"+str(self.n_hidden)].T)
 		db = (1./m) * np.sum(dZ, axis=1, keepdims=True)
@@ -263,7 +264,7 @@ class NN(object):
 
 		return parameters
 
-	def train(self, iterations, init_method, learning_rate, X, labels, mini_batches=100):
+	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=1000):
 
 		#One hot encoding of labels
 		y = np.eye(self.n_class)[labels]
@@ -273,20 +274,49 @@ class NN(object):
 		# Loop (gradient descent)
 		for i in range(iterations):
 
-			print str(i)+"/"+str(iterations)
+			print "epoch: "+str(i)+"/"+str(iterations)
 
-			#Forward pass
-			out, cache = self.forward(X, parameters)
+			#Get size of mini batches
+			nb_batchs = int(np.ceil(float(len(y)) / mini_batch))
 
-			#Backward pass
-			grads = self.backward(parameters, cache, y, X)
+			start = 0
+			
+			#init mini batch with shapes similar to X and y
+			#X = (Mx, m) and y = (m, n_classes)
+			batch_X = np.zeros((X.shape[0], mini_batch))
+			batch_y = np.zeros((mini_batch, y.shape[1]))
 
-			#Update
-			parameters = self.update(grads, parameters, learning_rate)
+			#losses
+			losses = []
 
-			#print out.shape
-			#print labels.shape
-			print self.loss(out, y.T)
+			for batch in range(nb_batchs):
+				end = start + mini_batch
+
+				#If it exceeds the nb of examples
+				if(end > X.shape[1]):
+					end = X.shape[1]
+					
+				batch_X = X[:, start:end]
+				batch_y = y[start:end, :]
+
+				start = end		
+
+				#Forward pass
+				out, cache = self.forward(batch_X, parameters)
+
+				#Backward pass
+				grads = self.backward(parameters, cache, batch_y, batch_X)
+
+				#Update
+				parameters = self.update(grads, parameters, learning_rate)
+
+				#Loss for each batch
+				losses.append(self.loss(out, batch_y.T))
+
+				#print self.loss(out, batch_y.T)
+
+			#Avg loss over batches
+			print "Avg loss: "+str(np.sum(losses)/len(losses))
 
 		return parameters
 
@@ -296,7 +326,7 @@ class NN(object):
 
 
 if __name__ == '__main__':
-	nn = NN(hidden_dims=(512, 1024), datapath='./datasets/mnist.pkl.npy')
+	nn = NN(hidden_dims=(10, 20), datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
 	#parameters = nn.initialize_weights(init_method='zeros')
