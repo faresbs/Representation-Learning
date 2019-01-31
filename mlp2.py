@@ -204,6 +204,8 @@ class NN(object):
 
 		return grads
 
+		#################Explicitly code the derivation equations for every layer##################
+
 		"""			
 		dZ3 = cache['A3'] - y.T
 		dW3 = (1./m) * np.dot(dZ3, cache['A2'].T)
@@ -271,6 +273,9 @@ class NN(object):
 
 		parameters = self.initialize_weights(init_method)
 
+		#Save avg loss in each epoch
+		avg_loss = []
+
 		# Loop (gradient descent)
 		for i in range(iterations):
 
@@ -316,17 +321,39 @@ class NN(object):
 				#print self.loss(out, batch_y.T)
 
 			#Avg loss over batches
+			avg_loss.append(np.sum(losses)/len(losses))
 			print "Avg loss: "+str(np.sum(losses)/len(losses))
+
+
+		#Plot loss curve
+		self.visualize(avg_loss, init_method)
 
 		return parameters
 
-	def test(self):
-		pass
+
+	def visualize(self, losses, init_method):
+		epochs = range(len(losses))
+
+		plt.figure()
+
+		plt.plot(epochs, losses, 'b', label='Training loss')
+		plt.title(str(init_method)+" Initializaton method")
+		plt.xlabel('epoch')
+		plt.ylabel('loss')
+		#plt.text(0.5, 0.5, "init_method used: "+str(init_method))
+		plt.legend()
+		plt.show()
+		#plt.savefig(path+"accuracy.png")
+
+	#def test(self):
+		#pass
+
+
 
 
 
 if __name__ == '__main__':
-	nn = NN(hidden_dims=(10, 20), datapath='./datasets/mnist.pkl.npy')
+	nn = NN(hidden_dims=(24, 48), datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
 	#parameters = nn.initialize_weights(init_method='zeros')
@@ -339,9 +366,7 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	#grads = nn.backward(parameters, cache, nn.D_train[1], nn.D_train[0])
-
-	parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(10, 'normal', 0.5, nn.D_train[0], nn.D_train[1])
 
 	out, cache = nn.forward(nn.D_train[0], parameters)
 
