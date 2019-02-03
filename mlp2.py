@@ -47,17 +47,21 @@ class NN(object):
 
 		#init dic to save weights and biases
 		parameters = {}
-
+		#counter for number of parameters
+		n_params = 0
 		#if the dim of the network doesn't respect the n_hidden layers
 		assert len(self.dims) == (self.n_hidden + 2),"network dimensions are incoherent!"
 
 		#Glarot distribution init of weights
 		if(init_method=='glarot'):
 			for i in range(self.n_hidden+1):
-
-				W = np.random.rand((self.dims[i+1], self.dims[i]))*np.sqrt(2/self.dims[i])
-				b = np.random.rand((self.dims[i+1], 1))*np.sqrt(2/self.dims[i])
-
+				# W = np.random.rand((self.dims[i+1], self.dims[i]))*np.sqrt(2/self.dims[i])
+				# b = np.random.rand((self.dims[i+1], 1))*np.sqrt(2/self.dims[i])
+				d = np.sqrt(6.0/(self.dims[i]+self.dims[i+1]))
+				print(d)
+				W = 2*d*np.random.rand(self.dims[i+1], self.dims[i]) - d
+				b = np.zeros((self.dims[i+1], 1))
+				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
@@ -68,7 +72,9 @@ class NN(object):
 			for i in range(self.n_hidden+1):
 
 				W = np.random.randn(self.dims[i+1], self.dims[i])
-				b = np.random.randn(self.dims[i+1], 1)
+				# b = np.random.randn(self.dims[i+1], 1)
+				b = np.zeros((self.dims[i+1], 1))
+				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
@@ -77,11 +83,16 @@ class NN(object):
 			for i in range(self.n_hidden+1):
 				W = np.zeros((self.dims[i+1], self.dims[i]))
 				b = np.zeros((self.dims[i+1], 1))
-
+				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
-
+		print('Number of parameters = ' + str(n_params))
+		plt.figure()
+		plt.plot(parameters['W'+str(i+1)].flatten(), '.')
+		plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
+		plt.xlabel('parameter')
+		plt.ylabel('initial value')
 		return parameters
 
 
@@ -143,7 +154,7 @@ class NN(object):
 		#y is one hot vector
 		log_likelihood = -np.log(y_hat)*y
 		loss = np.sum(log_likelihood) / m
-		
+
 		return loss
 
 
@@ -166,7 +177,7 @@ class NN(object):
 		m = len(y)
 
 		#Derivative of cross entropy with respect to softmax
-		dZ = cache["A"+str(self.n_hidden+1)] - y.T 
+		dZ = cache["A"+str(self.n_hidden+1)] - y.T
 		dW = (1./m) * np.dot(dZ, cache["A"+str(self.n_hidden)].T)
 		db = (1./m) * np.sum(dZ, axis=1, keepdims=True)
 
@@ -206,11 +217,11 @@ class NN(object):
 
 		#################Explicitly code the derivation equations for every layer##################
 
-		"""			
+		"""
 		dZ3 = cache['A3'] - y.T
 		dW3 = (1./m) * np.dot(dZ3, cache['A2'].T)
 		db3 = (1./m) * np.sum(dZ3, axis=1, keepdims=True)
-		
+
 		# Derivation of relu
 		drelu = cache['Z2']
 		drelu[drelu<=0] = 0
@@ -240,7 +251,7 @@ class NN(object):
 		assert(db1.shape == parameters['b1'].shape)
 
 		grads = {"dW3":dW3, "db3":db3, "dW2":dW2, "db2":db2, "dW1":dW1, "db1":db1}
-		
+
 		return grads
 		"""
 
@@ -285,7 +296,7 @@ class NN(object):
 			nb_batchs = int(np.ceil(float(len(y)) / mini_batch))
 
 			start = 0
-			
+
 			#init mini batch with shapes similar to X and y
 			#X = (Mx, m) and y = (m, n_classes)
 			batch_X = np.zeros((X.shape[0], mini_batch))
@@ -300,11 +311,11 @@ class NN(object):
 				#If it exceeds the nb of examples
 				if(end > X.shape[1]):
 					end = X.shape[1]
-					
+
 				batch_X = X[:, start:end]
 				batch_y = y[start:end, :]
 
-				start = end		
+				start = end
 
 				#Forward pass
 				out, cache = self.forward(batch_X, parameters)
@@ -366,7 +377,7 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	parameters = nn.train(10, 'normal', 0.5, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(10, 'glarot', 0.5, nn.D_train[0], nn.D_train[1])
 
 	out, cache = nn.forward(nn.D_train[0], parameters)
 
