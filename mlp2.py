@@ -55,9 +55,12 @@ class NN(object):
 		#Glarot distribution init of weights
 		if(init_method=='glarot'):
 			for i in range(self.n_hidden+1):
-
-				W = np.random.rand((self.dims[i+1], self.dims[i]))*np.sqrt(2/self.dims[i])
-				b = np.random.rand((self.dims[i+1], 1))*np.sqrt(2/self.dims[i])
+				# W = np.random.rand((self.dims[i+1], self.dims[i]))*np.sqrt(2/self.dims[i])
+				# b = np.random.rand((self.dims[i+1], 1))*np.sqrt(2/self.dims[i])
+				d = np.sqrt(6.0/(self.dims[i]+self.dims[i+1]))
+				print(d)
+				W = 2*d*np.random.rand(self.dims[i+1], self.dims[i]) - d
+				b = np.zeros((self.dims[i+1], 1))
 				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
@@ -69,7 +72,8 @@ class NN(object):
 			for i in range(self.n_hidden+1):
 
 				W = np.random.randn(self.dims[i+1], self.dims[i])
-				b = np.random.randn(self.dims[i+1], 1)
+				# b = np.random.randn(self.dims[i+1], 1)
+				b = np.zeros((self.dims[i+1], 1))
 				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
@@ -84,6 +88,11 @@ class NN(object):
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
 		print('Number of parameters = ' + str(n_params))
+		plt.figure()
+		plt.plot(parameters['W'+str(i+1)].flatten(), '.')
+		plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
+		plt.xlabel('parameter')
+		plt.ylabel('initial value')
 		return parameters
 
 
@@ -368,7 +377,7 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	parameters = nn.train(10, 'normal', 0.5, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(10, 'glarot', 0.5, nn.D_train[0], nn.D_train[1])
 
 	out, cache = nn.forward(nn.D_train[0], parameters)
 
