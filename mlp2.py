@@ -47,17 +47,21 @@ class NN(object):
 
 		#init dic to save weights and biases
 		parameters = {}
-
+		#counter for number of parameters
+		n_params = 0
 		#if the dim of the network doesn't respect the n_hidden layers
 		assert len(self.dims) == (self.n_hidden + 2),"network dimensions are incoherent!"
 
 		#Glarot distribution init of weights
 		if(init_method=='glarot'):
 			for i in range(self.n_hidden+1):
-
-				W = np.random.rand((self.dims[i+1], self.dims[i]))*np.sqrt(2/self.dims[i])
-				b = np.random.rand((self.dims[i+1], 1))*np.sqrt(2/self.dims[i])
-
+				# W = np.random.rand((self.dims[i+1], self.dims[i]))*np.sqrt(2/self.dims[i])
+				# b = np.random.rand((self.dims[i+1], 1))*np.sqrt(2/self.dims[i])
+				d = np.sqrt(6.0/(self.dims[i]+self.dims[i+1]))
+				#print(d)
+				W = 2*d*np.random.rand(self.dims[i+1], self.dims[i]) - d
+				b = np.zeros((self.dims[i+1], 1))
+				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
@@ -67,8 +71,14 @@ class NN(object):
 		if(init_method=='normal'):
 			for i in range(self.n_hidden+1):
 
-				W = np.random.randn(self.dims[i+1], self.dims[i]) * 0.01
-				b = np.random.randn(self.dims[i+1], 1) * 0.01
+				W = np.random.randn(self.dims[i+1], self.dims[i])
+				b = np.random.randn(self.dims[i+1], 1)
+
+				W = np.random.randn(self.dims[i+1], self.dims[i])
+				# b = np.random.randn(self.dims[i+1], 1)
+				b = np.zeros((self.dims[i+1], 1))
+				n_params = n_params + W.size + b.size
+
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
@@ -77,11 +87,16 @@ class NN(object):
 			for i in range(self.n_hidden+1):
 				W = np.zeros((self.dims[i+1], self.dims[i]))
 				b = np.zeros((self.dims[i+1], 1))
-
+				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
-
+		print('Number of parameters = ' + str(n_params))
+		plt.figure()
+		plt.plot(parameters['W'+str(i+1)].flatten(), '.')
+		plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
+		plt.xlabel('parameter')
+		plt.ylabel('initial value')
 		return parameters
 
 
@@ -101,6 +116,7 @@ class NN(object):
 
 			# Forward pass in hidden layer
 			Z = np.dot(W, A) + b
+			# print('size at ' + str(i) + 'layer' + str(Z.shape))
 			A = self.activation(Z)
 
 			#Save cache
@@ -113,7 +129,7 @@ class NN(object):
 
 		#logits
 		Z = np.dot(W, A) + b
-
+		# print('size at last ' + 'layer' + str(Z.shape))
 		#prob after softmax
 		A = self.softmax(Z)
 
@@ -143,7 +159,7 @@ class NN(object):
 		#y is one hot vector
 		log_likelihood = -np.log(y_hat)*y
 		loss = np.sum(log_likelihood) / m
-		
+
 		return loss
 
 
@@ -166,7 +182,7 @@ class NN(object):
 		m = len(y)
 
 		#Derivative of cross entropy with respect to softmax
-		dZ = cache["A"+str(self.n_hidden+1)] - y.T 
+		dZ = cache["A"+str(self.n_hidden+1)] - y.T
 		dW = (1./m) * np.dot(dZ, cache["A"+str(self.n_hidden)].T)
 		db = (1./m) * np.sum(dZ, axis=1, keepdims=True)
 
@@ -185,7 +201,7 @@ class NN(object):
 			drelu[drelu<=0] = 0
 			drelu[drelu>0] = 1
 
-			dZ = np.dot(dW.T, dZ) * drelu
+			dZ = np.dot(parameters["W"+str(i+1)].T, dZ) * drelu
 
 			if(i == 1):
 				A = X
@@ -206,11 +222,11 @@ class NN(object):
 
 		#################Explicitly code the derivation equations for every layer##################
 
-		"""			
+		"""
 		dZ3 = cache['A3'] - y.T
 		dW3 = (1./m) * np.dot(dZ3, cache['A2'].T)
 		db3 = (1./m) * np.sum(dZ3, axis=1, keepdims=True)
-		
+
 		# Derivation of relu
 		drelu = cache['Z2']
 		drelu[drelu<=0] = 0
@@ -240,7 +256,7 @@ class NN(object):
 		assert(db1.shape == parameters['b1'].shape)
 
 		grads = {"dW3":dW3, "db3":db3, "dW2":dW2, "db2":db2, "dW1":dW1, "db1":db1}
-		
+
 		return grads
 		"""
 
@@ -263,7 +279,7 @@ class NN(object):
 
 			# Save updated parameters
 			parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
-
+		
 		return parameters
 
 	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=64):
@@ -291,6 +307,11 @@ class NN(object):
 
 			start = 0
 
+			#init mini batch with shapes similar to X and y
+			#X = (Mx, m) and y = (m, n_classes)
+			batch_X = np.zeros((X.shape[0], mini_batch))
+			batch_y = np.zeros((mini_batch, y.shape[1]))
+
 			#losses
 			losses = []
 
@@ -300,11 +321,11 @@ class NN(object):
 				#If it exceeds the nb of examples
 				if(end > X.shape[1]):
 					end = X.shape[1]
-					
+
 				batch_X = X[:, start:end]
 				batch_y = y[start:end, :]
 
-				start = end		
+				start = end
 
 				#Forward pass
 				out, cache = self.forward(batch_X, parameters)
@@ -323,6 +344,8 @@ class NN(object):
 			#Avg loss over batches
 			avg_loss.append(np.sum(losses)/len(losses))
 			print "Avg loss: "+str(np.sum(losses)/len(losses))
+
+			
 
 
 		#Plot loss curve
@@ -353,7 +376,8 @@ class NN(object):
 
 
 if __name__ == '__main__':
-	nn = NN(hidden_dims=(24, 48), datapath='./datasets/mnist.pkl.npy')
+
+	nn = NN(hidden_dims=(24,48), datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
 	#parameters = nn.initialize_weights(init_method='zeros')
@@ -366,9 +390,19 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	parameters = nn.train(10, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
+	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(100, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
 
-	out, cache = nn.forward(nn.D_train[0], parameters)
+
+	# print(nn.D_train[0][:,0].shape)
+	# print(nn.D_train[1][0])
+	#out, cache = nn.forward(nn.D_train[0][:,0:1], parameters)
+	#print(nn.D_train[0][:,0:1].shape)
+	#print('size of output ' + str(out.shape))
+	#print(nn.D_train[1][0])
+	# grads = nn.backward(parameters, cache, nn.D_train[0][:,0], )
+
+	#print(parameters['W1'][0,0])
 
 	#print nn.D_train[1][0]
-	print out[:, 0]
+	#print out[:, 0]

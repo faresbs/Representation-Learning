@@ -1,0 +1,4 @@
+alexnet + resnet
+no data augmentation
+epochs 100
+lr 0.01
