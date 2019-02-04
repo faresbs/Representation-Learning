@@ -279,7 +279,7 @@ class NN(object):
 
 			# Save updated parameters
 			parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
-		
+
 		return parameters
 
 	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=64):
@@ -344,8 +344,9 @@ class NN(object):
 			#Avg loss over batches
 			avg_loss.append(np.sum(losses)/len(losses))
 			print "Avg loss: "+str(np.sum(losses)/len(losses))
+			self.test(self.D_val[0],self.D_val[1],parameters)
 
-			
+
 
 
 		#Plot loss curve
@@ -368,8 +369,15 @@ class NN(object):
 		plt.show()
 		#plt.savefig(path+"accuracy.png")
 
-	#def test(self):
-		#pass
+	def test(self, X, y, parameters):
+		out, _ = self.forward(X, parameters)
+		predicted = np.argmax(out,axis=0)
+		total = X.shape[1]
+		correct = np.sum(predicted==y)
+		acc = 100.*correct/total
+		print('Test Acc : %.3f ' % acc)
+		return acc
+
 
 
 
@@ -392,6 +400,7 @@ if __name__ == '__main__':
 
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
 	parameters = nn.train(100, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
+	nn.test(nn.D_train[0],nn.D_train[1],parameters)
 
 
 	# print(nn.D_train[0][:,0].shape)

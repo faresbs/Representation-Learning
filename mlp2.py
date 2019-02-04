@@ -344,6 +344,7 @@ class NN(object):
 			#Avg loss over batches
 			avg_loss.append(np.sum(losses)/len(losses))
 			print "Avg loss: "+str(np.sum(losses)/len(losses))
+			self.test(self.D_val[0],self.D_val[1],parameters)
 
 
 
