@@ -71,7 +71,8 @@ def train(data_dir):
 	print ("Start Time: "+start_date)
 
 	#Load model architecture
-	model = cnn.network(2)
+	#model = cnn.network(2)
+	model = cnn.AlexNet(2)
 	#model = models.squeezenet1_0(2)
 
 	#View model 
@@ -86,8 +87,8 @@ def train(data_dir):
 
 	data_transforms = {
 		'train': transforms.Compose([
-			#transforms.Resize(224),
-			transforms.RandomResizedCrop(64),
+			transforms.Resize(224),
+			transforms.RandomResizedCrop(224),
 			#transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.1),
 			#transforms.ColorJitter(brightness=0.2, contrast=0.2),
 			transforms.RandomRotation(10),
@@ -97,7 +98,7 @@ def train(data_dir):
 		        
 		]),
 		'val': transforms.Compose([
-			#transforms.Resize(224),
+			transforms.Resize(224),
 		    transforms.ToTensor(),
 		    #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]) 
 
@@ -107,12 +108,12 @@ def train(data_dir):
 	
 	image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
 	        			for x in ['train', 'val']}
-	dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=124,
+	dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=64,
 	                                             	shuffle=True, num_workers=2)
 	              for x in ['train', 'val']}
 
 	#Augment the size of data 
-	multiplier = 2
+	multiplier = 1
 	dataset_sizes = {}
 	
 	dataset_sizes['train'] = int (len(image_datasets['train']) * multiplier)
@@ -150,7 +151,7 @@ def train(data_dir):
 	#Load to device
 	model = model.to(device)
 
-	num_epochs = 500
+	num_epochs = 100
 
 	#Loss function
 	criterion = nn.CrossEntropyLoss()
