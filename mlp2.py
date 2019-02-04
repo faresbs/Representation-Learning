@@ -112,6 +112,7 @@ class NN(object):
 
 			# Forward pass in hidden layer
 			Z = np.dot(W, A) + b
+			# print('size at ' + str(i) + 'layer' + str(Z.shape))
 			A = self.activation(Z)
 
 			#Save cache
@@ -124,7 +125,7 @@ class NN(object):
 
 		#logits
 		Z = np.dot(W, A) + b
-
+		# print('size at last ' + 'layer' + str(Z.shape))
 		#prob after softmax
 		A = self.softmax(Z)
 
@@ -364,7 +365,8 @@ class NN(object):
 
 
 if __name__ == '__main__':
-	nn = NN(hidden_dims=(24, 48), datapath='./datasets/mnist.pkl.npy')
+	# nn = NN(hidden_dims=(24, 48), datapath='./datasets/mnist.pkl.npy')
+	nn = NN(hidden_dims=(512,512), datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
 	#parameters = nn.initialize_weights(init_method='zeros')
@@ -377,9 +379,16 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	parameters = nn.train(10, 'glarot', 0.5, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(20, 'glarot', 0.1, nn.D_train[0], nn.D_train[1])
+	# print(nn.D_train[0][:,0].shape)
+	# print(nn.D_train[1][0])
+	out, cache = nn.forward(nn.D_train[0][:,0:1], parameters)
+	print(nn.D_train[0][:,0:1].shape)
+	print('size of output ' + str(out.shape))
+	print(nn.D_train[1][0])
+	# grads = nn.backward(parameters, cache, nn.D_train[0][:,0], )
 
-	out, cache = nn.forward(nn.D_train[0], parameters)
+	print(parameters['W1'][0,0])
 
 	#print nn.D_train[1][0]
 	#print out[:, 0]
