@@ -14,6 +14,7 @@ from time import sleep
 #Progress bar to visualize training progress
 import progressbar
 
+#import network architecture
 import architecture as cnn
 
 np.random.seed(0)
@@ -70,7 +71,9 @@ def train(data_dir):
 	print ("Start Time: "+start_date)
 
 	#Load model architecture
-	model = cnn.vgg(2)
+	#model = cnn.network(2)
+	model = cnn.AlexNet(2)
+	#model = models.squeezenet1_0(2)
 
 	#View model 
 	print(model)
@@ -85,10 +88,10 @@ def train(data_dir):
 	data_transforms = {
 		'train': transforms.Compose([
 			transforms.Resize(224),
-			#transforms.RandomResizedCrop(224),
+			transforms.RandomResizedCrop(224),
 			#transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.1),
 			#transforms.ColorJitter(brightness=0.2, contrast=0.2),
-			#transforms.RandomRotation(20),
+			transforms.RandomRotation(10),
 			transforms.RandomHorizontalFlip(),
 			transforms.ToTensor(),
 			#transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
@@ -125,8 +128,6 @@ def train(data_dir):
 		# Get a batch of training data
 		inputs, classes = next(iter(dataloaders['train']))
 
-		print(inputs)
-
 		# Make a grid from batch
 		out = utils.make_grid(inputs)
 
@@ -150,13 +151,13 @@ def train(data_dir):
 	#Load to device
 	model = model.to(device)
 
-	num_epochs = 50
+	num_epochs = 100
 
 	#Loss function
 	criterion = nn.CrossEntropyLoss()
 
 	#SGD Optimizer
-	optimizer = optim.SGD(model.parameters(), lr=0.1, weight_decay=0.0005)
+	optimizer = optim.SGD(model.parameters(), lr=0.01)
 
 
 	best_model_wts = copy.deepcopy(model.state_dict())
