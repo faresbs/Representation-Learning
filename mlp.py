@@ -1,181 +1,408 @@
 # Create a Neural Network (MLP) with 2 hidden layers
-# Package imports
 
+
+# Package imports
 import numpy as np
 import matplotlib.pyplot as plt
-import sklearn
-import sklearn.datasets as datasets
-import sklearn.linear_model
 
 np.random.seed(1) # set a seed so that the results are consistent
 
-# The breast cancer dataset
-data = datasets.load_breast_cancer()
 
-# Define The NN structure
-def structure(X, n_y, n_h):
-	
-	n_X = X.shape[1]										# Number of input neurones
-	n_y = n_y												# Number of output neurones 
-	n_H = n_h 												# Number of hidden neurones
+class NN(object):
 
-	return (n_X, n_H, n_y)
+	def __init__(self, hidden_dims=(1024, 2048), n_hidden=2, n_class=10, input_dim=784, mode='train', datapath=None, model_path=None):
 
+		self.hidden_dims = hidden_dims
+		self.n_hidden = n_hidden
+		self.input_dim = input_dim
 
-# Initialize parameters with random values to break symmetry
-def initialize_parameters(n_X, n_H, n_y):
-	W1 = np.random.randn(n_H, n_X) * 0.01 
-	b1 = np.random.randn(1, n_H) * 0.01
-	W2 = np.random.randn(n_y, n_H) * 0.01
-	b2 = np.random.randn(n_y, 1) * 0.01
+		#all dims of the network
+		self.dims = [input_dim]
+		self.dims.extend(hidden_dims)
+		self.dims.append(n_class)
 
-	parameters = {"W1":W1, "b1":b1, "W2":W2, "b2":b2}
+		#load the npy data
+		self.data = np.load(datapath)
 
-	return parameters 
+		#Divide data to train, val and test
+		self.D_train = self.data[0]
+		self.D_val = self.data[1]
+		self.D_test = self.data[2]
 
+		#Reshape to (Mx, m) from (m, Mx) to simplify calculations
+		self.D_train[0] = self.D_train[0].T
+		self.D_val[0] = self.D_val[0].T
+		self.D_test[0] = self.D_test[0].T
 
-# Sigmoid function
-def sigmoid(z):
-    s = 1 / (1 + np.exp(-z))
-    return s
+		#dim of datasets
+		self.dim_data = (self.D_train[1].shape[0], self.D_val[1].shape[0], self.D_test[1].shape[0])
 
-# Forward Prop
-def Forward_propagation(X, parameters):
-	
-	# Retrieve parameters
-	W1 = parameters["W1"]
-	b1 = parameters["b1"]
-	W2 = parameters["W2"]
-	b2 = parameters["b2"]
+		self.model_path = model_path
 
-	# Forward pass in hidden layer
-	Z1 = np.dot(X, W1.T) + b1
-	A1 = np.tanh(Z1)
-	# Forward pass in the output layer
-	Z2 = np.dot(A1, W2.T) + b2
-	A2 = sigmoid(Z2)
-
-	#cache = {Z1:"Z1", Z2:"Z2", A1:"A1", A2:"A2"} 
-
-	return A2, A1
+		self.n_class = n_class
 
 
-# Compute the cross entropy cost
-def cost_function(A2, y):
+	#def initialize_weights(self, n_hidden, dims, init_method):
+	def initialize_weights(self, init_method):
 
-	# Reshape y from (m, ) to (m, 1)
-	y = y.reshape(y.shape[0], 1) 
-	m = np.shape(y)[0]
-	
-	J = 0
-	J = J + ((-1./m) * (np.dot(y.T, np.log(A2)) + np.dot((1 - y).T, np.log(1 - A2))))
+		#init dic to save weights and biases
+		parameters = {}
+		#counter for number of parameters
+		n_params = 0
+		#if the dim of the network doesn't respect the n_hidden layers
+		assert len(self.dims) == (self.n_hidden + 2),"network dimensions are incoherent!"
 
-	J = np.squeeze(J)
-	return J
-
-
-# Backpropgation
-def backprop(parameters, A2, A1, X, y):
-	
-	# Reshape y from (m, ) to (m, 1)
-	y = y.reshape(y.shape[0], 1) 
-	
-	m = y.shape[0]
-
-	#Retrive parameters
-	W2 = parameters["W2"]
-	W1 = parameters["W1"]
-	b2 = parameters["b2"]
-	b1 = parameters["b1"]
-
-	dZ2 = A2 - y
-	dW2 = (1./m) * np.dot(dZ2.T, A1)
-	db2 = (1./m) * np.sum(dZ2, axis=0, keepdims=True)
-
-	# Derivation of tanh is 1 - np.power(A1, 2)
-	dZ1 = (1./m) * (np.dot(dZ2, dW2) * (1 - np.power(A1, 2)))
-	dW1 = np.dot(dZ1.T, X)
-	db1 = (1./m) * np.sum(dZ1, axis=0, keepdims=True)
-
-	# gradients must have same dimension as the parameters
-	assert(dW2.shape == W2.shape)
-	assert(db2.shape == b2.shape)
-	assert(dW1.shape == W1.shape)
-	assert(db1.shape == b1.shape)
-
-	grads = {"dW2":dW2, "db2":db2, "dW1":dW1, "db1":db1}
-
-	return grads
+		#Glarot distribution init of weights
+		if(init_method=='glarot'):
+			for i in range(self.n_hidden+1):
+				# W = np.random.rand((self.dims[i+1], self.dims[i]))*np.sqrt(2/self.dims[i])
+				# b = np.random.rand((self.dims[i+1], 1))*np.sqrt(2/self.dims[i])
+				d = np.sqrt(6.0/(self.dims[i]+self.dims[i+1]))
+				#print(d)
+				W = 2*d*np.random.rand(self.dims[i+1], self.dims[i]) - d
+				b = np.zeros((self.dims[i+1], 1))
+				n_params = n_params + W.size + b.size
+				#Save weights
+				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
 
-# Update 
-def Update(parameters, grads, learning_rate):
-	
-	# Retrieve parameters
-	W2 = parameters["W2"]
-	b2 = parameters["b2"]
-	W1 = parameters["W1"]
-	b1 = parameters["b1"]
+		#normal distribution init of weights
+		#To break symmetry
+		if(init_method=='normal'):
+			for i in range(self.n_hidden+1):
 
-	# Retrieve grads
-	dW2 = grads["dW2"]
-	db2 = grads["db2"]
-	dW1 = grads["dW1"]
-	db1 = grads["db1"]
+				W = np.random.randn(self.dims[i+1], self.dims[i])
+				b = np.random.randn(self.dims[i+1], 1)
 
-	# Update parameters using gradient descent
-	W2 = W2 - learning_rate * dW2
-	W1 = W1 - learning_rate * dW1
-	b2 = b2 - learning_rate * db2
-	b1 = b1 - learning_rate * db1
+				W = np.random.randn(self.dims[i+1], self.dims[i])
+				# b = np.random.randn(self.dims[i+1], 1)
+				b = np.zeros((self.dims[i+1], 1))
+				n_params = n_params + W.size + b.size
 
-	# Save updated parameters
-	parameters = {"W2":W2, "W1":W1, "b2":b2, "b1":b1}
-	
-	return parameters
+				#Save weights
+				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
+		#weights init to zeros
+		if(init_method=='zeros'):
+			for i in range(self.n_hidden+1):
+				W = np.zeros((self.dims[i+1], self.dims[i]))
+				b = np.zeros((self.dims[i+1], 1))
+				n_params = n_params + W.size + b.size
+				#Save weights
+				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
-# Put all together
-def model(X, y, n_y, n_h, iterations, learning_rate):
-	(n_X, n_H, n_y) = structure(X, n_y, n_h)
-	parameters = initialize_parameters(n_X, n_H, n_y)
-
-	# Retrieve parameters
-	W2 = parameters["W2"]
-	b2 = parameters["b2"]
-	W1 = parameters["W1"]
-	b1 = parameters["b1"]
-
-	# Loop (gradient descent)
-	for i in range(iterations):
-		#Forward pass
-		A2, A1 = Forward_propagation(X, parameters)
-		#Backward pass
-		grads = backprop(parameters, A2, A1, X, y)
-		#Update
-		parameters = Update(parameters, grads, learning_rate) 
-
-		# FIX ME : why cost is not decreasing
-
-		print cost_function(A2, y)
-
-	return parameters	
-
-# Make predictions wil new examples
-def predict(X, parameters):
-	A2, A1 = Forward_propagation(X, parameters)
-	if(A2 >= 0.5):
-		p = 1
-	else :
-		p = 0
-	return p
+		print('Number of parameters = ' + str(n_params))
+		plt.figure()
+		plt.plot(parameters['W'+str(i+1)].flatten(), '.')
+		plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
+		plt.xlabel('parameter')
+		plt.ylabel('initial value')
+		return parameters
 
 
-X = data.data
-y = data.target
+	def forward(self, X, parameters):
 
-#print X[2]
-#print y[2] 
+		#init dic to save cache of the forward
+		cache = {}
 
-param = model(X, y, 1, 4, 1000, 0.1)
-#print predict(X[20], param)
+		#output of the last layer
+		A = X
+
+		for i in range(self.n_hidden):
+
+			# Retrieve parameters
+			W = parameters["W"+str(i+1)]
+			b = parameters["b"+str(i+1)]
+
+			# Forward pass in hidden layer
+			Z = np.dot(W, A) + b
+			# print('size at ' + str(i) + 'layer' + str(Z.shape))
+			A = self.activation(Z)
+
+			#Save cache
+			cache.update({"Z"+str(i+1):Z, "A"+str(i+1):A})
+
+		#Apply softmax at the last layer
+		#Retrieve parameters
+		W = parameters["W"+str(self.n_hidden+1)]
+		b = parameters["b"+str(self.n_hidden+1)]
+
+		#logits
+		Z = np.dot(W, A) + b
+		# print('size at last ' + 'layer' + str(Z.shape))
+		#prob after softmax
+		A = self.softmax(Z)
+
+		#Save cache
+		cache.update({"Z"+str(self.n_hidden+1):Z, "A"+str(self.n_hidden+1):A})
+
+		#returns the last output as prediction + cache
+		return A, cache
+
+
+	def activation(self, z):
+		#Relu
+		a = np.maximum(0, z)
+		return a
+
+		# Sigmoid function
+		#a = 1 / (1 + np.exp(-z))
+		#return a
+
+
+    #Compute the cross entropy cost
+	def loss(self, y_hat, y):
+		#number of examples
+		m = y.shape[1]
+
+		#y_hat is the probability after softmax
+		#y is one hot vector
+		log_likelihood = -np.log(y_hat)*y
+		loss = np.sum(log_likelihood) / m
+
+		return loss
+
+
+	#Measure prob with softmax
+	def softmax(self,inp):
+		#exps = np.exp(inp)
+		#return exps / np.sum(exps)
+
+		#Stable softmax
+		exps = np.exp(inp - np.max(inp, axis=0))
+		return exps / np.sum(exps, axis=0)
+
+
+	def backward(self, parameters, cache, y, X):
+
+		#init dic for gradients
+		grads = {}
+
+		#Number of examples
+		m = len(y)
+
+		#Derivative of cross entropy with respect to softmax
+		dZ = cache["A"+str(self.n_hidden+1)] - y.T
+		dW = (1./m) * np.dot(dZ, cache["A"+str(self.n_hidden)].T)
+		db = (1./m) * np.sum(dZ, axis=1, keepdims=True)
+
+		# gradients must have same dimension as the parameters
+		assert(dW.shape == parameters["W"+str(self.n_hidden+1)].shape)
+		assert(db.shape == parameters["b"+str(self.n_hidden+1)].shape)
+
+		# Save updated grads
+		grads.update({"dW"+str(self.n_hidden+1):dW, "db"+str(self.n_hidden+1):db})
+
+
+		for i in range(self.n_hidden, 0, -1):
+
+			# Derivation of relu
+			drelu = cache["Z"+str(i)]
+			drelu[drelu<=0] = 0
+			drelu[drelu>0] = 1
+
+			dZ = np.dot(parameters["W"+str(i+1)].T, dZ) * drelu
+
+			if(i == 1):
+				A = X
+			else:
+				A = cache["A"+str(i-1)]
+
+			dW = (1./m) * np.dot(dZ, A.T)
+			db = (1./m) * np.sum(dZ, axis=1, keepdims=True)
+
+			# gradients must have same dimension as the parameters
+			assert(dW.shape == parameters["W"+str(i)].shape)
+			assert(db.shape == parameters["b"+str(i)].shape)
+
+			# Save updated grads
+			grads.update({"dW"+str(i):dW, "db"+str(i):db})
+
+		return grads
+
+		#################Explicitly code the derivation equations for every layer##################
+
+		"""
+		dZ3 = cache['A3'] - y.T
+		dW3 = (1./m) * np.dot(dZ3, cache['A2'].T)
+		db3 = (1./m) * np.sum(dZ3, axis=1, keepdims=True)
+
+		# Derivation of relu
+		drelu = cache['Z2']
+		drelu[drelu<=0] = 0
+		drelu[drelu>0] = 1
+
+		dZ2 = np.dot(parameters['W3'].T, dZ3) * drelu
+
+		dW2 = (1./m) * np.dot(dZ2, cache['A1'].T)
+		db2 = (1./m) * np.sum(dZ2, axis=1, keepdims=True)
+
+		# Derivation of relu
+		drelu = cache['Z1']
+		drelu[drelu<=0] = 0
+		drelu[drelu>0] = 1
+
+		dZ1 = np.dot(parameters['W2'].T, dZ2) * drelu
+		dW1 = (1./m) * np.dot(dZ1, X.T)
+		db1 = (1./m) * np.sum(dZ1, axis=1, keepdims=True)
+
+
+		# gradients must have same dimension as the parameters
+		assert(dW3.shape == parameters['W3'].shape)
+		assert(db3.shape == parameters['b3'].shape)
+		assert(dW2.shape == parameters['W2'].shape)
+		assert(db2.shape == parameters['b2'].shape)
+		assert(dW1.shape == parameters['W1'].shape)
+		assert(db1.shape == parameters['b1'].shape)
+
+		grads = {"dW3":dW3, "db3":db3, "dW2":dW2, "db2":db2, "dW1":dW1, "db1":db1}
+
+		return grads
+		"""
+
+	#Update parameters using stochastic gradient descent
+	def update(self, grads, parameters, learning_rate):
+
+		for i in range(self.n_hidden+1):
+
+			# Retrieve parameters
+			W = parameters["W"+str(i+1)]
+			b = parameters["b"+str(i+1)]
+
+			# Retrieve grads
+			dW = grads["dW"+str(i+1)]
+			db = grads["db"+str(i+1)]
+
+			# Update parameters using gradient descent
+			W = W - learning_rate * grads["dW"+str(i+1)]
+			b = b - learning_rate * grads["db"+str(i+1)]
+
+			# Save updated parameters
+			parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
+		
+		return parameters
+
+	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=64):
+
+		#One hot encoding of labels
+		y = np.eye(self.n_class)[labels]
+
+		parameters = self.initialize_weights(init_method)
+
+		#Save avg loss in each epoch
+		avg_loss = []
+
+		#Get size of mini batches
+		nb_batchs = int(np.ceil(float(len(y)) / mini_batch))
+
+		#init mini batch with shapes similar to X and y
+		#X = (Mx, m) and y = (m, n_classes)
+		batch_X = np.zeros((X.shape[0], mini_batch))
+		batch_y = np.zeros((mini_batch, y.shape[1]))
+
+		# Loop (gradient descent)
+		for i in range(iterations):
+
+			print "epoch: "+str(i)+"/"+str(iterations)
+
+			start = 0
+
+			#init mini batch with shapes similar to X and y
+			#X = (Mx, m) and y = (m, n_classes)
+			batch_X = np.zeros((X.shape[0], mini_batch))
+			batch_y = np.zeros((mini_batch, y.shape[1]))
+
+			#losses
+			losses = []
+
+			for batch in range(nb_batchs):
+				end = start + mini_batch
+
+				#If it exceeds the nb of examples
+				if(end > X.shape[1]):
+					end = X.shape[1]
+
+				batch_X = X[:, start:end]
+				batch_y = y[start:end, :]
+
+				start = end
+
+				#Forward pass
+				out, cache = self.forward(batch_X, parameters)
+
+				#Backward pass
+				grads = self.backward(parameters, cache, batch_y, batch_X)
+
+				#Update
+				parameters = self.update(grads, parameters, learning_rate)
+
+				#Loss for each batch
+				losses.append(self.loss(out, batch_y.T))
+
+				#print self.loss(out, batch_y.T)
+
+			#Avg loss over batches
+			avg_loss.append(np.sum(losses)/len(losses))
+			print "Avg loss: "+str(np.sum(losses)/len(losses))
+
+			
+
+
+		#Plot loss curve
+		self.visualize(avg_loss, init_method)
+
+		return parameters
+
+
+	def visualize(self, losses, init_method):
+		epochs = range(len(losses))
+
+		plt.figure()
+
+		plt.plot(epochs, losses, 'b', label='Training loss')
+		plt.title(str(init_method)+" Initializaton method")
+		plt.xlabel('epoch')
+		plt.ylabel('loss')
+		#plt.text(0.5, 0.5, "init_method used: "+str(init_method))
+		plt.legend()
+		plt.show()
+		#plt.savefig(path+"accuracy.png")
+
+	#def test(self):
+		#pass
+
+
+
+
+
+if __name__ == '__main__':
+
+	nn = NN(hidden_dims=(24,48), datapath='./datasets/mnist.pkl.npy')
+	print("train/val/test: "+str(nn.dim_data))
+
+	#parameters = nn.initialize_weights(init_method='zeros')
+
+	#for key, value in parameters.iteritems() :
+	#	print key, value.shape
+
+	#out, cache = nn.forward(nn.D_train[0], parameters)
+
+	#for key, value in cache.iteritems() :
+	#	print key, value.shape
+
+	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(100, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
+
+
+	# print(nn.D_train[0][:,0].shape)
+	# print(nn.D_train[1][0])
+	#out, cache = nn.forward(nn.D_train[0][:,0:1], parameters)
+	#print(nn.D_train[0][:,0:1].shape)
+	#print('size of output ' + str(out.shape))
+	#print(nn.D_train[1][0])
+	# grads = nn.backward(parameters, cache, nn.D_train[0][:,0], )
+
+	#print(parameters['W1'][0,0])
+
+	#print nn.D_train[1][0]
+	#print out[:, 0]
