@@ -67,8 +67,8 @@ class NN(object):
 		if(init_method=='normal'):
 			for i in range(self.n_hidden+1):
 
-				W = np.random.randn(self.dims[i+1], self.dims[i])
-				b = np.random.randn(self.dims[i+1], 1)
+				W = np.random.randn(self.dims[i+1], self.dims[i]) * 0.01
+				b = np.random.randn(self.dims[i+1], 1) * 0.01
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
@@ -266,7 +266,7 @@ class NN(object):
 
 		return parameters
 
-	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=1000):
+	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=64):
 
 		#One hot encoding of labels
 		y = np.eye(self.n_class)[labels]
@@ -276,20 +276,20 @@ class NN(object):
 		#Save avg loss in each epoch
 		avg_loss = []
 
+		#Get size of mini batches
+		nb_batchs = int(np.ceil(float(len(y)) / mini_batch))
+
+		#init mini batch with shapes similar to X and y
+		#X = (Mx, m) and y = (m, n_classes)
+		batch_X = np.zeros((X.shape[0], mini_batch))
+		batch_y = np.zeros((mini_batch, y.shape[1]))
+
 		# Loop (gradient descent)
 		for i in range(iterations):
 
 			print "epoch: "+str(i)+"/"+str(iterations)
 
-			#Get size of mini batches
-			nb_batchs = int(np.ceil(float(len(y)) / mini_batch))
-
 			start = 0
-			
-			#init mini batch with shapes similar to X and y
-			#X = (Mx, m) and y = (m, n_classes)
-			batch_X = np.zeros((X.shape[0], mini_batch))
-			batch_y = np.zeros((mini_batch, y.shape[1]))
 
 			#losses
 			losses = []
@@ -366,9 +366,9 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	parameters = nn.train(10, 'normal', 0.5, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(10, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
 
 	out, cache = nn.forward(nn.D_train[0], parameters)
 
 	#print nn.D_train[1][0]
-	#print out[:, 0]
+	print out[:, 0]
