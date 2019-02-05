@@ -53,14 +53,14 @@ class NN(object):
 		assert len(self.dims) == (self.n_hidden + 2),"network dimensions are incoherent!"
 
 		#Glarot distribution init of weights
-		if(init_method=='glarot'):
+		if(init_method=='glorot'):
 			for i in range(self.n_hidden+1):
-				# W = np.random.rand((self.dims[i+1], self.dims[i]))*np.sqrt(2/self.dims[i])
-				# b = np.random.rand((self.dims[i+1], 1))*np.sqrt(2/self.dims[i])
+				
 				d = np.sqrt(6.0/(self.dims[i]+self.dims[i+1]))
-				#print(d)
+
 				W = 2*d*np.random.rand(self.dims[i+1], self.dims[i]) - d
 				b = np.zeros((self.dims[i+1], 1))
+				
 				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
@@ -72,31 +72,33 @@ class NN(object):
 			for i in range(self.n_hidden+1):
 
 				W = np.random.randn(self.dims[i+1], self.dims[i])
-				b = np.random.randn(self.dims[i+1], 1)
-
-				W = np.random.randn(self.dims[i+1], self.dims[i])
-				# b = np.random.randn(self.dims[i+1], 1)
 				b = np.zeros((self.dims[i+1], 1))
+				
 				n_params = n_params + W.size + b.size
 
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
 		#weights init to zeros
-		if(init_method=='zeros'):
+		if(init_method=='zero'):
 			for i in range(self.n_hidden+1):
+				
 				W = np.zeros((self.dims[i+1], self.dims[i]))
 				b = np.zeros((self.dims[i+1], 1))
+				
 				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
+
 		print('Number of parameters = ' + str(n_params))
-		plt.figure()
-		plt.plot(parameters['W'+str(i+1)].flatten(), '.')
-		plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
-		plt.xlabel('parameter')
-		plt.ylabel('initial value')
+		
+		#plt.figure()
+		#plt.plot(parameters['W'+str(i+1)].flatten(), '.')
+		#plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
+		#plt.xlabel('parameter')
+		#plt.ylabel('initial value')
+
 		return parameters
 
 
@@ -293,6 +295,10 @@ class NN(object):
 		#Save avg loss in each epoch
 		avg_loss = []
 
+		#Save train and val acc in each epoch
+		train_acc = []
+		val_acc = []
+
 		#Get size of mini batches
 		nb_batchs = int(np.ceil(float(len(y)) / mini_batch))
 
@@ -346,25 +352,48 @@ class NN(object):
 			avg_loss.append(np.sum(losses)/len(losses))
 			print "Avg Train loss: "+str(np.sum(losses)/len(losses))
 
-			#Validation
-			print('Validation Acc : %.3f ' % self.test(self.D_val[0], self.D_val[1], parameters))
+			#Training accuracy
+			acc = self.test(self.D_train[0], self.D_train[1], parameters)
+			print('Training Acc : %.3f ' % acc)
+			train_acc.append(acc)
+
+			#Validation accuracy
+			acc = self.test(self.D_train[0], self.D_train[1], parameters)
+			print('Validation Acc : %.3f ' % acc)
+			val_acc.append(acc)
 
 		#Plot loss curve
-		self.visualize(avg_loss, init_method)
+		self.visualize_loss(avg_loss, init_method, 'Training loss')
+
+		#Plot accuracy & validation curve
+		self.visualize_acc(train_acc, val_acc, 'Training', 'Validation')
 
 		return parameters
 
 
-	def visualize(self, losses, init_method):
-		epochs = range(len(losses))
+	def visualize_loss(self, x, init_method, label):
+		epochs = range(len(x))
 
 		plt.figure()
 
-		plt.plot(epochs, losses, 'b', label='Training loss')
+		plt.plot(epochs, x, 'b', label=label)
 		plt.title(str(init_method)+" Initializaton method")
 		plt.xlabel('epoch')
 		plt.ylabel('loss')
-		#plt.text(0.5, 0.5, "init_method used: "+str(init_method))
+		plt.legend()
+		plt.show()
+		#plt.savefig(path+"accuracy.png")
+
+
+	def visualize_acc(self, x1, x2, label1, label2):
+		epochs = range(len(x1))
+
+		plt.figure()
+
+		plt.plot(epochs, x1, 'b', label=label1)
+		plt.plot(epochs, x2, 'r', label=label2)
+		plt.xlabel('epoch')
+		plt.ylabel('accuracy')
 		plt.legend()
 		plt.show()
 		#plt.savefig(path+"accuracy.png")
@@ -383,12 +412,9 @@ class NN(object):
 
 
 
-
-
-
 if __name__ == '__main__':
 
-	nn = NN(hidden_dims=(24, 48), datapath='./datasets/mnist.pkl.npy')
+	nn = NN(hidden_dims=(64, 32), n_hidden=2, datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
 	#parameters = nn.initialize_weights(init_method='zeros')
@@ -402,8 +428,8 @@ if __name__ == '__main__':
 	#	print key, value.shape
 
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-	parameters = nn.train(70, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
-	print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
+	parameters = nn.train(50, 'glorot', 0.01, nn.D_train[0], nn.D_train[1])
+	#print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
 
 
 	# print(nn.D_train[0][:,0].shape)
