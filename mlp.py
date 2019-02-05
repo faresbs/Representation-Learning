@@ -66,7 +66,7 @@ class NN(object):
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
 
-		#normal distribution init of weights
+		#Normal distribution init of weights
 		#To break symmetry
 		if(init_method=='normal'):
 			for i in range(self.n_hidden+1):
@@ -343,11 +343,10 @@ class NN(object):
 
 			#Avg loss over batches
 			avg_loss.append(np.sum(losses)/len(losses))
-			print "Avg loss: "+str(np.sum(losses)/len(losses))
-			self.test(self.D_val[0],self.D_val[1],parameters)
+			print "Avg Train loss: "+str(np.sum(losses)/len(losses))
 
-
-
+			#Validation
+			print('Validation Acc : %.3f ' % self.test(self.D_val[0], self.D_val[1], parameters))
 
 		#Plot loss curve
 		# self.visualize(avg_loss, init_method)
@@ -369,13 +368,16 @@ class NN(object):
 		plt.show()
 		#plt.savefig(path+"accuracy.png")
 
+
+	#Evaluate model
 	def test(self, X, y, parameters):
+
 		out, _ = self.forward(X, parameters)
 		predicted = np.argmax(out,axis=0)
 		total = X.shape[1]
 		correct = np.sum(predicted==y)
 		acc = 100.*correct/total
-		print('Test Acc : %.3f ' % acc)
+
 		return acc
 
 
@@ -420,7 +422,7 @@ class NN(object):
 
 if __name__ == '__main__':
 
-	nn = NN(hidden_dims=(24,48), datapath='./datasets/mnist.pkl.npy')
+	nn = NN(hidden_dims=(24, 48), datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
 	#parameters = nn.initialize_weights(init_method='zeros')
@@ -434,13 +436,13 @@ if __name__ == '__main__':
 	#	print key, value.shape
 
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-	parameters = nn.train(10, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
 	print('-----training')
 	nn.test(nn.D_train[0],nn.D_train[1],parameters)
 	print('-----validation')
 	nn.test(nn.D_val[0],nn.D_val[1],parameters)
 
-	gd = nn.grad_check(0.000001,parameters,'b2', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
+	gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
 
 
 
