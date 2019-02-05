@@ -99,6 +99,12 @@ class NN(object):
 		#plt.xlabel('parameter')
 		#plt.ylabel('initial value')
 
+		# plt.figure()
+		# plt.plot(parameters['W'+str(i+1)].flatten(), '.')
+		# plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
+		# plt.xlabel('parameter')
+		# plt.ylabel('initial value')
+
 		return parameters
 
 
@@ -367,6 +373,7 @@ class NN(object):
 
 		#Plot accuracy & validation curve
 		self.visualize_acc(train_acc, val_acc, 'Training', 'Validation')
+		# self.visualize(avg_loss, init_method)
 
 		return parameters
 
@@ -411,6 +418,41 @@ class NN(object):
 		return acc
 
 
+	def grad_check(self, epsilon, parameters, key, X, y):
+		n,m = parameters[key].shape
+		grad = np.zeros(n*m)
+		grad_approx = np.zeros(n*m)
+		for i in range(n):
+			for j in range(m):
+				#analytic gradient
+				_, cache = self.forward(X, parameters)
+				grads = self.backward(parameters, cache, y, X)
+				grad[i*m+j] = grads['d'+key][i,j]
+				# print('d%s[%d,%d] gradient = %.9f' % (key,i,j,grad))
+
+				#finite difference approximation
+				parameters[key][i,j] = parameters[key][i,j] + epsilon
+				out, _ = nn.forward(X, parameters)
+				loss_plus_e = nn.loss(out, np.expand_dims(y, axis=1).T)
+				parameters[key][i,j] = parameters[key][i,j] - 2*epsilon
+				out, _ = nn.forward(X, parameters)
+				loss_minus_e = nn.loss(out, np.expand_dims(y, axis=1).T)
+				grad_approx[i*m+j] = (loss_plus_e - loss_minus_e) / (2*epsilon)
+				# print('d%s[%d,%d] gradient approximation = %.9f' %(key,i,j,grad_approx))
+
+				#back to initial point
+				parameters[key][i,j] = parameters[key][i,j] + epsilon
+
+		plt.figure()
+		plt.plot(grad, 'o', label='Analytic gradient')
+		plt.plot(grad_approx,'rx', label='Gradient approximation')
+		plt.title("Gradient checking for %s" %(key))
+		plt.xlabel('parameter')
+		plt.ylabel('gradient')
+		plt.legend()
+		plt.show()
+		return np.abs(grad-grad_approx)
+
 
 if __name__ == '__main__':
 
@@ -428,8 +470,39 @@ if __name__ == '__main__':
 	#	print key, value.shape
 
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
+
 	parameters = nn.train(50, 'glorot', 0.01, nn.D_train[0], nn.D_train[1])
 	#print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
+	parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
+	print('-----training')
+	nn.test(nn.D_train[0],nn.D_train[1],parameters)
+	print('-----validation')
+	nn.test(nn.D_val[0],nn.D_val[1],parameters)
+
+	gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
+
+
+
+	# param_idx = (2,2)
+	# _, cache = nn.forward(nn.D_train[0][:,0:1], parameters)
+	# grads = nn.backward(parameters, cache, nn.D_train[1][0:1], nn.D_train[0][:,0:1])
+	# print('dW3 gradient = %.9f' %(grads['dW3'][param_idx]))
+	#
+	# epsilon = 0.000001
+	# # print(parameters['W3'].shape)
+	# parameters['W3'][param_idx] = parameters['W3'][param_idx] + epsilon
+	# print(parameters['W3'][param_idx])
+	# out, _ = nn.forward(nn.D_train[0][:,0:1], parameters)
+	# loss_1 = nn.loss(out, np.expand_dims(nn.D_train[1][0:1], axis=1).T)
+	# print(loss_1)
+	# parameters['W3'][param_idx] = parameters['W3'][param_idx] - 2*epsilon
+	# print(parameters['W3'][param_idx])
+	# out, _ = nn.forward(nn.D_train[0][:,0:1], parameters)
+	# loss_2 = nn.loss(out, np.expand_dims(nn.D_train[1][0:1], axis=1).T)
+	# print(loss_2)
+	# grad_approx = (loss_1 - loss_2) / (2*epsilon)
+	# print('dW3 gradient approximation = %.9f' %(grad_approx))
+
 
 
 	# print(nn.D_train[0][:,0].shape)
