@@ -434,13 +434,13 @@ if __name__ == '__main__':
 	#	print key, value.shape
 
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-	parameters = nn.train(200, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(10, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
 	print('-----training')
 	nn.test(nn.D_train[0],nn.D_train[1],parameters)
 	print('-----validation')
 	nn.test(nn.D_val[0],nn.D_val[1],parameters)
 
-	gd = nn.grad_check(0.000001,parameters,'W3', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(0.000001,parameters,'b2', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
 
 
 
