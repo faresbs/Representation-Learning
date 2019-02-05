@@ -203,6 +203,7 @@ class NN(object):
 
 			dZ = np.dot(parameters["W"+str(i+1)].T, dZ) * drelu
 
+			#if we have A0 then take X instead
 			if(i == 1):
 				A = X
 			else:
