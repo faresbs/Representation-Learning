@@ -146,14 +146,22 @@ class NN(object):
 		return A, cache
 
 
-	def activation(self, z):
+	def activation(self, z, function="relu"):
 		#Relu
-		a = np.maximum(0, z)
-		return a
+		if (function=="relu"):
+			a = np.maximum(0, z)
+			return a
 
-		# Sigmoid function
-		#a = 1 / (1 + np.exp(-z))
-		#return a
+		#Sigmoid function
+		if(function=="sigmoid"):
+			a = 1 / (1 + np.exp(-z))
+			return a
+
+
+		#tanh function
+		if(function=="tanh"):
+			a = (2 / (1 + np.exp(-(2*z)))) - 1
+			return a
 
 
     #Compute the cross entropy cost
@@ -179,7 +187,7 @@ class NN(object):
 		return exps / np.sum(exps, axis=0)
 
 
-	def backward(self, parameters, cache, y, X):
+	def backward(self, parameters, cache, y, X, act_function="relu"):
 
 		#init dic for gradients
 		grads = {}
@@ -206,12 +214,23 @@ class NN(object):
 
 		for i in range(self.n_hidden, 0, -1):
 
-			# Derivation of relu
-			drelu = cache["Z"+str(i)]
-			drelu[drelu<=0] = 0
-			drelu[drelu>0] = 1
+			#Derivation of relu
+			if(act_function=="relu"):
+				d_activation = cache["Z"+str(i)]
+				d_activation[d_activation<=0] = 0
+				d_activation[d_activation>0] = 1
 
-			dZ = np.dot(parameters["W"+str(i+1)].T, dZ) * drelu
+			#Derivation of sigmoid
+			if(act_function=="sigmoid"):
+				A = self.activation(cache["Z"+str(i)], function="sigmoid")
+				d_activation = A * (1 - A)
+
+			#Derivation of tanh
+			if(act_function=="tanh"):
+				A = self.activation(cache["Z"+str(i)], function="tanh")
+				d_activation = 1 - np.power(A, 2)
+
+			dZ = np.dot(parameters["W"+str(i+1)].T, dZ) * d_activation
 
 			#if we have A0 then take X instead
 			if(i == 1):
@@ -293,7 +312,7 @@ class NN(object):
 
 		return parameters
 
-	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=64):
+	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=64, act_function="relu"):
 
 		#One hot encoding of labels
 		y = np.eye(self.n_class)[labels]
@@ -346,7 +365,7 @@ class NN(object):
 				out, cache = self.forward(batch_X, parameters)
 
 				#Backward pass
-				grads = self.backward(parameters, cache, batch_y, batch_X)
+				grads = self.backward(parameters, cache, batch_y, batch_X, act_function)
 
 				#Update
 				parameters = self.update(grads, parameters, learning_rate)
@@ -366,27 +385,26 @@ class NN(object):
 			train_acc.append(acc)
 
 			#Validation accuracy
-			acc = self.test(self.D_train[0], self.D_train[1], parameters)
+			acc = self.test(self.D_val[0], self.D_val[1], parameters)
 			print('Validation Acc : %.3f ' % acc)
 			val_acc.append(acc)
 
 		#Plot loss curve
-		self.visualize_loss(avg_loss, init_method, 'Training loss')
+		self.visualize_loss(avg_loss, iterations, 'Training loss')
 
-		#Plot accuracy & validation curve
+		#Plot training & validation accuracy curve
 		self.visualize_acc(train_acc, val_acc, 'Training', 'Validation')
-		# self.visualize(avg_loss, init_method)
 
 		return parameters
 
 
-	def visualize_loss(self, x, init_method, label):
+	def visualize_loss(self, x, title, label):
 		epochs = range(len(x))
 
 		plt.figure()
 
 		plt.plot(epochs, x, 'b', label=label)
-		plt.title(str(init_method)+" Initializaton method")
+		plt.title(str(title)+" epochs")
 		plt.xlabel('epoch')
 		plt.ylabel('loss')
 		plt.legend()
@@ -473,8 +491,40 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
+	parameters = nn.train(50,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="tanh")
+	#print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
+	#parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
+	#print('-----training')
+	#nn.test(nn.D_train[0],nn.D_train[1],parameters)
+	#print('-----validation')
+	#nn.test(nn.D_val[0],nn.D_val[1],parameters)
+
+	#gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
+
+
+
+	# param_idx = (2,2)
+	# _, cache = nn.forward(nn.D_train[0][:,0:1], parameters)
+	# grads = nn.backward(parameters, cache, nn.D_train[1][0:1], nn.D_train[0][:,0:1])
+	# print('dW3 gradient = %.9f' %(grads['dW3'][param_idx]))
+	#
+	# epsilon = 0.000001
+	# # print(parameters['W3'].shape)
+	# parameters['W3'][param_idx] = parameters['W3'][param_idx] + epsilon
+	# print(parameters['W3'][param_idx])
+	# out, _ = nn.forward(nn.D_train[0][:,0:1], parameters)
+	# loss_1 = nn.loss(out, np.expand_dims(nn.D_train[1][0:1], axis=1).T)
+	# print(loss_1)
+	# parameters['W3'][param_idx] = parameters['W3'][param_idx] - 2*epsilon
+	# print(parameters['W3'][param_idx])
+	# out, _ = nn.forward(nn.D_train[0][:,0:1], parameters)
+	# loss_2 = nn.loss(out, np.expand_dims(nn.D_train[1][0:1], axis=1).T)
+	# print(loss_2)
+	# grad_approx = (loss_1 - loss_2) / (2*epsilon)
+	# print('dW3 gradient approximation = %.9f' %(grad_approx))
+
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-	parameters = nn.train(10, 'glorot', 0.01, nn.D_train[0], nn.D_train[1],mini_batch=105)
+	parameters = nn.train(100, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
 	print('-----training')
 	print(nn.test(nn.D_train[0],nn.D_train[1],parameters))
 	print('-----validation')
@@ -487,11 +537,6 @@ if __name__ == '__main__':
 	gd = nn.grad_check(epsilon,parameters,'b2', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
 	gd = nn.grad_check(epsilon,parameters,'W3', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
 	gd = nn.grad_check(epsilon,parameters,'b3', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
-
-
-
-
-
 
 	# print(nn.D_train[0][:,0].shape)
 	# print(nn.D_train[1][0])
