@@ -55,12 +55,12 @@ class NN(object):
 		#Glarot distribution init of weights
 		if(init_method=='glorot'):
 			for i in range(self.n_hidden+1):
-				
+
 				d = np.sqrt(6.0/(self.dims[i]+self.dims[i+1]))
 
 				W = 2*d*np.random.rand(self.dims[i+1], self.dims[i]) - d
 				b = np.zeros((self.dims[i+1], 1))
-				
+
 				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
@@ -73,7 +73,7 @@ class NN(object):
 
 				W = np.random.randn(self.dims[i+1], self.dims[i])
 				b = np.zeros((self.dims[i+1], 1))
-				
+
 				n_params = n_params + W.size + b.size
 
 				#Save weights
@@ -82,17 +82,17 @@ class NN(object):
 		#weights init to zeros
 		if(init_method=='zero'):
 			for i in range(self.n_hidden+1):
-				
+
 				W = np.zeros((self.dims[i+1], self.dims[i]))
 				b = np.zeros((self.dims[i+1], 1))
-				
+
 				n_params = n_params + W.size + b.size
 				#Save weights
 				parameters.update({"W"+str(i+1):W, "b"+str(i+1):b})
 
 
 		print('Number of parameters = ' + str(n_params))
-		
+
 		#plt.figure()
 		#plt.plot(parameters['W'+str(i+1)].flatten(), '.')
 		#plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
@@ -104,7 +104,6 @@ class NN(object):
 		# plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
 		# plt.xlabel('parameter')
 		# plt.ylabel('initial value')
-
 		return parameters
 
 
@@ -115,7 +114,6 @@ class NN(object):
 
 		#output of the last layer
 		A = X
-
 		for i in range(self.n_hidden):
 
 			# Retrieve parameters
@@ -148,14 +146,22 @@ class NN(object):
 		return A, cache
 
 
-	def activation(self, z):
+	def activation(self, z, function="relu"):
 		#Relu
-		a = np.maximum(0, z)
-		return a
+		if (function=="relu"):
+			a = np.maximum(0, z)
+			return a
 
-		# Sigmoid function
-		#a = 1 / (1 + np.exp(-z))
-		#return a
+		#Sigmoid function
+		if(function=="sigmoid"):
+			a = 1 / (1 + np.exp(-z))
+			return a
+
+
+		#tanh function
+		if(function=="tanh"):
+			a = (2 / (1 + np.exp(-(2*z)))) - 1
+			return a
 
 
     #Compute the cross entropy cost
@@ -173,22 +179,26 @@ class NN(object):
 
 	#Measure prob with softmax
 	def softmax(self,inp):
-		#exps = np.exp(inp)
-		#return exps / np.sum(exps)
+		# exps = np.exp(inp)
+		# return exps / np.sum(exps)
 
 		#Stable softmax
 		exps = np.exp(inp - np.max(inp, axis=0))
 		return exps / np.sum(exps, axis=0)
 
 
-	def backward(self, parameters, cache, y, X):
+	def backward(self, parameters, cache, y, X, act_function="relu"):
 
 		#init dic for gradients
 		grads = {}
 
 		#Number of examples
 		m = len(y)
-
+		# print('in backward')
+		# print(cache["A"+str(self.n_hidden+1)].shape)
+		# print(cache["A"+str(self.n_hidden+1)][:,0])
+		# print(y.shape)
+		# print(y.T[:,0])
 		#Derivative of cross entropy with respect to softmax
 		dZ = cache["A"+str(self.n_hidden+1)] - y.T
 		dW = (1./m) * np.dot(dZ, cache["A"+str(self.n_hidden)].T)
@@ -204,12 +214,23 @@ class NN(object):
 
 		for i in range(self.n_hidden, 0, -1):
 
-			# Derivation of relu
-			drelu = cache["Z"+str(i)]
-			drelu[drelu<=0] = 0
-			drelu[drelu>0] = 1
+			#Derivation of relu
+			if(act_function=="relu"):
+				d_activation = cache["Z"+str(i)]
+				d_activation[d_activation<=0] = 0
+				d_activation[d_activation>0] = 1
 
-			dZ = np.dot(parameters["W"+str(i+1)].T, dZ) * drelu
+			#Derivation of sigmoid
+			if(act_function=="sigmoid"):
+				A = self.activation(cache["Z"+str(i)], function="sigmoid")
+				d_activation = A * (1 - A)
+
+			#Derivation of tanh
+			if(act_function=="tanh"):
+				A = self.activation(cache["Z"+str(i)], function="tanh")
+				d_activation = 1 - np.power(A, 2)
+
+			dZ = np.dot(parameters["W"+str(i+1)].T, dZ) * d_activation
 
 			#if we have A0 then take X instead
 			if(i == 1):
@@ -291,7 +312,7 @@ class NN(object):
 
 		return parameters
 
-	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=64):
+	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=64, act_function="relu"):
 
 		#One hot encoding of labels
 		y = np.eye(self.n_class)[labels]
@@ -344,7 +365,7 @@ class NN(object):
 				out, cache = self.forward(batch_X, parameters)
 
 				#Backward pass
-				grads = self.backward(parameters, cache, batch_y, batch_X)
+				grads = self.backward(parameters, cache, batch_y, batch_X, act_function)
 
 				#Update
 				parameters = self.update(grads, parameters, learning_rate)
@@ -364,16 +385,15 @@ class NN(object):
 			train_acc.append(acc)
 
 			#Validation accuracy
-			acc = self.test(self.D_train[0], self.D_train[1], parameters)
+			acc = self.test(self.D_val[0], self.D_val[1], parameters)
 			print('Validation Acc : %.3f ' % acc)
 			val_acc.append(acc)
 
 		#Plot loss curve
-		self.visualize_loss(avg_loss, learning_rate, 'Training loss')
+		self.visualize_loss(avg_loss, iterations, 'Training loss')
 
-		#Plot accuracy & validation curve
+		#Plot training & validation accuracy curve
 		self.visualize_acc(train_acc, val_acc, 'Training', 'Validation')
-		# self.visualize(avg_loss, init_method)
 
 		return parameters
 
@@ -384,7 +404,7 @@ class NN(object):
 		plt.figure()
 
 		plt.plot(epochs, x, 'b', label=label)
-		plt.title(str(title)+" learning rate")
+		plt.title(str(title)+" epochs")
 		plt.xlabel('epoch')
 		plt.ylabel('loss')
 		plt.legend()
@@ -419,6 +439,8 @@ class NN(object):
 
 
 	def grad_check(self, epsilon, parameters, key, X, y):
+		#One hot encoding of labels
+		y = np.eye(self.n_class)[y]
 		n,m = parameters[key].shape
 		grad = np.zeros(n*m)
 		grad_approx = np.zeros(n*m)
@@ -433,10 +455,10 @@ class NN(object):
 				#finite difference approximation
 				parameters[key][i,j] = parameters[key][i,j] + epsilon
 				out, _ = nn.forward(X, parameters)
-				loss_plus_e = nn.loss(out, np.expand_dims(y, axis=1).T)
+				loss_plus_e = nn.loss(out, y.T)
 				parameters[key][i,j] = parameters[key][i,j] - 2*epsilon
 				out, _ = nn.forward(X, parameters)
-				loss_minus_e = nn.loss(out, np.expand_dims(y, axis=1).T)
+				loss_minus_e = nn.loss(out, y.T)
 				grad_approx[i*m+j] = (loss_plus_e - loss_minus_e) / (2*epsilon)
 				# print('d%s[%d,%d] gradient approximation = %.9f' %(key,i,j,grad_approx))
 
@@ -469,7 +491,7 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	parameters = nn.train(50, 'glorot', 0.001, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(50,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="tanh")
 	#print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
 	#parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
 	#print('-----training')
@@ -501,7 +523,20 @@ if __name__ == '__main__':
 	# grad_approx = (loss_1 - loss_2) / (2*epsilon)
 	# print('dW3 gradient approximation = %.9f' %(grad_approx))
 
+	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(100, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
+	print('-----training')
+	print(nn.test(nn.D_train[0],nn.D_train[1],parameters))
+	print('-----validation')
+	print(nn.test(nn.D_val[0],nn.D_val[1],parameters))
 
+	epsilon = 0.00001
+	gd = nn.grad_check(epsilon,parameters,'W1', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'b1', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'W2', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'b2', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'W3', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'b3', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
 
 	# print(nn.D_train[0][:,0].shape)
 	# print(nn.D_train[1][0])
