@@ -104,7 +104,6 @@ class NN(object):
 		# plt.title("W"+str(i)+" using "+str(init_method)+" initializaton method")
 		# plt.xlabel('parameter')
 		# plt.ylabel('initial value')
-
 		return parameters
 
 
@@ -475,7 +474,7 @@ if __name__ == '__main__':
 	#	print key, value.shape
 
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-	parameters = nn.train(100, 'glarot', 0.01, nn.D_train[0], nn.D_train[1],mini_batch=105)
+	parameters = nn.train(100, 'glorot', 0.01, nn.D_train[0], nn.D_train[1],mini_batch=105)
 	print('-----training')
 	print(nn.test(nn.D_train[0],nn.D_train[1],parameters))
 	print('-----validation')
