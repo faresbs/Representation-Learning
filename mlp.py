@@ -369,7 +369,7 @@ class NN(object):
 			val_acc.append(acc)
 
 		#Plot loss curve
-		self.visualize_loss(avg_loss, init_method, 'Training loss')
+		self.visualize_loss(avg_loss, learning_rate, 'Training loss')
 
 		#Plot accuracy & validation curve
 		self.visualize_acc(train_acc, val_acc, 'Training', 'Validation')
@@ -378,13 +378,13 @@ class NN(object):
 		return parameters
 
 
-	def visualize_loss(self, x, init_method, label):
+	def visualize_loss(self, x, title, label):
 		epochs = range(len(x))
 
 		plt.figure()
 
 		plt.plot(epochs, x, 'b', label=label)
-		plt.title(str(init_method)+" Initializaton method")
+		plt.title(str(title)+" learning rate")
 		plt.xlabel('epoch')
 		plt.ylabel('loss')
 		plt.legend()
@@ -469,17 +469,15 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-
-	parameters = nn.train(50, 'glorot', 0.01, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(50, 'glorot', 0.001, nn.D_train[0], nn.D_train[1])
 	#print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
-	parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
-	print('-----training')
-	nn.test(nn.D_train[0],nn.D_train[1],parameters)
-	print('-----validation')
-	nn.test(nn.D_val[0],nn.D_val[1],parameters)
+	#parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
+	#print('-----training')
+	#nn.test(nn.D_train[0],nn.D_train[1],parameters)
+	#print('-----validation')
+	#nn.test(nn.D_val[0],nn.D_val[1],parameters)
 
-	gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
+	#gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
 
 
 
