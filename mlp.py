@@ -107,7 +107,6 @@ class NN(object):
 
 		#output of the last layer
 		A = X
-
 		for i in range(self.n_hidden):
 
 			# Retrieve parameters
@@ -165,8 +164,8 @@ class NN(object):
 
 	#Measure prob with softmax
 	def softmax(self,inp):
-		#exps = np.exp(inp)
-		#return exps / np.sum(exps)
+		# exps = np.exp(inp)
+		# return exps / np.sum(exps)
 
 		#Stable softmax
 		exps = np.exp(inp - np.max(inp, axis=0))
@@ -180,7 +179,11 @@ class NN(object):
 
 		#Number of examples
 		m = len(y)
-
+		# print('in backward')
+		# print(cache["A"+str(self.n_hidden+1)].shape)
+		# print(cache["A"+str(self.n_hidden+1)][:,0])
+		# print(y.shape)
+		# print(y.T[:,0])
 		#Derivative of cross entropy with respect to softmax
 		dZ = cache["A"+str(self.n_hidden+1)] - y.T
 		dW = (1./m) * np.dot(dZ, cache["A"+str(self.n_hidden)].T)
@@ -383,6 +386,8 @@ class NN(object):
 
 
 	def grad_check(self, epsilon, parameters, key, X, y):
+		#One hot encoding of labels
+		y = np.eye(self.n_class)[y]
 		n,m = parameters[key].shape
 		grad = np.zeros(n*m)
 		grad_approx = np.zeros(n*m)
@@ -397,10 +402,10 @@ class NN(object):
 				#finite difference approximation
 				parameters[key][i,j] = parameters[key][i,j] + epsilon
 				out, _ = nn.forward(X, parameters)
-				loss_plus_e = nn.loss(out, np.expand_dims(y, axis=1).T)
+				loss_plus_e = nn.loss(out, y.T)
 				parameters[key][i,j] = parameters[key][i,j] - 2*epsilon
 				out, _ = nn.forward(X, parameters)
-				loss_minus_e = nn.loss(out, np.expand_dims(y, axis=1).T)
+				loss_minus_e = nn.loss(out, y.T)
 				grad_approx[i*m+j] = (loss_plus_e - loss_minus_e) / (2*epsilon)
 				# print('d%s[%d,%d] gradient approximation = %.9f' %(key,i,j,grad_approx))
 
@@ -437,35 +442,22 @@ if __name__ == '__main__':
 	#	print key, value.shape
 
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-	parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
+	parameters = nn.train(100, 'glarot', 0.01, nn.D_train[0], nn.D_train[1],mini_batch=105)
 	print('-----training')
-	nn.test(nn.D_train[0],nn.D_train[1],parameters)
+	print(nn.test(nn.D_train[0],nn.D_train[1],parameters))
 	print('-----validation')
-	nn.test(nn.D_val[0],nn.D_val[1],parameters)
+	print(nn.test(nn.D_val[0],nn.D_val[1],parameters))
 
-	gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
+	epsilon = 0.00001
+	gd = nn.grad_check(epsilon,parameters,'W1', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'b1', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'W2', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'b2', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'W3', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
+	gd = nn.grad_check(epsilon,parameters,'b3', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
 
 
 
-	# param_idx = (2,2)
-	# _, cache = nn.forward(nn.D_train[0][:,0:1], parameters)
-	# grads = nn.backward(parameters, cache, nn.D_train[1][0:1], nn.D_train[0][:,0:1])
-	# print('dW3 gradient = %.9f' %(grads['dW3'][param_idx]))
-	#
-	# epsilon = 0.000001
-	# # print(parameters['W3'].shape)
-	# parameters['W3'][param_idx] = parameters['W3'][param_idx] + epsilon
-	# print(parameters['W3'][param_idx])
-	# out, _ = nn.forward(nn.D_train[0][:,0:1], parameters)
-	# loss_1 = nn.loss(out, np.expand_dims(nn.D_train[1][0:1], axis=1).T)
-	# print(loss_1)
-	# parameters['W3'][param_idx] = parameters['W3'][param_idx] - 2*epsilon
-	# print(parameters['W3'][param_idx])
-	# out, _ = nn.forward(nn.D_train[0][:,0:1], parameters)
-	# loss_2 = nn.loss(out, np.expand_dims(nn.D_train[1][0:1], axis=1).T)
-	# print(loss_2)
-	# grad_approx = (loss_1 - loss_2) / (2*epsilon)
-	# print('dW3 gradient approximation = %.9f' %(grad_approx))
 
 
 
