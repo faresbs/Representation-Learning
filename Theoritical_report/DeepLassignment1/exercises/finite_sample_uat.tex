@@ -1,0 +1,156 @@
+% (meta)
+% Exercise contributed by Aristide Baratin
+% label: ch6
+
+\Exercise{
+\label{ex:finite_sample_uat}
+Given $N \in \sZ^+$, we want to show that for any $f:\R^n \to \R^m$ and any sample set $\gS\subset \R^n$ of size $N$, there is a set of parameters for a two-layer network such that the output $y(\vx)$ matches $f(\vx)$ for all $\vx \in \gS$.
+That is, we want to interpolate $f$ with $y$ on any finite set of samples $\gS$. 
+\begin{enumerate}
+\item Write the generic form of the function $y: \R^n \to \R^m$ defined by a 2-layer network with $N-1$ hidden units, with linear output and activation function $\phi$, in terms of its weights and biases $(\mW^{(1)}, \vb^{(1)})$ and $(\mW^{(2)}, \vb^{(2)})$.
+\item In what follows, we will restrict $\mW^{(1)}$ to be $\mW^{(1)} = [\vw, \cdots, \vw]^T$ for some $\vw \in \R^n$ (so the rows of  $\mW^{(1)}$ are all the same).
+Show that the interpolation problem on the sample set $\gS=\{\vx^{(1)}, \cdots \vx^{(N)}\} \subset \R^n$ can be reduced to solving a matrix equation: 
+$\mM\tilde{\mW}^{(2)}=\mF$,
+where $\tilde{\mW}^{(2)}$ and $\mF$ are both $N\times m$, given by
+$$\tilde{\mW}^{(2)}=[\mW^{(2)}, \vb^{(2)}]^\top \qquad\qquad \mF=[f(\vx^{(1)}), \cdots, f(\vx^{(N)})]^\top$$
+Express the $N \times N$ matrix $\mM$ in terms of $\vw$, $\vb^{(1)}$, $\phi$ and $\vx^{(i)}$.
+\staritem {\bf Proof with Relu activation.} 
+Assume $\vx^{(i)}$ are all distinct. 
+Choose $\vw$ such that $\vw^\top \vx^{(i)}$ are also all distinct (Try to prove the existence of such a $\vw$, although this is not required for the assignment - See Assignment 0). 
+Set $\vb^{(1)}_j = -\vw^\top \vx^{(j)} + \epsilon$, where $\epsilon >0$. 
+Find a value of $\epsilon$ such that $\mM$ is triangular with non-zero diagonal elements.
+Conclude.
+(Hint: assume an ordering of $\vw^\top\vx^{(i)}$.)
+\staritem {\bf Proof with sigmoid-like activations}. 
+Assume $\phi$ is continuous, bounded, $\phi(-\infty)=0$ and $\phi(0)>0$.
+Decompose $\vw$ as $\vw=\lambda\vu$. 
+Set $\vb^{(1)}_j = -\lambda \vu^\top \vx^{(j)}$.
+Fixing $\vu$, show that $\lim_{\lambda\to +\infty} {\mM}$ is triangular with non-zero diagonal elements. Conclude. 
+(Note that doing so preserves the distinctness of $\vw^\top \vx^{(i)}$.)
+\end{enumerate}
+}
+
+\Answer{
+${}$%placeholder
+\begin{enumerate}
+\item Let's $\vx$ be is the input vector of the NN, which is of dimension $n\times 1$. 
+The dimensions of the weights are:
+\begin{enumerate}
+\item[-] $\mW^{(1)}$ is $N-1\times n$
+\item[-] $\vb^{(1)}$ is $N-1\times 1$
+\item[-] $\mW^{(2)}$ is $m\times N-1$
+\item[-] $\vb^{(2)}$ is $m\times 1$
+\end{enumerate}
+The activation of the first layer is defined by:
+$h^{(1)} = \phi(\mW^{(1)} \vx + \vb^{(1)}))$
+\newline
+As the output activation is a linear function of the hidden layer, the output function is then:
+$$y(\vx) = \mW^{(2)} \phi(\mW^{(1)} \vx + \vb^{(1)})) + \vb^{(2)})$$
+\item From the formulation above, we can generalize to $N$ samples as follows:
+$$y(\gS) = \mW^{(2)} \phi(\mW^{(1)} \mX + \vb^{(1)})) + \vb^{(2)})$$
+where $\mX = [\vx^{(1)}, \cdots, \vx^{(N)}]$, is the matrix of input with dimension $n\times N$.
+
+Specifically we have: 
+$$\mW^{(1)} \vX = [\vw, \cdots, \vw]^T \vX$$
+$$    = {\bm{1}}_{N-1} \vw^T \vX$$
+where ${\bm{1}}_{N-1}$ is a vector of ones with dimension of $N-1 \times 1$. The result is a $N-1 \times N$ matrix. The addition of $\vb^{(1)}$ and the activation function $\phi$ will not change this dimension.
+So the interpolation problem on the sample $\gS$ is solved by the equation:
+
+\begin{equation}
+\begin{split}
+y(\gS) & = f(\gS) \\
+& = [f(\vx^{(1)}), \cdots, f(\vx^{(N)})]^\top \\
+& = \mF
+\end{split}
+\end{equation}
+
+using the formulation of the NN above, we got:
+
+$$\mW^{(2)} \phi(\bm{1}_{N-1} \vw^T \mX + \vb^{(1)})) + \vb^{(2)})=\mF$$
+
+given the definition of $\tilde{\mW}^{(2)}$, we got
+
+$$
+\begin{vmatrix}
+\phi(\bm{1}_{N-1} \vw^T \vx^{(1)}+\vb^{(1)})^T&1\\
+\cdots\\
+\phi(\bm{1}_{N-1} \vw^T \vx^{(N)}+\vb^{(1)})^T&1\\
+\end{vmatrix}
+\times
+\begin{vmatrix}
+{\mW^{(2)}}^\top\\
+{\vb^{(2)}}^\top 
+\end{vmatrix}
+= \mF$$
+or
+$$\mM [\mW^{(2)}, \vb^{(2)}]^\top = \mF$$
+
+where:
+$$
+\mM =
+\begin{vmatrix}
+\phi(\bm{1}_{N-1} \vw^T \vx^{(1)}+\vb^{(1)})^T&1\\
+\cdots\\
+\phi(\bm{1}_{N-1} \vw^T \vx^{(N)}+\vb^{(1)})^T&1\\
+\end{vmatrix}$$
+
+\item  Let's replace $\vb^{(1)}_j = -\vw^\top \vx^{(j)} + \epsilon$ in the matrix $\mM$ defined earlier:
+$$\mM = 
+\begin{vmatrix}
+\phi(\bm{1}_{N-1} \vw^T \vx^{(1)}-\vw^\top \vx^{(1)} + \epsilon)^T&1\\
+\cdots\\
+\phi(\bm{1}_{N-1} \vw^T \vx^{(N)}-\vw^\top \vx^{(N)} + \epsilon)^T&1\\
+\end{vmatrix}
+$$
+
+$$= 
+\begin{vmatrix}
+\phi(\bm{1}_{N-1} \epsilon)^T&1\\
+\cdots\\
+\phi(\bm{1}_{N-1} \epsilon)^T&1\\
+\end{vmatrix}
+$$
+
+So, in order to make $\mM$ triangular, assuming that $\phi$ is a Relu function:
+
+$\phi({\bm{1}}_{N-1} \epsilon) = 0$ whenever i<j ??????
+
+\item Let's replace $\vw$ by $\lambda\vu$ and $\vb^{(1)}_j$ by $-\lambda \vu^\top \vx^{(j)}$ in $\mM$:
+$$\mM = 
+\begin{vmatrix}
+\phi(\bm{1}_{N-1} \lambda\vu^T \vx^{(1)}-\lambda \vu^\top \vx^{(1)})^T&1\\
+\cdots\\
+\phi(\bm{1}_{N-1} \lambda\vu^T \vx^{(N)}-\lambda \vu^\top \vx^{(N)})^T&1\\
+\end{vmatrix}
+$$
+
+???
+
+\end{enumerate}
+
+{ANSWER Nr 2, Parviz}\\
+Q.1
+$$\mY = \mW^{(2)} [\phi(\mW^{(1)} \mX + \vb^{(1)})] + \vb^{(2)}$$
+Q.2: Define the data matrix (pseudo-data matrix) and a pseudo-weight matrix as
+$$
+\tilde{\mat{X}}=
+  \begin{bmatrix}
+  \vx^{(1)}_1&\vx^{(2)}_1&\dots&\vx^{(N)}_1\\
+  \vdots&\vdots&\dots&\vdots\\
+  \vx^{(1)}_n&\vx^{(2)}_n&\dots&\vx^{(N)}_n\\
+  1&1&\dots&1  
+  \end{bmatrix},\;\;\;
+  \tilde{\mat{W}}^{(1)}=
+  \begin{bmatrix}
+  \vw^{(1)}_{11}&\vw^{(1)}_{12}&\dots&\vw^{(1)}_{1n}&\vb^{(1)}_1\\
+  \vw^{(1)}_{21}&\vw^{(1)}_{22}&\dots&\vw^{(1)}_{2n}&\vb^{(1)}_2\\
+  \vdots&\vdots&\dots&\vdots&\vdots\\
+ 
+  \vw^{(1)}_{N-1,1}&\vw^{(1)}_{N-1,2}&\dots&\vw^{(1)}_{N-1,n}&\vb^{(1)}_{N-1}
+  \end{bmatrix}
+$$
+We will have:
+$$
+\phi(\mW^{(1)} \mX + \vb^{(1)})=
+$$
+}

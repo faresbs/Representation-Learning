@@ -1,0 +1,127 @@
+\documentclass[12pt]{article}
+\usepackage[canadien]{babel} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{url}
+\usepackage{todonotes}
+
+% If your paper is accepted, change the options for the package
+% aistats2e as follows:
+%
+%\usepackage[accepted]{aistats2e}
+%
+% This option will print headings for the title of your paper and
+% headings for the authors names, plus a copyright note at the end of
+% the first column of the first page.
+\setlength{\parindent}{0cm}
+\addtolength{\oddsidemargin}{-2cm}
+\addtolength{\evensidemargin}{-2cm}
+\setlength{\textwidth}{17.78cm}
+\addtolength{\topmargin}{-2.25cm}
+\setlength{\textheight}{24.24cm}
+\addtolength{\parskip}{5mm}
+\pagestyle{fancy}
+
+%************
+%* COMMANDS *
+%************
+
+\input{math_commands.tex}
+
+\newif\ifexercise
+\exercisetrue
+%\exercisefalse
+
+\newif\ifsolution
+\solutiontrue
+%\solutionfalse
+
+\usepackage{booktabs}
+\usepackage[chapter]{algorithm}
+\usepackage{algorithmic}
+% Include chapter number in algorithm number
+\renewcommand{\thealgorithm}{\arabic{chapter}.\arabic{algorithm}}
+
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{exercise}{Question}%[chapter]
+\newtheorem{answer}{Answer} % asterisk to remove ordering
+\newcommand{\Exercise}[1]{
+\begin{exercise}
+\ifexercise#1\fi
+\end{exercise}
+}
+\newcommand{\Answer}[1]{
+\ifsolution\begin{answer}#1\end{answer}\fi
+}
+
+\newif\ifexercise
+\exercisetrue
+%\exercisefalse
+
+\newif\ifsolution
+%\solutiontrue
+\solutionfalse
+
+\usepackage{enumitem}
+\newcommand{\staritem}{
+\addtocounter{enumi}{1}
+\item[$\phantom{x}^{*}$\theenumi]}
+\setlist[enumerate,1]{leftmargin=*, label=\arabic*.}
+
+\begin{document}
+
+
+\fancyhead{}
+\fancyfoot{}
+
+\fancyhead[L]{
+  \begin{tabular}[b]{l}
+    IFT6135-H2019  \\
+    Prof: Aaron Courville \\
+  \end{tabular}
+}
+\fancyhead[R]{
+  \begin{tabular}[b]{r}
+    Assignment 0  \\
+    Linear Algebra and Probability \\
+  \end{tabular}
+}
+
+\vspace{1cm}
+
+{\bf Due Date: January 25 (10pm), 2019}\\
+
+\vspace{-0.5cm}
+\underline{Instructions}
+%Laissez des traces de votre démarche pour toutes les questions! \\
+\renewcommand{\labelitemi}{\textbullet}
+\begin{itemize}
+\item \emph{This assignment serves as a warm-up for the following assignments. You are not obliged to finish this assignment, but some of the results here might be useful for the upcoming assignments. Unless otherwise specified, you may use the results in this assignment directly in your answer in the future.}
+\item \emph{Use a document preparation system such as LaTeX.}
+\item \emph{You will be using Gradescope, you should have received an email to sign up, otherwise sign up for an account on gradescope.com and use course code 9EVRGV}
+\item \emph{Submit this test submission on Gradescope (not necessary to complete and not marked)}
+% to Michael: modify the last bullet point
+\end{itemize}
+
+\input{exercises/linear_proj_distinct.tex}
+\input{exercises/law_totalvar.tex}
+\input{exercises/change_of_density.tex}
+\input{exercises/kl_normal.tex}
+
+
+
+
+
+
+
+\end{document}

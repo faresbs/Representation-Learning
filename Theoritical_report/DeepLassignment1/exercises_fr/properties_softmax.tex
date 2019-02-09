@@ -1,0 +1,25 @@
+% (meta) 
+% Exercise contributed by Antoine Lefebvre-Brossard
+% Translation by Salem Lahlou
+% label: ch6
+
+\Exercise{
+\label{ex:properties_softmax}
+On rappelle la définition de la fonction softmax: $S(\vx)_i={e^{\vx_i}}/{\sum_j e^{\vx_j}}$.
+\begin{enumerate}
+\item Montrez que la fonction softmax est invariante aux translations, c'est-à-dire : $S(\vx+c) = S(\vx)$, où $c$ est une constante.
+
+\item Montrez que la fonction softmax n'est pas invariante aux multiplications scalaires.
+On définit $S_c(\vx)=S(c\vx)$ où $c\geq0$. Quels seraient les effets si on choisissait $c = 0$ ou $c \rightarrow \infty$. 
+
+\item Soit $\vx \in \R^2$ un vecteur. On peut représenter une probabilité catégorique sur deux classes en utilisant la fonction softmax. Montrez que $S(x)$ peut être reparamétrisée en utilisant la fonction sigmoïde, c'est-à-dire : $S(\vx)=[\sigma(z), 1-\sigma(z)]^\top$ où $z$ est un scalaire, qu'il faut exprimer en fonction de $\vx$.
+
+\item Soit $\vx \in \R^K$ un vecteur ($K\geq2$).
+Montrez que $S(\vx)$ peut être représentée avec $K-1$ paramètres, c.-à-d.
+$S(\vx)=S([0, y_1, y_2, ..., y_{K-1}]^\top)$ où $y_{i}$ sont des scalaires, à exprimer en fonction de $\vx$ pour $i\in\{1,...,K-1\}$. 
+\end{enumerate}
+}
+
+\Answer{
+${}$%placeholder
+}

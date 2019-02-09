@@ -1,0 +1,27 @@
+% (meta) 
+% Exercise contributed by Louis-Guillaume Gagnon
+% Translation by Salem Lahlou
+% label: ch6
+
+\Exercise{
+\label{ex:grad_softmax}
+Soit $x \in \R^n$ un vecteur.
+On rappelle les définitions de la fonction softmax (fonction exponentielle normalisée): $S: \vx \in \R^n \mapsto S(\vx) \in \R^n$ tel que $S(\vx)_i=\frac{e^{\vx_i}}{\sum_j e^{\vx_j}}$ et de la fonction diagonale: $\text{diag}(\vx)_{ij}=\vx_i$ si $i=j$ et $\text{diag}(\vx)_{ij}=0$ si $i\neq j$;
+et du symbole de Kronecker: $\delta_{ij}=1$ if $i=j$ and $\delta_{ij}=0$ if $i\neq j$.  
+
+\begin{enumerate}
+\item Montrez que la dérivée de la fonction softmax est $\frac{d S(\vx)_i}{d \vx_j}=S(\vx)_i\left(\delta_{ij}-S(\vx)_j\right)$.
+
+\item Exprimez la matrice Jacobienne $\frac{\partial S(\vx)}{\partial \vx}$ en utilisant la notation matricielle/vectorielle. Utilisez $\text{diag}(\cdot)$.
+
+\item Calculez la matrice Jacobienne de la fonction logistique $\sigma(\vx) = 1/(1 + e^{-\vx})$.
+
+\item Soient $\vy, \vx \in \R^n$ des vecteurs, tels que $\vy = f(\vx)$. Soit $L$ une fonction de coût, differentiable.
+D'après le théorème de dérivation des fonctions composées (règle de dérivation en chaîne), $ \nabla_\vx L = (\frac{\partial \vy}{\partial \vx})^\top  \nabla_\vy L$, dont le calcul a une complexité en temps de $\gO(n^2)$, en général.
+Montrer que si $f(\vx)=\sigma(\vx)$ ou $f(\vx)=S(\vx)$, alors la multiplication matrice-vecteur précédente peut être simplifiée, et évaluée en utilisant $\gO(n)$ opérations.
+\end{enumerate}
+}
+
+\Answer{
+${}$%placeholder
+}

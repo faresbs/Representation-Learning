@@ -1,0 +1,16 @@
+% (meta)
+% Exercise contributed by Philip Paquette
+% label: ch9
+
+\Exercise{
+\label{ex:1dconv_eval}
+Compute the \textit{full}, \textit{valid}, and \textit{same} convolution (with kernel flipping) for the following 1D matrices: $\begin{bmatrix}1,2,3,4\end{bmatrix} * \begin{bmatrix}1,0,2\end{bmatrix}$
+}
+
+\Answer{
+Assuming that the given kernel is not already flipped: Flipped kernel: $[2,0,1]$\\
+All convolutions are done with stride: 1\\
+Full convolution (with double zero padding): $[0,0,1,2,3,4,0,0]*[2,0,1]=[1,2,5,6,6,8]$\\
+Same convolution (with zero padding): $[0,1,2,3,4,0]*[2,0,1]=[2,5,8,6]$\\
+Valid convolution:$[1,2,3,4]*[2,0,1]=[5,8]$
+}

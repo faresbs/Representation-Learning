@@ -1,0 +1,266 @@
+\documentclass[12pt]{article}
+
+\usepackage{fancyhdr}
+\usepackage{extramarks}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{tikz}
+\usepackage[plain]{algorithm}
+\usepackage{algpseudocode}
+\usepackage{hyperref}
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
+
+\input{math_commands.tex}
+
+%\setlength{\parskip}{\baselineskip}
+%\setlength{\parindent}{0pt}
+
+\usetikzlibrary{automata,positioning}
+
+%
+% Basic Document Settings
+%
+
+\setlength{\parindent}{0cm}
+\addtolength{\oddsidemargin}{-2cm}
+\addtolength{\evensidemargin}{-2cm}
+\setlength{\textwidth}{17.78cm}
+\addtolength{\topmargin}{-2.25cm}
+\setlength{\textheight}{24.24cm}
+\addtolength{\parskip}{5mm}
+
+\pagestyle{fancy}
+%\lhead{\hmwkAuthorName}
+\lhead{\hmwkClass\ (\hmwkClassInstructor) \#\hmwkNumber}
+\rhead{\firstxmark}
+\lfoot{\lastxmark}
+\cfoot{\thepage}
+
+\renewcommand\headrulewidth{0.4pt}
+\renewcommand\footrulewidth{0.4pt}
+
+\setlength\parindent{0pt}
+
+%
+% Create Problem Sections
+%
+
+\newcommand{\enterProblemHeader}[1]{
+    \nobreak\extramarks{}{Problem \arabic{#1} continued on next page\ldots}\nobreak{}
+    \nobreak\extramarks{Problem \arabic{#1} (continued)}{Problem \arabic{#1} continued on next page\ldots}\nobreak{}
+}
+
+\newcommand{\exitProblemHeader}[1]{
+    \nobreak\extramarks{Problem \arabic{#1} (continued)}{Problem \arabic{#1} continued on next page\ldots}\nobreak{}
+    \stepcounter{#1}
+    \nobreak\extramarks{Problem \arabic{#1}}{}\nobreak{}
+}
+
+\setcounter{secnumdepth}{0}
+\newcounter{partCounter}
+\newcounter{homeworkProblemCounter}
+\setcounter{homeworkProblemCounter}{1}
+\nobreak\extramarks{Problem \arabic{homeworkProblemCounter}}{}\nobreak{}
+
+%
+% Homework Problem Environment
+%
+% This environment takes an optional argument. When given, it will adjust the
+% problem counter. This is useful for when the problems given for your
+% assignment aren't sequential. See the last 3 problems of this template for an
+% example.
+%
+\newenvironment{homeworkProblem}[1][-1]{
+    \ifnum#1>0
+        \setcounter{homeworkProblemCounter}{#1}
+    \fi
+    \section{Problem \arabic{homeworkProblemCounter}}
+    \setcounter{partCounter}{1}
+    \enterProblemHeader{homeworkProblemCounter}
+}{
+    \exitProblemHeader{homeworkProblemCounter}
+}
+
+%
+% Homework Details
+%   - Title
+%   - Due date
+%   - Class
+%   - Section/Time
+%   - Instructor
+%   - Author
+%
+
+\newcommand{\hmwkTitle}{Homework \hmwkNumber}
+\newcommand{\hmwkNumber}{1}
+\newcommand{\hmwkDueDate}{February 16, 2019}
+\newcommand{\hmwkClass}{IFT6135H18 - Representation Learning}
+\newcommand{\hmwkClassInstructor}{Aaron Courville}
+
+
+%
+% Title Page
+%
+
+\title{
+    \vspace{0in}
+    \textmd{\textbf{\hmwkClass}}\\
+    \hmwkTitle \ - Programming Part\\
+    \normalsize\vspace{0.1in}\small{Due\ on\ \hmwkDueDate}\\
+    \vspace{0.1in}\large{Instructor: \textit{\hmwkClassInstructor\\}} 
+    \vspace{0in}
+}
+
+%\author{\hmwkAuthorName}
+%\date{}
+
+\renewcommand{\part}[1]{\textbf{\large Part \Alph{partCounter}}\stepcounter{partCounter}\\}
+
+
+
+%
+% Various Helper Commands
+%
+
+% Useful for algorithms
+\newcommand{\alg}[1]{\textsc{\bfseries \footnotesize #1}}
+% For derivatives
+\newcommand{\deriv}[1]{\frac{\mathrm{d}}{\mathrm{d}x} (#1)}
+% Integral dx
+\newcommand{\dx}{\mathrm{d}x}
+% Alias for the Solution section header
+\newcommand{\solution}{\textbf{\large Solution}}
+% Probability commands: Expectation, Variance, Covariance, Bias
+
+\newcommand{\Bias}{\mathrm{Bias}}
+\newcommand{\N}{\mathcal{N}}
+
+\begin{document}
+
+\fancyhead{}
+\fancyfoot{}
+
+\fancyhead[L]{
+  \begin{tabular}[b]{l}
+    IFT6135-H2019  \\
+    Prof: Aaron Courville \\
+  \end{tabular}
+}
+\fancyhead[R]{
+  \begin{tabular}[b]{r}
+    Assignment 1, Programming Part   \\
+    Multilayer Perceptrons and Convolutional Neural Networks \\
+  \end{tabular}
+}
+
+{\bf Due Date: February 16th, 2019}
+
+\vspace{-0.5cm}
+\underline{Instructions}
+%Laissez des traces de votre démarche pour toutes les questions! \\
+\renewcommand{\labelitemi}{\textbullet}
+\begin{itemize}
+\item \emph{For all questions, show your work!}
+\item \emph{Submit your code and your report (pdf) electronically via the course Gradescope page. If you use the Jupyter notebook, please export it as pdf and submit via Gradescope.}
+\item \emph{You should push your code to a Github repository, and include the link to the repository in your report!}
+\end{itemize}
+
+%\maketitle
+\begin{homeworkProblem}
+    In this problem, we will build a Multilayer Perceptron (MLP) and train it on the \href{http://yann.lecun.com/exdb/mnist/}{MNIST handwritten digit dataset} \footnote{\url{http://yann.lecun.com/exdb/mnist/} - Use the standard train/valid/test splits such as the one provided \href{https://github.com/CW-Huang/IFT6135H19_assignment}{\underline{\it here}}.}. 
+    
+  \vspace{0.1cm}  
+\paragraph{Building the Model}
+Consider an MLP with two hidden layers with $h^{1}$ and $h^{2}$ hidden units. For the MNIST dataset, the number of features of the input data $h^0$ is 784.
+  The output of the neural network is parameterized by a softmax of $h^3=$ 10 classes. 
+\begin{enumerate}
+\item Build an MLP  and choose the values of $h^1$ and $h^2$ such that the total number of parameters (including biases) falls within the range of [0.5M, 1.0M].
+\item Implement the forward and backward propagation of the MLP in numpy without using any of the deep learning frameworks that provides automatic differentiation. Use the class structure provided \href{https://github.com/CW-Huang/IFT6135H19_assignment/blob/master/assignment1.ipynb}{here}\footnote{\url{https://github.com/CW-Huang/IFT6135H19_assignment/blob/master/assignment1.ipynb}}. 
+ \item Train the MLP using the probability loss (\textit{cross entropy}) as training criterion. We minimize this criterion to optimize the model parameters using \textit{stochastic gradient descent}.
+ 
+\end{enumerate}  
+  In the following sub-questions, please specify the \textit{model architecture} (number of hidden units per layer, and the total number of parameters), the \textit{nonlinearity} chosen as neuron activation, \textit{learning rate}, \textit{mini-batch size}. 
+  
+\paragraph{Initialization}
+  In this sub-question, we consider different initial values for the weight parameters. 
+  Set the biases to be zeros, and consider the following settings for the weight parameters:  
+  \begin{itemize}
+  \item \textbf{Zero}: all weight parameters are initialized to be zeros (like biases).
+  \item \textbf{Normal}: sample the initial weight values from a standard Normal distribution; $w_{i,j}\sim \N(w_{i,j};0,1)$.
+  \item \textbf{Glorot}: sample the initial weight values from a uniform distribution; $w^{l}_{i,j}\sim \mathcal{U}(w^l_{i,j};-d^l,d^l)$ where $d^l=\sqrt{\frac{6}{h^{l-1}+h^{l}}}$.
+\end{itemize}
+ 
+\begin{enumerate}
+  \item Train the model for 10 epochs \footnote{One epoch is one pass through the whole training set.} using the initialization methods above and record the average loss measured on the training data at the end of each epoch (10 values for each setup). 
+  \item Compare the three setups by plotting the losses against the training time (epoch) and comment on the result.
+  \end{enumerate}
+  
+ \paragraph{Hyperparameter Search}
+ From now on, use the Glorot initialization method. 
+ \begin{enumerate}
+	\item Find out a combination of hyper-parameters (model architecture, learning rate, nonlinearity, etc.) such that the average accuracy rate on the validation set ($r^{(valid)}$) is at least 97\%. 
+	\item Report the hyper-parameters you tried and the corresponding $r^{(valid)}$.
+ \end{enumerate}
+  
+  \paragraph{Validate Gradients using Finite Difference}
+  The finite difference gradient approximation of a scalar function $x \in \R \mapsto f(x) \in \R$, of precision $\epsilon$, is defined as $\frac{f(x + \epsilon) - f(x - \epsilon)}{2\epsilon}$. Consider the first layer weights of the MLP you built in the previous section, as a vector $\theta = (\theta_1, \dots, \theta_m)$. We are interested in approximating the gradient of the loss function $L$, evaluated using \textbf{one} training sample, at the end of training, with respect to $\theta_{1:p}$, the first $p = \min(10, m)$ elements of $\theta$, using finite differences.
+  
+  \begin{enumerate}
+  \item Evaluate the finite difference gradients $\nabla^N \in \R^p$ using $\epsilon = \frac{1}{N}$ for different values of $N$
+  $$\nabla^N_i = \frac{L(\theta_1, \dots, \theta_{i-1}, \theta_i + \epsilon, \theta_{i+1}, \dots, \theta_p) - L(\theta_1, \dots, \theta_{i-1}, \theta_i - \epsilon, \theta_{i+1}, \dots, \theta_p)}{2 \epsilon}$$ 
+  Use at least 5 values of $N$ from the set $\{k  10^i: \ i \in \{0, \dots, 5\}, \ k \in \{1, 5\}\} $. 
+  
+  \item Plot the maximum difference between the true gradient and the finite difference gradient ($\max_{1 \leq i \leq p} |\nabla^N_i - \frac{\partial L}{\partial \theta_i}| $) as a function of $N$. Comment on the result. 
+\end{enumerate}
+
+\end{homeworkProblem}
+
+\newpage
+\begin{homeworkProblem}
+    \textit{Convolutional Networks}: Many techniques correspond to incorporating certain prior knowledge of the structure of the data into the parameterization of the model. 
+  Convolution operation, for example, is designed for visual imagery.
+  
+  \vspace{-15pt}
+  \subparagraph{Instructions:} For this part of the assignment we will train a convolutional network on MNIST for 10 epochs using your favorite deep learning frameworks such as Pytorch of Tensorflow.
+  Plot the train and valid errors at the end of each epoch for the model.
+  \begin{enumerate}
+  \item Come up with a CNN architecture with more or less similar number of parameters as MLP trained in Problem 1 and describe it.
+  \item Compare the performances of CNN vs MLP. Comment.
+\end{enumerate}
+You could take reference from  the architecture mentioned  \href{https://github.com/MaximumEntropy/welcome_tutorials/tree/pytorch/pytorch} {here}\footnote{\url{https://github.com/MaximumEntropy/welcome_tutorials/tree/pytorch/pytorch}}.
+\end{homeworkProblem}
+%------------------------
+%    Question 2:   
+%------------------------
+\vspace{0.5cm}
+\begin{homeworkProblem}
+
+Dogs vs. Cats is an InclassKaggle challenge for image classification.
+Using what you have learned from the class and from previous problems, make an attempt at training the best CNN classifier for this task.
+Use the link \href{https://www.kaggle.com/c/ift6135h19}{here}\footnote{\url{https://www.kaggle.com/c/ift6135h19}} to download the data and access the competition. Make sure to read the description and the rules thoroughly. 
+\begin{itemize}
+    \item The data is already preprocessed and ready to use, but you are free to add more layers of preprocessing if you wish. You may for example do your own cropping. Any extra preprocessing step should be mentioned in your report. You are not allowed to use any external data sources, but you can use usual data augmentation techniques. Please make sure to mention them. You are responsible for splitting the train set to an actual train and validation sets yourself.
+    \item In addition to Kaggle submissions, we require that you submit your code through Gradescope, along with your report. We will run your code and make sure we can recreate your submission.
+    \item You cannot use things that we have not covered in the class, directly from the deep learning library you are using, such as BatchNorm/WeightNorm/LayerNorm layers, regularization techniques (including dropout), and optimizers such as ADAM, ``unless you implement them yourself''. 
+    \item This problem is meant to give you a chance to play with the methods seen in class and apply them to a real classification task. Show your efforts by recording what you have tried on the report (even things that did not lead to high scores). 
+    \item Your mark will be a combination of the accuracy score you obtained on the private leaderboard (more details on Kaggle) and the quality of your report. Your report should include the answers to the following questions:
+\end{itemize}
+
+\textbf{Important: The Kaggle submission deadline is 1 day before the assignment deadline.}
+\begin{enumerate}
+\item Describe the architecture (number of layers, filter sizes, pooling, etc.), and report the number of parameters.
+You can take inspiration from some modern deep neural network architectures such as the VGG networks to improve the performance. 
+
+\item Plot the training error and validation error curves, along with the training and validation losses. Comment on them. What techniques (you did not implement) could be useful to improve the validation performance. How does your validation performance compare to the test set performance (that you can only get in Kaggle). 
+
+\item Compare different hyperparameter settings and report the final results of performance on your validation set. 
+Aside from quantitative results, also include some visual analysis such as visualizing the feature maps or kernels, or showing examples where the images are (a) clearly misclassified and (b) where the classifier predicts around 50\% on both classes. Explain your observation and/or suggest any improvements you think may help.
+\end{enumerate}
+
+
+\end{homeworkProblem}
+
+
+
+\end{document}

@@ -1,0 +1,55 @@
+% (meta)
+% Exercise contributed by Philippe Lacaille 
+% label: ch9
+
+\Exercise{
+\label{ex:template}
+Assume we are given data of size $3\times64\times64$. 
+In what follows, provide the correct configuration of a convolutional neural network layer that satisfies the specified assumption. 
+Answer with the window size of kernel ($k$), stride ($s$), padding ($p$), and dilation ($d$, with convention $d=1$ for no dilation).
+Use square windows only (e.g. same $k$ for both width and height). 
+\begin{enumerate}
+\item The output shape of the first layer is $(64,32,32)$. 
+\begin{enumerate}
+    \item Assume $k=8$ without dilation.
+    \item Assume $d=7$, and $s=2$.
+\end{enumerate}
+\item The output shape of the second layer is $(64,8,8)$. 
+Assume $p=0$ and $d=1$.
+\begin{enumerate}
+    \item Specify $k$ and $s$ for pooling with non-overlapping window.
+    \item What is output shape if $k=8$ and $s=4$ instead?
+\end{enumerate} 
+\item The output shape of the last layer is $(128,4,4)$. 
+\begin{enumerate}
+    \item Assume we are not using padding or dilation.
+    \item Assume $d=2$, $p=2$.
+    \item Assume $p=1$, $d=1$. 
+\end{enumerate}
+
+\end{enumerate}
+}
+
+\Answer{This problem was originally solved with the stated requirement to use $d=0$ for no dilation is used. In this case, the relationship between the effective kernel $K$ and the original kernel $k$ became $K=d+k(d+1)$.\\ 
+Moving on to the corrected definition of effective kernel when $d=1$ means no dilation, we have:
+$K=k+(k-1)(d-1)$.\\ 
+The formula for the size of the output is now $o=\frac{i+2p-K}{s}+1$, where $o$ is the size of the output layer after convolution (assuming that the layers are quadratic), $i$ is the input layer size, $p$ is the padding number, $K$ is the size of the effective kernel, and $s$ is the stride. \\
+
+8.1(a): Using the above formula $32=\frac{64+2p-8}{s}+1$, we find that one solution is:\\ ${k=8, s=2, p=3 , d=1}$\\
+
+8.1(b): Given the values for dilation $d=7$ and stride $s=2$, we first calculate the new kernel size  $K=7k-6$. Inserted in $o=\frac{i+2p-K}{s}+1$, we solve $32=\frac{64+2p-(7k-6)}{2}+1$. 
+One solution is ${k=4, s=2, p=10 , d=7}$\\
+
+8.2(a) Similarly we get ${k=4, s=4, p=0 , d=0}$\\
+
+8.2(b) Again, using the above formula and ${k=8, s=4, p=0 , d=1}$, we calculate the output to $7\times 7$:  $o=\frac{i+2p-k}{s}+1=\frac{32+0-8}{4}+1=7$  \\
+
+8.3(a) Solving $o=\frac{i+2p-k}{s}+1$, we get $4=\frac{8+0-k}{s}+1$, which can be solved by:\\ ${k=5, s=1, p=0 , d=1}$\\
+
+8.3(b) With dilation $d=2$, the new kernel size will be $K=2k-1$. We solve $4=\frac{8+4-K}{s}+1=$ and pick one solution:\\
+${k=5, s=1, p=2 , d=1}$\\
+
+8.3(c) Similarly, a couple of solutions are:\\ 
+${k=7, s=1, p=1 , d=1}$ or\\
+${k=4, s=2, p=1 , d=1}$
+}
