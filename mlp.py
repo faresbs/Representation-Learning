@@ -438,42 +438,47 @@ class NN(object):
 		return acc
 
 
-	def grad_check(self, epsilon, parameters, key, X, y):
+	def grad_check(self, epsilon, parameters, key, p, X, y, visualize=1):
 		#One hot encoding of labels
 		y = np.eye(self.n_class)[y]
 		n,m = parameters[key].shape
-		grad = np.zeros(n*m)
-		grad_approx = np.zeros(n*m)
-		for i in range(n):
-			for j in range(m):
+		p = np.minimum(p,n*m)
+		grad = np.zeros(p)
+		grad_approx = np.zeros(p)
+		for p_i in range(p):
+			# indices
+			j = np.int(np.floor(p_i/n))
+			i = p_i-j*n
+
 				#analytic gradient
-				_, cache = self.forward(X, parameters)
-				grads = self.backward(parameters, cache, y, X)
-				grad[i*m+j] = grads['d'+key][i,j]
-				# print('d%s[%d,%d] gradient = %.9f' % (key,i,j,grad))
+			_, cache = self.forward(X, parameters)
+			grads = self.backward(parameters, cache, y, X)
+			grad[p_i] = grads['d'+key][i,j]
+			# print('d%s[%d,%d] gradient = %.9f' % (key,i,j,grad))
 
-				#finite difference approximation
-				parameters[key][i,j] = parameters[key][i,j] + epsilon
-				out, _ = nn.forward(X, parameters)
-				loss_plus_e = nn.loss(out, y.T)
-				parameters[key][i,j] = parameters[key][i,j] - 2*epsilon
-				out, _ = nn.forward(X, parameters)
-				loss_minus_e = nn.loss(out, y.T)
-				grad_approx[i*m+j] = (loss_plus_e - loss_minus_e) / (2*epsilon)
-				# print('d%s[%d,%d] gradient approximation = %.9f' %(key,i,j,grad_approx))
+			#finite difference approximation
+			parameters[key][i,j] = parameters[key][i,j] + epsilon
+			out, _ = nn.forward(X, parameters)
+			loss_plus_e = nn.loss(out, y.T)
+			parameters[key][i,j] = parameters[key][i,j] - 2*epsilon
+			out, _ = nn.forward(X, parameters)
+			loss_minus_e = nn.loss(out, y.T)
+			grad_approx[p_i] = (loss_plus_e - loss_minus_e) / (2*epsilon)
+			# print('d%s[%d,%d] gradient approximation = %.9f' %(key,i,j,grad_approx))
 
-				#back to initial point
-				parameters[key][i,j] = parameters[key][i,j] + epsilon
+			#back to initial point
+			parameters[key][i,j] = parameters[key][i,j] + epsilon
 
-		plt.figure()
-		plt.plot(grad, 'o', label='Analytic gradient')
-		plt.plot(grad_approx,'rx', label='Gradient approximation')
-		plt.title("Gradient checking for %s" %(key))
-		plt.xlabel('parameter')
-		plt.ylabel('gradient')
-		plt.legend()
-		plt.show()
-		return np.abs(grad-grad_approx)
+		if visualize == 1:
+			plt.figure()
+			plt.plot(grad, 'o', label='Analytic gradient')
+			plt.plot(grad_approx,'rx', label='Gradient approximation')
+			plt.title("Gradient checking for %s" %(key))
+			plt.xlabel('parameter')
+			plt.ylabel('gradient')
+			plt.legend()
+			plt.show()
+		return np.abs(grad-grad_approx).max()
 
 
 if __name__ == '__main__':
@@ -491,7 +496,7 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	parameters = nn.train(50,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="tanh")
+	# parameters = nn.train(50,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="tanh")
 	#print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
 	#parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
 	#print('-----training')
@@ -502,29 +507,29 @@ if __name__ == '__main__':
 	#gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
 
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-	parameters = nn.train(100, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
+	parameters = nn.train(10, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
 	print('-----training')
 	print(nn.test(nn.D_train[0],nn.D_train[1],parameters))
 	print('-----validation')
 	print(nn.test(nn.D_val[0],nn.D_val[1],parameters))
 
-	epsilon = 0.00001
-	gd = nn.grad_check(epsilon,parameters,'W1', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
-	gd = nn.grad_check(epsilon,parameters,'b1', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
-	gd = nn.grad_check(epsilon,parameters,'W2', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
-	gd = nn.grad_check(epsilon,parameters,'b2', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
-	gd = nn.grad_check(epsilon,parameters,'W3', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
-	gd = nn.grad_check(epsilon,parameters,'b3', nn.D_train[0][:,0:1], nn.D_train[1][0:1])
 
-	# print(nn.D_train[0][:,0].shape)
-	# print(nn.D_train[1][0])
-	#out, cache = nn.forward(nn.D_train[0][:,0:1], parameters)
-	#print(nn.D_train[0][:,0:1].shape)
-	#print('size of output ' + str(out.shape))
-	#print(nn.D_train[1][0])
-	# grads = nn.backward(parameters, cache, nn.D_train[0][:,0], )
-
-	#print(parameters['W1'][0,0])
-
-	#print nn.D_train[1][0]
-	#print out[:, 0]
+	K = 5
+	I = 5
+	N_array = []
+	diff_array = []
+	for i in np.arange(0,I+1):
+		for k in np.arange(1,K+1):
+			N = k*(10**i)
+			N_array = np.append(N_array, N)
+			epsilon = 1.0/N
+			print(N)
+			diff = nn.grad_check(epsilon,parameters,'W2', 10, nn.D_train[0][:,0:1], nn.D_train[1][0:1], visualize=0)
+			diff_array = np.append(diff_array,diff)
+	plt.figure()
+	plt.plot(N_array, diff_array,  '*')
+	plt.xscale('log')
+	plt.title("Gradient checking for W2")
+	plt.xlabel('N')
+	plt.ylabel('Max. difference')
+	plt.show()
