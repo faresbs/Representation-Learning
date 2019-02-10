@@ -1,0 +1,38 @@
+% (meta)
+% Exercise contributed by Julian Zaidi
+% label: ch6
+
+\Exercise{
+\label{ex:activation_transform}
+Consider a 2-layer neural network $y:\R^D\rightarrow\R^K$ of the form:
+$$
+y(x, \Theta, \sigma)_k=\sum_{j=1}^M \omega_{kj}^{(2)}\sigma\left(\sum_{i=1}^D \omega_{ji}^{(1)}x_i+\omega_{j0}^{(1)}\right)+\omega_{k0}^{(2)}
+$$
+for $1\leq k\leq K$, with parameters $\Theta=(\omega^{(1)},\omega^{(2)})$ and logistic sigmoid activation function $\sigma$.
+Show that there exists an equivalent network of the same form, with parameters $\Theta'=(\tilde{\omega}^{(1)},\tilde{\omega}^{(2)})$ and $\tanh$ activation function, such that $y(x, \Theta', \tanh)=y(x, \Theta, \sigma)$ for all $x\in\R^D$, and express $\Theta'$ as a function of $\Theta$.
+}
+
+\Answer{ We know that the following relationship between $\sigma(x)$ and $tanh(x)$, holds: 
+$$
+\sigma(\vz)=\frac{1+tanh(\frac{\vz}{2})}{2}
+$$
+Here, $\vz_j=\sum_{i=1}^D \omega_{ji}^{(1)}x_i+\omega_{j0}^{(1)}$, and we can write:
+
+\begin{align*}
+y(x, \Theta, \sigma)_k&=\sum_{j=1}^M \omega_{kj}^{(2)}\sigma\left(\vz_j\right)+\omega_{k0}^{(2)}=\sum_{j=1}^M \omega_{kj}^{(2)}
+(\frac{1}{2}+\frac{1}{2}\tanh(\frac{\vz_j}{2}))+\omega_{k0}^{(2)}\\
+&=\sum_{j=1}^M \tilde{\omega}_{kj}^{(2)}
+(1+\tanh(\frac{\vz_j}{2}))+\omega_{k0}^{(2)}, \;\;\;\;\;
+\tilde{\omega}_{kj}^{(2)}={\omega}_{kj}^{(2)}/2\\
+&=\sum_{j=1}^M \tilde{\omega}_{kj}^{(2)}
+(1+\tanh(\sum_{i=1}^D \tilde{\omega}_{ji}^{(1)}x_i+\tilde{\omega}_{j0}^{(1)}))+\omega_{k0}^{(2)},\;\;\;
+\tilde{\omega}_{ji}^{(1)}=\omega_{ji}^{(1)}/2,\;\;\;\tilde{\omega}_{j0}^{(1)}=\omega_{j0}^{(1)}/2\\
+&=\sum_{j=1}^M \tilde{\omega}_{kj}^{(2)}
+(\tanh(\sum_{i=1}^D \tilde{\omega}_{ji}^{(1)}x_i+\tilde{\omega}_{j0}^{(1)}))+\sum_{j=1}^M\tilde{\omega}_{kj}^{(2)}+\omega_{k0}^{(2)}\\
+&=\sum_{j=1}^M \tilde{\omega}_{kj}^{(2)}
+(\tanh(\sum_{i=1}^D \tilde{\omega}_{ji}^{(1)}x_i+\tilde{\omega}_{j0}^{(1)}))+\tilde{\omega}_{k0}^{(2)},\;\;\;\tilde{\omega}_{k0}^{(2)}=\sum_{j=1}^M\tilde{\omega}_{kj}^{(2)}+\omega_{k0}^{(2)}\\
+&=y(x, \Theta', \tanh)_k
+\end{align*}
+
+
+}

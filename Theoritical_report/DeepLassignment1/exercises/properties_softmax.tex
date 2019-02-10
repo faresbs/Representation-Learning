@@ -1,0 +1,135 @@
+% (meta) 
+% Exercise contributed by Antoine Lefebvre-Brossard
+% label: ch6
+
+\Exercise{
+\label{ex:properties_softmax}
+Recall the definition of the softmax function:  $S(\vx)_i={e^{\vx_i}}/{\sum_j e^{\vx_j}}$.
+\begin{enumerate}
+\item Show that softmax is translation-invariant, that is: $S(\vx+c) = S(\vx)$, where $c$ is a scalar constant.
+
+\item Show that softmax is not invariant under scalar multiplication.
+Let $S_c(\vx)=S(c\vx)$ where $c\geq0$.
+What are the effects of taking $c$ to be $0$ and arbitrarily large?
+
+\item Let $\vx$ be a 2-dimentional vector. 
+One can represent a 2-class categorical probability using softmax $S(\vx)$. 
+Show that $S(\vx)$ can be reparameterized using sigmoid function, i.e.
+$S(\vx)=[\sigma(z), 1-\sigma(z)]^\top$ where $z$ is a scalar function of $\vx$. 
+
+\item Let $\vx$ be a $K$-dimentional vector ($K\geq2$).
+Show that $S(\vx)$ can be represented using $K-1$ parameters, i.e.
+$S(\vx)=S([0, y_1, y_2, ..., y_{K-1}]^\top)$ where $y_{i}$ is a scalar function of $\vx$ for $i\in\{1,...,K-1\}$. 
+\end{enumerate}
+}
+\Answer{ Q 3.1: We will prove this for one component of the softmax function. The general case will follow. 
+$$S(\vx+c)_i =S(\vx+c)_i=\frac{e^{\vx_i+c}}{\sum_j e^{\vx_j+c}}=\frac{e^ce^{\vx_i}}{e^c\sum_j e^{\vx_j}}=\frac{e^{\vx_i}}{\sum_j e^{\vx_j}}=S(\vx)_i$$
+Q 3.2: $$S_c(\vx)_i=S(c\vx)_i=\frac{e^{c\vx_i}}{\sum_j e^{c\vx_j}}\neq S(\vx)_i$$
+
+$$\lim_{c\x\rightarrow{0}}S(c\vx)_i=\lim_{c\x\rightarrow{0}}\frac{e^{c\vx_i}}{\sum_j e^{c\vx_j}}=\frac{1}{\sum_j 1}=1/n$$
+
+$$\lim_{c\x\rightarrow{\infty}}S(c\vx)_i=\lim_{c\x\rightarrow{\infty}}\frac{e^{c\vx_i}}{\sum_j e^{c\vx_j}}=\lim_{c\x\rightarrow{\infty}}\frac{1}{\sum_j e^{c(\vx_j-\vx_i)}}$$
+From this we conclude that 
+$$S_{\infty}(\vx)=\begin{bmatrix}
+    S_{\infty}(\vx)_1 \\
+    S_{\infty}(\vx)_2\\
+    S_{\infty}(\vx)_3\\ 
+    \vdots  \\
+     S_{\infty}(\vx)_n
+\end{bmatrix}
+=
+\begin{bmatrix}
+    \lim_{c\x\rightarrow{\infty}}\frac{1}{\sum_j e^{c(\vx_j-\vx_1)}}\\
+    \lim_{c\x\rightarrow{\infty}}\frac{1}{\sum_j e^{c(\vx_j-\vx_2)}}\\
+    \lim_{c\x\rightarrow{\infty}}\frac{1}{\sum_j e^{c(\vx_j-\vx_3)}}\\ 
+    \vdots  \\
+     \lim_{c\x\rightarrow{\infty}}\frac{1}{\sum_j e^{c(\vx_j-\vx_n)}}
+\end{bmatrix}
+=
+\begin{bmatrix}
+    0 \\
+    0\\
+    \vdots\\ 
+    1\\
+    \vdots  \\
+    0
+\end{bmatrix}
+$$
+where we get $1$ in entry $k$ if $\forall \vx_i, \;\vx_k>\vx_i$ and $0$ otherwise.\\
+Q 3.3: 
+$$S_(\vx)=\begin{bmatrix}
+    S(\vx)_1 \\
+    S(\vx)_2
+\end{bmatrix}
+=S_(\vx)=\begin{bmatrix}
+    \frac{e^{\vx_1}}{e^{\vx_1}+e^{\vx_2}}\\
+    \frac{e^{\vx_2}}{e^{\vx_1}+e^{\vx_2}}
+\end{bmatrix}
+=
+S_(\vx)=\begin{bmatrix}
+    \frac{1}{1+e^{\vx_2-\vx_1}}\\
+    \frac{1}{1+e^{\vx_1-\vx_2}}
+\end{bmatrix}
+=\begin{bmatrix}
+    \sigma(z) \\
+    1-\sigma(z)
+\end{bmatrix}
+$$
+Here we have defined $z=\vx_2-\vx_1$.\\
+Q 3.4: $$S(\vx)=\begin{bmatrix}
+    S(\vx)_1 \\
+    S(\vx)_2\\
+    S(\vx)_3\\ 
+    \vdots  \\
+     S(\vx)_K
+\end{bmatrix}
+=
+\begin{bmatrix}
+    \frac{1}{\sum_j e^{\vx_j-\vx_1}}\\
+    \frac{1}{\sum_j e^{\vx_j-\vx_2}}\\
+    \frac{1}{\sum_j e^{\vx_j-\vx_3}}\\ 
+    \vdots  \\
+    \frac{1}{\sum_j e^{\vx_j-\vx_K}}
+\end{bmatrix}
+=
+\begin{bmatrix}
+    \frac{1}{1+e^{\vx_2-\vx_1}+\dots +e^{\vx_{K-1}-\vx_1}+e^{\vx_K-\vx_1}}\\
+    \frac{1}{e^{\vx_1-\vx_2}+1+\dots +e^{\vx_{K-1}-\vx_2}+e^{\vx_K-\vx_2}}\\
+    \frac{1}{e^{\vx_1-\vx_3}+e^{\vx_2-\vx_3}+\dots +e^{\vx_{K-1}-\vx_3}+e^{\vx_K-\vx_3}}\\ 
+    \vdots  \\
+    \frac{1}{e^{\vx_1-\vx_K}+e^{\vx_2-\vx_K}+\dots +e^{\vx_{K-1}-\vx_K}+1}
+\end{bmatrix}
+$$
+Writing all possible combinations of $\vx_i-\vx_j$ in a matrix, we have 
+$$\begin{bmatrix}
+    \vx_1-\vx_1&\vx_1-\vx_2&\vx_1-\vx_3&\dots &\vx_1-\vx_K\\
+    \vx_2-\vx_1&\vx_2-\vx_2&\vx_2-\vx_3&\dots &\vx_2-\vx_K\\
+    \vx_3-\vx_1&\vx_3-\vx_2&\vx_3-\vx_3&\dots &\vx_3-\vx_K\\
+    \vdots& \vdots & \vdots &\ddots &\vdots \\
+     \vx_K-\vx_1&\vx_K-\vx_2&\vx_K-\vx_3&\dots &\vx_K-\vx_K\\
+\end{bmatrix}
+$$
+This matrix has $K^2$ entries. Its diagonal elements are zero and it is anti-symmetric. In other words, the matrix has $K(K-1)/2$ independent entries. Focusing on the independent entries in the upper triangular part of the matrix, it can be rewritten as:
+$$\begin{bmatrix}
+    0&\vx_1-\vx_2&\vx_1-\vx_3&\vx_1-\vx_4&\dots &\vx_1-\vx_K\\
+    \dots &0&\vx_2-\vx_3&\vx_2-\vx_4&\dots &\vx_2-\vx_K\\
+    \dots &\dots &0&\vx_3-\vx_4&\dots &\vx_3-\vx_K\\
+    \dots &\dots &\dots &0&\vx_4-\vx_5&\vx_4-\vx_K\\
+    \vdots& \vdots & \vdots &\vdots &\vdots&\ddots \\
+     \dots &\dots&\dots&\dots &\dots&0\\
+\end{bmatrix}
+$$
+We see by inspection that all other entries can be deduced from the entries above the main diagonal.
+$$\begin{bmatrix}
+    0& y_1&y_1+y_2&y_1+y_2+y_3&y_1+y_2+y_3+y_4&\dots \dots&\dots&y_1+y_2+y_3+\dots+y_{K-1}\\
+    \dots &0&y_2&y_2+y_3&y_2+y_3+y_4&\dots&\dots &y_2+y_3+\dots+y_{K-1}\\
+    \dots &\dots &0&y_3&y_3+y_4&\dots&\dots&y_3+\dots+y_{K-1}\\
+    \dots &\dots &\dots &0&y_4&y_4+y_5&\dots&y_4+\dots+y_{K-1}\\
+    \dots& \dots & \dots &\dots &0&y_5&\dots&y_5+\dots+y_{K-1} \\
+    \dots &\dots&\dots&\dots &\dots&0&\dots&\dots&\\
+     \dots &\dots&\dots&\dots &\dots&\dots&\dots&y_{K-1}\\
+     \dots &\dots&\dots&\dots &\dots&\dots&\dots&0
+\end{bmatrix}
+$$
+We conclude that the Softmax function can be parameterized by $K-1$ parameters. 
+}

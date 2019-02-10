@@ -501,28 +501,6 @@ if __name__ == '__main__':
 
 	#gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
 
-
-
-	# param_idx = (2,2)
-	# _, cache = nn.forward(nn.D_train[0][:,0:1], parameters)
-	# grads = nn.backward(parameters, cache, nn.D_train[1][0:1], nn.D_train[0][:,0:1])
-	# print('dW3 gradient = %.9f' %(grads['dW3'][param_idx]))
-	#
-	# epsilon = 0.000001
-	# # print(parameters['W3'].shape)
-	# parameters['W3'][param_idx] = parameters['W3'][param_idx] + epsilon
-	# print(parameters['W3'][param_idx])
-	# out, _ = nn.forward(nn.D_train[0][:,0:1], parameters)
-	# loss_1 = nn.loss(out, np.expand_dims(nn.D_train[1][0:1], axis=1).T)
-	# print(loss_1)
-	# parameters['W3'][param_idx] = parameters['W3'][param_idx] - 2*epsilon
-	# print(parameters['W3'][param_idx])
-	# out, _ = nn.forward(nn.D_train[0][:,0:1], parameters)
-	# loss_2 = nn.loss(out, np.expand_dims(nn.D_train[1][0:1], axis=1).T)
-	# print(loss_2)
-	# grad_approx = (loss_1 - loss_2) / (2*epsilon)
-	# print('dW3 gradient approximation = %.9f' %(grad_approx))
-
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
 	parameters = nn.train(100, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
 	print('-----training')

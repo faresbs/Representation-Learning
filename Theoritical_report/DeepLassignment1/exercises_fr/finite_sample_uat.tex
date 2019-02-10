@@ -1,0 +1,24 @@
+% (meta)
+% Exercise contributed by Aristide Baratin
+% Translation by Salem Lahlou
+% label: ch6
+
+\Exercise{
+\label{ex:finite_sample_uat}
+Soit $N$ un entier strictement positif. On veut montrer que pour toute fonction $f:\R^n \to \R^m$ et pour tout échantillon $\gS\subset \R^n$ de taille $N$, il existe un ensemble de paramètres pour un réseau de neurones à deux couches, tel que la sortie $y(\vx)$ correspond à $f(\vx)$ pour tout $\vx \in \gS$. En d'autres termes, on veut interpoler la fonction $f$ avec le réseau de neurones $y$ pour tout ensemble fini $\gS$.
+
+\begin{enumerate}
+\item Écrivez la forme générique de la fonction $y: \R^n \to \R^m$ qui définit un réseau de neurones à deux couches avec $N-1$ neurones dans la couche cachée (\textit{hidden units}), avec une fonction d'activation $\phi$, et une fonction linéaire à la dernière couche (output linéaire), en fonction des poids et biais $(\mW^{(1)}, \vb^{(1)})$ et $(\mW^{(2)}, \vb^{(2)})$.
+\item Dans le reste de cet exercice, on se restreint au cas où $\mW^{(1)} = [\vw, \cdots, \vw]^T$ pour un certain $\vw \in \R^n$ (c'est-à-dire que les lignes de la matrice $\mW^{(1)}$ sont toutes pareilles).
+Montrez que le problème d'interpolation sur l'ensemble $\gS=\{\vx^{(1)}, \cdots \vx^{(N)}\} \subset \R^n$ peut être réduit à la résolution d'une équation matricielle $\mM\tilde{\mW}^{(2)}=\mF$, $\tilde{\mW}^{(2)}$ et $\mF$ étant deux matrices de taille $N \times m$ définies par 
+$$\tilde{\mW}^{(2)}=[\mW^{(2)}, \vb^{(2)}]^\top \qquad\qquad \mF=[f(\vx^{(1)}), \cdots, f(\vx^{(N)})]^\top$$
+Exprimez la matrice $\mM$ de taille $N \times N$ en fonction de $\vw$, $\vb^{(1)}$, $\phi$ et $\vx^{(i)}$.
+\staritem {\bf Preuve avec la fonction d'activation ReLU.} Supposons que les  $\vx^{(i)}$ sont tous distincts. On choisit $\vw$ tel que $\vw^\top \vx^{(i)}$ sont aussi tous distincts (Essayez de montrer l'existence d'un tel $\vw$, mais ce n'est pas requis pour le devoir - voir Assignment 0). On définit $\vb^{(1)}_j = -\vw^\top \vx^{(j)} + \epsilon$, où $\epsilon >0$. Trouvez une valeur de $\epsilon$ telle que $\mM$ est une matrice triangulaire à éléments diagonaux non-nuls. Conclure. (Indice: Définir un ordre sur les $\vw^\top\vx^{(i)}$)
+\staritem {\bf Preuve avec des fonctions d'activation similaires à la sigmoïde.} Supposons que $\phi$ est continue, bornée, $\phi(-\infty)=0$ et $\phi(0)>0$. 
+On écrit $\vw$ comme $\vw=\lambda\vu$. On définit $\vb^{(1)}_j = -\lambda \vu^\top \vx^{(j)}$. En laissant $\vu$ fixe, montrez que $\lim_{\lambda\to +\infty} {\mM}$ est une matrice triangulaire à éléments diagonaux non-nuls. Conclure. (A noter que cela préserve le fait que les $\vw^\top \vx^{(i)}$ sont distincts.)
+\end{enumerate}
+}
+
+\Answer{
+${}$%placeholder
+}
