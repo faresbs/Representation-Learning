@@ -203,6 +203,18 @@ We keep the same settings and we only change the hidden layers dimensions.
   
 \end{itemize}
 
+\subsection{Gradient validation using finite difference approximation}
+We implemented a gradient validation function \emph{grad\_check} which returns the maximum difference between the true gradient and the finite difference gradient approximation for a given number of elements of a network parameter and a given precision $\epsilon$.
+
+We validated the gradients for the first $p=\min(10,m)$ elements of the second layer weights ($W2$) with $m$ number of elements. Using $\epsilon=\frac{1}{N}$ Figure \ref{fig:grad_check} shows the maximum difference as a function of the $N$.
+
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth]{grad_check}
+\label{fig:grad_check}
+\end{figure}
+
+The approximation of the gradient for each element gets closer to the real partial derivative as $\epsilon$ gets smaller, this is consistent with theory since in the definition of the derivative the epsilon tends to zero. 
 
 \end{enumerate}
 

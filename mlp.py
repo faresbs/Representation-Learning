@@ -507,7 +507,7 @@ if __name__ == '__main__':
 	#gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
 
 	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-	parameters = nn.train(10, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
+	parameters = nn.train(100, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
 	print('-----training')
 	print(nn.test(nn.D_train[0],nn.D_train[1],parameters))
 	print('-----validation')
