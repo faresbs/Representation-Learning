@@ -478,7 +478,7 @@ class NN(object):
 
 if __name__ == '__main__':
 
-	nn = NN(hidden_dims=(64, 32), n_hidden=2, datapath='./datasets/mnist.pkl.npy')
+	nn = NN(hidden_dims=(10, 5), n_hidden=2, datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
 	#parameters = nn.initialize_weights(init_method='zeros')
@@ -491,7 +491,7 @@ if __name__ == '__main__':
 	#for key, value in cache.iteritems() :
 	#	print key, value.shape
 
-	parameters = nn.train(50,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="tanh")
+	parameters = nn.train(50,'glorot', 0.5, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="tanh")
 	#print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
 	#parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
 	#print('-----training')
