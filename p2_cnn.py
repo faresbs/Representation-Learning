@@ -1,5 +1,6 @@
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 
 import torch
 import torch.nn as nn
@@ -12,7 +13,8 @@ import torchvision
 import torchvision.transforms
 
 # Define image transformations & Initialize datasets
-mnist_transforms = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
+# mnist_transforms = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
+mnist_transforms = torchvision.transforms.ToTensor()
 mnist_train = torchvision.datasets.MNIST(root='./data', train=True, transform=mnist_transforms, download=True)
 mnist_test = torchvision.datasets.MNIST(root='./data', train=False, transform=mnist_transforms, download=True)
 
@@ -20,33 +22,34 @@ mnist_test = torchvision.datasets.MNIST(root='./data', train=False, transform=mn
 trainloader = torch.utils.data.DataLoader(mnist_train, batch_size=64, shuffle=True, num_workers=2)
 testloader = torch.utils.data.DataLoader(mnist_test, batch_size=64, shuffle=True, num_workers=2)
 
+# 52650 parameters for the mlp
 class Classifier(nn.Module):
     """CNN Classifier"""
     def __init__(self):
         super(Classifier, self).__init__()
         self.conv = nn.Sequential(
             # Layer 1
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(in_channels=1, out_channels=12, kernel_size=(3, 3), padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2),
 
             # Layer 2
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(in_channels=12, out_channels=24, kernel_size=(3, 3), padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2),
 
             # Layer 3
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(in_channels=24, out_channels=48, kernel_size=(3, 3), padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2),
 
             # Layer 4
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(in_channels=48, out_channels=96, kernel_size=(3, 3), padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2)
         )
         # Logistic Regression
-        self.clf = nn.Linear(128, 10)
+        self.clf = nn.Linear(96, 10)
 
     def forward(self, x):
         return self.clf(self.conv(x).squeeze())
@@ -64,8 +67,11 @@ optimizer = torch.optim.Adam(clf.parameters(), lr=1e-4)
 # criterion includes the softmax
 criterion = nn.CrossEntropyLoss()
 
-for epoch in range(1):
+n_epochs = 3
+for epoch in range(n_epochs):
     losses = []
+    total = 0
+    correct = 0
     # Train
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         if cuda_available:
@@ -73,12 +79,16 @@ for epoch in range(1):
 
         optimizer.zero_grad()
         outputs = clf(inputs)
+        _, predicted = torch.max(outputs.data, 1)
+        total += targets.size(0)
+        correct += predicted.eq(targets.data).cpu().sum()
         loss = criterion(outputs, targets)
         loss.backward()
         optimizer.step()
         losses.append(loss.item())
 
     print('Epoch : %d Loss : %.3f ' % (epoch, np.mean(losses)))
+    print('Epoch : %d Train Acc : %.3f' % (epoch, 100.*correct/total))
 
     # Evaluate
     clf.eval()
@@ -96,3 +106,11 @@ for epoch in range(1):
     print('Epoch : %d Test Acc : %.3f' % (epoch, 100.*correct/total))
     print('--------------------------------------------------------------')
     clf.train()
+
+plt.figure()
+plt.plot(np.arange(n_epochs),losses,  '*')
+# plt.xscale('log')
+# plt.title("Gradient checking for W2")
+# plt.xlabel('N')
+# plt.ylabel('Max. difference')
+plt.show()
