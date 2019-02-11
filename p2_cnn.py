@@ -13,7 +13,6 @@ import torchvision
 import torchvision.transforms
 
 # Define image transformations & Initialize datasets
-# mnist_transforms = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
 mnist_transforms = torchvision.transforms.ToTensor()
 mnist_train = torchvision.datasets.MNIST(root='./data', train=True, transform=mnist_transforms, download=True)
 mnist_test = torchvision.datasets.MNIST(root='./data', train=False, transform=mnist_transforms, download=True)
@@ -67,7 +66,10 @@ optimizer = torch.optim.Adam(clf.parameters(), lr=1e-4)
 # criterion includes the softmax
 criterion = nn.CrossEntropyLoss()
 
-n_epochs = 3
+n_epochs = 10
+loss_history = []
+train_acc_history = []
+valid_acc_history = []
 for epoch in range(n_epochs):
     losses = []
     total = 0
@@ -87,6 +89,8 @@ for epoch in range(n_epochs):
         optimizer.step()
         losses.append(loss.item())
 
+    train_acc_history.append(100.*correct/total)
+    loss_history.append(np.mean(losses))
     print('Epoch : %d Loss : %.3f ' % (epoch, np.mean(losses)))
     print('Epoch : %d Train Acc : %.3f' % (epoch, 100.*correct/total))
 
@@ -103,14 +107,16 @@ for epoch in range(n_epochs):
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
 
-    print('Epoch : %d Test Acc : %.3f' % (epoch, 100.*correct/total))
+    valid_acc_history.append(100.*correct/total)
+    print('Epoch : %d Validation Acc : %.3f' % (epoch, 100.*correct/total))
     print('--------------------------------------------------------------')
     clf.train()
 
 plt.figure()
-plt.plot(np.arange(n_epochs),losses,  '*')
-# plt.xscale('log')
+plt.plot(np.arange(n_epochs),train_acc_history, label='Training accuracy')
+plt.plot(np.arange(n_epochs),valid_acc_history,  'r', label='Validation accuracy')
 # plt.title("Gradient checking for W2")
 # plt.xlabel('N')
 # plt.ylabel('Max. difference')
+plt.legend()
 plt.show()
