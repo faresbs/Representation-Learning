@@ -61,9 +61,10 @@ print('total number of parameters in the network = ' + str(total_parameters))
 if cuda_available:
     clf = clf.cuda()
 optimizer = torch.optim.Adam(clf.parameters(), lr=1e-4)
+# criterion includes the softmax
 criterion = nn.CrossEntropyLoss()
 
-for epoch in range(10):
+for epoch in range(1):
     losses = []
     # Train
     for batch_idx, (inputs, targets) in enumerate(trainloader):
