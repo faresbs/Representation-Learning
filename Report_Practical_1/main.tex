@@ -224,6 +224,203 @@ The approximation of the gradient for each element gets closer to the real parti
 \section{Problem 3 (Kaggle challenge)}
 \label{sec:problem1}
 
+\subsection{Architecture of the model}
+The model's architecture that we have used is inspired from VGG model, which has the following components (see Figure \ref{fig:vgg}) :
+
+\begin{itemize}
+	\item[-] 13 convolutions layers, with 0 padding at each layer, with a kernel of size (3,3) and stride of 1.
+	\item[-] 5 max pooling with kernel of size (2,2) and stride of 2.
+	\item[-] 2 fully connected layers with 2048 hidden units
+	\item[-] 1 output layer
+\end{itemize}
+
+%\begin{figure}[h!]
+%\centering
+%\includegraphics[scale=0.45]{VGG_arch.png}
+%\caption{Model architecture}
+%\label{fig:vgg}
+%\end{figure}
+
+The total parameters of this model is 23,111,490, which is a medium size in comparison of the more recent deep models.
+
+It worth saying that our experimentation has shown that a model with more layers performs better than a model with a fewer ones. In fact, for this competition, we have found that the VGG model above have performed better than AlexNet-based architecture.
+
+\subsection{Learning curves}
+The following figures (\ref{fig:vggloss},\ref{fig:vggacc}) show respectively the training and validation loss and accuracy by epochs:
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.6]{VGGLoss_of.png}
+	\caption{Loss of the model by epoch}
+	\label{fig:vggloss}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.6]{VGGAccu_of.png}
+	\caption{Accuracy of the model by epoch}
+	\label{fig:vggacc}
+\end{figure}
+
+Before starting training the model, we have split the input images randomly to training and validation sets with a ratio of $80\%-20\%$ respectively. (see the code on appendix).
+
+We have also used data augmentation strategy to improve the variance of the model.
+
+The learning curves show that the model has a high bias and high variance at the beginning of the training and then starts learning till an optimal value around 150 epochs. After that point, the model starts overfitting as the accuracy and loss on the training set was bigger than those on the validation set.
+
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.5]{150epoch.png}
+	\caption{Accuracy and Loss after 150 epochs}
+	\label{fig:150epoch}
+\end{figure}
+
+
+We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 150 epochs without overfitting.
+
+Notice that the accuracy on the testset is better than the accuracy on the validation set, which is a proof that the model generalize well, and the data augmentation strategy was a good one to improve the model's performance on unseen data.
+
+\subsection{Hyperparameters settings}
+We have selected different hyperparameters to tune on the validation set in order to get the best model configuration, which are:
+- Number of hidden layers
+- Size of the kernels
+- Learning rate
+- Batch size
+
+The following table gives a comparison of the model's performance while for each parameter while keeping the others fixed.
+
+The table below (\ref{table:1}) show the accuracy of the model for given different model architecture while keeping fixed the other parameters : kernel size, number of epoch, ...
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{||c c c c||} 
+		\hline
+		Nbr of layers & Accuracy & Loss & Total nb of parameters\\ [0.5ex] 
+		\hline\hline
+		6 & 0.3109 & 0.8574 & 2,736,066\\ 
+		10 & 0.2713 & 0.8841 & 5,147,458\\ 
+		13 & 0.2068 & 0.9078 & 17,076,546\\ 
+		16 lite & 0.1984 & 0.9158 & 23,111,490\\ 
+		16 & ? & ? & 39,896,898\\  [1ex] 
+		\hline
+	\end{tabular}
+	\caption{Number of layers tuning}
+	\label{table:1}
+\end{table}
+
+We notice that a model has a better performance when he has more hidden layers. This is normal because more layers means more capacity for the model.
+
+The next table (\ref{table:2}) gives a comparison for different kernel size. This hyperparameter influence drasticly the architecture of the model, that is a bigger kernel shorten the model and it could'nt be deeper unless we add 0 padding which gives a poorer feature map. We notice that in general a smaller kernel size gives a better result!
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{||c c c||} 
+		\hline
+		Kernel size & Accuracy & Loss \\ [0.5ex] 
+		\hline\hline
+		2 & 0.5832 & 0.6919 \\ 
+		3 & 0.5761 & 0.6912 \\ 
+		4 & 0.5444 & 0.6894 \\ 
+		5 & 0.5418 & 0.6930 \\ [1ex]  
+		\hline
+	\end{tabular}
+	\caption{Kernel size tuning}
+	\label{table:2}
+\end{table}
+
+The next table (\ref{table:3}) gives a comparison of the model performance as a function of the batch size. We notice that a small batch size push the model to make more iterations which make the SGD converge better than with bigger batch size.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{||c c c||} 
+		\hline
+		Batch size & Accuracy & Loss \\ [0.5ex] 
+		\hline\hline
+		16 & 0.5320 & 0.6892 \\ 
+		32 & 0.5015 & 0.6919 \\ 
+		64 & 0.4859 & 0.6935 \\ 
+		128 & 0.5000 & 0.6929 \\ [1ex]  
+		\hline
+	\end{tabular}
+	\caption{Kernel size tuning}
+	\label{table:3}
+\end{table}
+
+And finally, table (\ref{table:4}) gives a comparison of the model performance as a function of the learning rate. We notice, that the model convergence is very slow with a small learning rate and faster with a relatively bigger one like 0.03.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{||c c c||} 
+		\hline
+		Learning rate & Accuracy & Loss \\ [0.5ex] 
+		\hline\hline
+		0.03 & 0.8935 & 0.2417 \\ 
+		0.01 & 0.8595 & 0.3279 \\ 
+		0.003 & 0.6930 & 0.5981 \\
+		0.001 & 0.5825 & 0.6709 \\ [1ex]  
+		\hline
+	\end{tabular}
+	\caption{Kernel size tuning}
+	\label{table:4}
+\end{table}
+
+Our final model has those values as hyperparameters:
+- Number of hidden layers: 13 convolutions and 3 FC
+- Size of the kernels: (3,3)
+- Learning rate: 0.03
+- Batch size: 16
+
+This model give an accuracy of : $94\%$ on validation set and $93.7\%$ on the public leaderboard. The model was trained for 200 but get his best parameters around 150 epochs.
+
+As we haven't used any regularization strategies, on the training phase, we have used the early stopping strategy the use the best model's parameters before he starts overfitting.
+
+The model get a decent performance (not expected though) of $91\%$ on validation set and $92\%$ (see Figure \ref{fig:150epoch} on the public leader board (see Figure \ref{fig:kaggle}) which is a very good result.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.4]{kaggle.png}
+	\caption{Rank at the public leaderboard}
+	\label{fig:kaggle}
+\end{figure}
+
+\subsubsection{Feature map visualization}
+The feature map visualization give in some sens an intuition on how a CNN works to learn from images. Across the layers, the feature map go from high level pattern recognition to low level as we go deeper in the model. The following image shows for each layers the feature map after each activation layer
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.3]{fp1.png}
+	\caption{Feature map after conv layer 1}
+	\label{fig:fp1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.3]{fp2.png}
+	\caption{Feature map after conv layer 2}
+	\label{fig:fp2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.3]{fp3.png}
+	\caption{Feature map after conv layer 3}
+	\label{fig:fp3}
+\end{figure}
+
+\subsubsection{Performance of the model}
+The model get nearly $94\%$ accuracy on test set (public leaderboard) which is not bad given that we haven't used any fancy techniques like regularization. It is interesting to see, what kind of images the model has misclassified. The following images are examples of Cats that the model has classified to Dogs:
+
+
+Here some images that the model predict around 50\%:
+
+
+Here some examples where the images are 
+(a) clearly misclassified
+
+(b) where the classifier predicts around 50\% on both classes.  
+
+Explain your observation and/or suggest any improvements you think may help.
 
 \begin{thebibliography}
 @online{,
