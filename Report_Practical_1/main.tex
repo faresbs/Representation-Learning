@@ -229,7 +229,7 @@ In order to obtain a similar number of parameters than our mlp of Problem~\ref{s
 \subsection{Performance}
 Figure~\ref{fig:CNN_accuracy} shows the training and validation accuracy of the model at each epoch. After training the model for 10 epoch we obtain a validation accuracy of $97\%$
 
-\begin{figure}
+\begin{figure}[h!]
 \centering
 \includegraphics[width=1\textwidth]{P2_CNN_accuracy}
 \label{fig:CNN_accuracy}
@@ -237,7 +237,7 @@ Figure~\ref{fig:CNN_accuracy} shows the training and validation accuracy of the 
 \end{figure}
 
 
-
+\newpage
 \section{Problem 3 (Kaggle challenge)}
 \label{sec:problem3}
 
@@ -251,12 +251,12 @@ The model's architecture that we have used is inspired from VGG model, which has
 	\item[-] 1 output layer
 \end{itemize}
 
-%\begin{figure}[h!]
-%\centering
-%\includegraphics[scale=0.45]{VGG_arch.png}
-%\caption{Model architecture}
-%\label{fig:vgg}
-%\end{figure}
+\begin{figure}[h!]
+\centering
+\includegraphics[scale=0.4]{VGG_arch.png}
+\caption{Model architecture}
+\label{fig:vgg}
+\end{figure}
 
 The total parameters of this model is 23,111,490, which is a medium size in comparison of the more recent deep models.
 
@@ -426,19 +426,48 @@ The feature map visualization give in some sens an intuition on how a CNN works 
 \end{figure}
 
 \subsubsection{Performance of the model}
-The model get nearly $94\%$ accuracy on test set (public leaderboard) which is not bad given that we haven't used any fancy techniques like regularization. It is interesting to see, what kind of images the model has misclassified. The following images are examples of Cats that the model has classified to Dogs:
+The model get nearly $94\%$ accuracy on test set (public leaderboard) which is not bad given that we haven't used any fancy techniques like regularization. It is interesting to investigate which images the model has misclassified, in order to identify ways to improve the model's performance. 
+
+Our model has misclassified nearly $5\%$ of the validation set images, as shown in the confusion matrix (see Figure \ref{fig:confusion}). We notice that the model has misclassified more Dogs than Cats.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.5]{confusion.png}
+	\caption{Confusion matrix of the model}
+	\label{fig:confusion}
+\end{figure}
+
+To understand why the model have done such misclassification, we will display a sample of two kind of mislcassifications:
+
+\begin{itemize}
+	\item[(a)] The model clearly misclassified images:\\
+	In the Figure \ref{fig:100misclass}, we displayed a sample of images that the model has misclassified with probability $>= 0.6$.
+	We notice that these images are noisy and doesn't show clearly the animal's figure or they contains other objects like human or fences.
+	
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=.4]{100misclass.png}
+		\caption{100\% miclassification}
+		\label{fig:100misclass}
+	\end{figure}
+
+\item[(b)] The model predicts around $50\%$ on both classes:\\
+In the Figure \ref{fig:50misclass} we can see some images that the model have bearly misclassified them. We notice the same pattern as the item (a) where the animals took different position in the picture with other objects or half captured.
 
 
-Here some images that the model predict around 50\%:
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.4]{50misclass.png}
+	\caption{50\% miclassification}
+		\label{fig:50misclass}
+	\end{figure}
 
 
-Here some examples where the images are 
-(a) clearly misclassified
+\end{itemize}
 
-(b) where the classifier predicts around 50\% on both classes.  
-
-Explain your observation and/or suggest any improvements you think may help.
-
+As a conclusion, the classifier that we have build was able to classify correctly 94\% of images which is a good result without even using any regularization or fancy optimization algorithm. However, the model couldn't classify some images because of it's complexity, like having other objects around or taking just a part of the animal. In that case, we may suggest to add more data by sampling over those kind of misclassified images and give train the model on them, or use the K-Fold cross validation in order to train the model on all kind of images.
+ 
+ \newpage
 \begin{thebibliography}
 @online{,
   author = {Thayumanav Jayadevan},
