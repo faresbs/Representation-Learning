@@ -20,6 +20,7 @@ mnist_test = torchvision.datasets.MNIST(root='./data', train=False, transform=mn
 trainloader = torch.utils.data.DataLoader(mnist_train, batch_size=64, shuffle=True, num_workers=2)
 testloader = torch.utils.data.DataLoader(mnist_test, batch_size=64, shuffle=True, num_workers=2)
 
+#Network architecture
 class Classifier(nn.Module):
     """CNN Classifier"""
     def __init__(self):
@@ -51,27 +52,32 @@ class Classifier(nn.Module):
     def forward(self, x):
         return self.clf(self.conv(x).squeeze())
 
-
 cuda_available = torch.cuda.is_available()
 
-clf = Classifier()
-total_parameters = sum([p.data.numpy().size for p in clf.parameters()])
+model = Classifier()
+
+total_parameters = sum([p.data.numpy().size for p in model.parameters()])
+
 print('total number of parameters in the network = ' + str(total_parameters))
 
 if cuda_available:
-    clf = clf.cuda()
-optimizer = torch.optim.Adam(clf.parameters(), lr=1e-4)
+    model = model.cuda()
+
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 criterion = nn.CrossEntropyLoss()
+
+print("Training...")
 
 for epoch in range(10):
     losses = []
     # Train
     for batch_idx, (inputs, targets) in enumerate(trainloader):
+
         if cuda_available:
             inputs, targets = inputs.cuda(), targets.cuda()
 
         optimizer.zero_grad()
-        outputs = clf(inputs)
+        outputs = model(inputs)
         loss = criterion(outputs, targets)
         loss.backward()
         optimizer.step()
@@ -80,9 +86,11 @@ for epoch in range(10):
     print('Epoch : %d Loss : %.3f ' % (epoch, np.mean(losses)))
 
     # Evaluate
-    clf.eval()
+    model.eval()
+    
     total = 0
     correct = 0
+    
     for batch_idx, (inputs, targets) in enumerate(testloader):
         if cuda_available:
             inputs, targets = inputs.cuda(), targets.cuda()
