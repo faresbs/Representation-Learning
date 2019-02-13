@@ -5,14 +5,16 @@
 \usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{color}
+\usepackage{geometry}
 \usepackage[colorinlistoftodos]{todonotes}
 
 \title{Report Practical assignment 1}
 
-\author{Machinists:\\
-Fares Ben Slimane
-Parviz Haggi
-Mohammed Loukili
+\author{Machinists:\vspace{0.5cm}\\
+Fares Ben Slimane \\
+Parviz Haggi \\
+Mohammed Loukili \\
+Jorge A. Gutierrez Ortega
 }
 
 \date{\today}
@@ -58,19 +60,19 @@ loss measured for each method.
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{zero_init.png}
+\includegraphics[width=0.7\textwidth]{zero_init.png}
 \caption{\label{fig:init1}average loss against the training time (epoch) using zero initialization method.}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{normal_init.png}
+\includegraphics[width=0.7\textwidth]{normal_init.png}
 \caption{\label{fig:init2}average loss against the training time (epoch) using normal initialization method.}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{glorot_init.png}
+\includegraphics[width=0.7\textwidth]{glorot_init.png}
 \caption{\label{fig:init3}average loss against the training time (epoch) using glorot initialization method.}
 \end{figure}
 
@@ -101,47 +103,47 @@ We keep the same settings and we only change the learning rate.
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{acc_hyper.png}
+\includegraphics[width=0.7\textwidth]{acc_hyper.png}
 \caption{\label{fig:hyper}Validation/training accuracy against the training time (epoch) using the chosen hyper-parameters.}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{lr2.png}
+\includegraphics[width=0.7\textwidth]{lr2.png}
 \caption{\label{fig:lr2}Validation accuracy against the training time (epoch) using a learning rate of 0.1.}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{lr3.png}
+\includegraphics[width=0.7\textwidth]{lr3.png}
 \caption{\label{fig:lr3}Validation accuracy against the training time (epoch) using a learning rate of 0.001.}
 \end{figure}
 
 
-\subsubsection{Number of epochs}
-We keep the same settings and we only change the number of epochs.
-
-\begin{itemize}
-
-\item number of epochs of 50: validation accuracy = 97.2\% (See Figure \ref{fig:hyper}).
-
-\item number of epochs of 5: validation accuracy = 92.8\% (See Figure \ref{fig:epoch2}).
-
-\item number of epochs of 150: validation accuracy = 97.3\% (See Figure \ref{fig:epoch3}).  
-  
-\end{itemize}
-
-\begin{figure}
-\centering
-\includegraphics[width=1\textwidth]{epoch2.png}
-\caption{\label{fig:epoch2}Validation/training accuracy against the training time (epoch) using a number of epochs of 5..}
-\end{figure}
-
-\begin{figure}
-\centering
-\includegraphics[width=1\textwidth]{epoch3.png}
-\caption{\label{fig:epoch3}Validation/training accuracy against the training time (epoch) using a number of epochs of 150.}
-\end{figure}
+%\subsubsection{Number of epochs}
+%We keep the same settings and we only change the number of epochs.
+%
+%\begin{itemize}
+%
+%\item number of epochs of 50: validation accuracy = 97.2\% (See Figure \ref{fig:hyper}).
+%
+%\item number of epochs of 5: validation accuracy = 92.8\% (See Figure \ref{fig:epoch2}).
+%
+%\item number of epochs of 150: validation accuracy = 97.3\% (See Figure \ref{fig:epoch3}).  
+%  
+%\end{itemize}
+%
+%\begin{figure}
+%\centering
+%\includegraphics[width=0.7\textwidth]{epoch2.png}
+%\caption{\label{fig:epoch2}Validation/training accuracy against the training time (epoch) using a number of epochs of 5..}
+%\end{figure}
+%
+%\begin{figure}
+%\centering
+%\includegraphics[width=0.7\textwidth]{epoch3.png}
+%\caption{\label{fig:epoch3}Validation/training accuracy against the training time (epoch) using a number of epochs of 150.}
+%\end{figure}
 
 \subsubsection{Number of mini-batches}
 We keep the same settings and we only change the number of mini-batches.
@@ -158,13 +160,13 @@ We keep the same settings and we only change the number of mini-batches.
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{batch2.png}
+\includegraphics[width=0.7\textwidth]{batch2.png}
 \caption{\label{fig:batch2}Validation/training accuracy against the training time (epoch) using a number of mini-batches of 8.}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{batch3.png}
+\includegraphics[width=0.7\textwidth]{batch3.png}
 \caption{\label{fig:batch3}Validation/training accuracy against the training time (epoch) using a number of mini-batches of 512.}
 \end{figure}
 
@@ -183,13 +185,13 @@ We keep the same settings and we only change the activation function.
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{epoch2.png}
+\includegraphics[width=0.7\textwidth]{epoch2.png}
 \caption{\label{fig:sigmoid}Validation/training accuracy against the training time (epoch) using a sigmoid activation function.}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{epoch3.png}
+\includegraphics[width=0.7\textwidth]{epoch3.png}
 \caption{\label{fig:tanh}Validation/training accuracy against the training time (epoch) using a tanh activation function.}
 \end{figure}
 
@@ -213,7 +215,7 @@ We validated the gradients for the first $p=\min(10,m)$ elements of the second l
 
 \begin{figure}
 \centering
-\includegraphics[width=1\textwidth]{grad_check}
+\includegraphics[width=0.7\textwidth]{grad_check}
 \label{fig:grad_check}
 \caption{Maximum difference between the analytic gradient and the finite difference approximation for some elements of the weight matrix at the second layer as a function of the precision $N = \frac{1}{\epsilon}$}
 \end{figure}
@@ -234,7 +236,7 @@ Figure~\ref{fig:CNN_accuracy} shows the training and validation accuracy of the 
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=1\textwidth]{P2_CNN_accuracy}
+\includegraphics[width=0.7\textwidth]{P2_CNN_accuracy}
 \label{fig:CNN_accuracy}
 \caption{Training and validation accuracy of the convolutional model of Section~\ref{sec:problem2}}
 \end{figure}
