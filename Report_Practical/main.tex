@@ -23,7 +23,11 @@ Jorge A. Gutierrez Ortega
 \maketitle
 
 \begin{abstract}
+<<<<<<< HEAD
 This report ourlines are our approach to solving the problems in the practical assignment 1, the experiments we performed, our results and conclusions.
+=======
+This report explains our approaches to solving the problems of the practical assignment 1. the experiments we performed, results and conclusion of our work.
+>>>>>>> ce3238cb42cbd222e3df2841037128ef8330b90d
 \end{abstract}
 
 \section{Problem 1 (MLP)}
@@ -194,6 +198,16 @@ Obviously Relu and tanh perform better in terms of accuracy.
 \includegraphics[width=0.7\textwidth]{epoch3.png}
 \caption{\label{fig:tanh}Validation/training accuracy against the training time (epoch) using a tanh activation function.}
 \end{figure}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\textwidth]{arch2.png}
+	\caption{\label{fig:arch2}Validation/training accuracy against the training time (epoch) using a network architecture with h1=32 and h2=64}
+\end{figure}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\textwidth]{arch3.png}
+	\caption{\label{fig:arch3}Validation/training accuracy against the training time (epoch) using a network architecture with h1=10 and h2=5}
+\end{figure}
 
 \subsubsection{Network architecture (Chaning the number of hidden units)}
 
@@ -210,9 +224,9 @@ Obviously Relu and tanh perform better in terms of accuracy.
 
 
 \subsection{Gradient validation using finite difference approximation}
-We implemented a gradient validation function \emph{grad\_check} which returns the maximum difference between the true gradient and the finite difference gradient approximation for a given number of elements of a network parameter and a given precision $\epsilon$.
+We implemented the gradient validation method \emph{grad\_check} under the mlp.py script which returns the maximum difference between the true gradient and the finite difference gradient approximation for a given precision $\epsilon$.
 
-We validated the gradients for the first $p=\min(10,m)$ elements of the second layer weights ($W2$) with $m$ number of elements. Using $\epsilon=\frac{1}{N}$ Figure \ref{fig:grad_check} shows the maximum difference as a function of the $N$.
+We validated the gradients for the first $p=\min(10,m)$ elements of the second layer weights ($W2$) with $m$ number of elements. Using $\epsilon=\frac{1}{N}$, Figure \ref{fig:grad_check} shows the maximum difference as a function of the $N$.
 
 \begin{figure}
 \centering
@@ -249,66 +263,79 @@ Figure~\ref{fig:CNN_accuracy} shows the training and validation accuracy of the 
 
 \subsection{Architecture of the model}
 The model's architecture that we have used is inspired from VGG model, which has the following components (see Figure \ref{fig:vgg}) :
-
+%
 \begin{itemize}
+\setlength\itemsep{0em}
 	\item[-] 13 convolutions layers, with 0 padding at each layer, and a kernel of size (3,3) and stride of 1.
 	\item[-] 5 max pooling with kernel of size (2,2) and stride of 2.
 	\item[-] 2 fully connected layers with 4096 hidden units
 	\item[-] 1 output layer
 \end{itemize}
-
+%
 \begin{figure}[h!]
 \centering
 \includegraphics[scale=0.4]{VGG_arch.png}
 \caption{Model architecture}
 \label{fig:vgg}
 \end{figure}
-
+%
 The total parameters of this model is 23,111,490, which is a medium size in comparison with the most recent deep learning models.
-
-IOur experimentation has shown that a model with more layers performs better than a model with fewer ones. In fact, for this competition, we have found that the VGG model above have performed better than AlexNet-based architecture.
+%
+Our experimentation has shown that a model with more layers performs better than a model with fewer ones. In fact, for this competition, we have found that the VGG model above have performed better than AlexNet-based architecture.
 
 \subsection{Learning curves}
-The following figures (\ref{fig:vggloss},\ref{fig:vggacc}) show respectively the training and validation loss and accuracy per epochs:
+Figures \ref{fig:vggloss} and \ref{fig:vggacc} show respectively the training and validation loss and accuracy per epoch.
+%
+%
+Before starting training the model, we have split the input images randomly to training and validation sets with a ratio of $80\%-20\%$ respectively. (see the code on appendix).
+%
+We have also used data augmentation strategy to improve the variance of the model. The transformation used were:
+\begin{itemize}
+\setlength\itemsep{0em}
+\item[-]rotation with a range of 15 degrees
+\item[-]rescale by up to 1/255
+\item[-]width shift by up to 0.2
+\item[-]height shift by up to 0.2
+\item[-]zoom by up to 0.1
+\item[-]shear by up to 0.1,
+\item[-]horizontal flip
 
+\end{itemize}
+%
+The learning curves above show that the model reaches its optimal value around epoch 150. After that point, the model starts overfitting as the loss on validation set starts growing.
+%
+We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 150 epochs without overfitting.
+%
+Notice that the accuracy on the test set is better than the accuracy on the validation set, which is a proof that the model generalize well, and the data augmentation strategy did well to improve the model's performance.
 \begin{figure}[h!]
 	\centering
 	\includegraphics[scale=.6]{VGGLoss_of.png}
 	\caption{Loss of the model by epoch}
 	\label{fig:vggloss}
 \end{figure}
-
+%
 \begin{figure}[h!]
 	\centering
 	\includegraphics[scale=.6]{VGGAccu_of.png}
 	\caption{Accuracy of the model by epoch}
 	\label{fig:vggacc}
 \end{figure}
-
-Before starting training the model, we have split the input images randomly to training and validation sets with a ratio of $80\%-20\%$ respectively. (see the code on appendix).
-
-We have also used data augmentation strategy to improve the variance of the model.
-
-The learning curves above show that the model reaches its optimal value around epoch 150. After that point, the model starts overfitting as the loss on validation set starts growing.
-
-
-We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 150 epochs without overfitting.
-
-Notice that the accuracy on the testset is better than the accuracy on the validation set, which is a proof that the model generalize well, and the data augmentation strategy did well to improve the model's performance.
-
 \subsection{Hyperparameters settings}
 In order to get a better performance, we have to choose the most relevent values for the hyperparameters during validation phase. That is, computing the accuracy and the loss of the model on validation set for multiple values of these hyperparameters.
-
+%
 The hyperparameters that we have decided to tune are:
-- Number of hidden layers
-- Size of the kernels
-- Learning rate
-- Batch size
-
+\begin{itemize}
+\setlength\itemsep{0em}
+\item[-]Number of hidden layers
+\item[-]Size of the kernels
+\item[-]Learning rate
+\item[-]Batch size
+\end{itemize}
+%
 We will give for each of these hyperparameters the accuracy and the loss of the model while keeping the others fixed.
-
-The table (\ref{table:1}) shows the performance of the model with different number of convolutional layers.
-
+%
+The Table~\ref{table:1} shows the performance of the model with different number of convolutional layers.
+%
 \begin{table}[h!]
 	\centering
 	\begin{tabular}{||c c c c||} 
@@ -325,10 +352,10 @@ The table (\ref{table:1}) shows the performance of the model with different numb
 	\caption{Number of layers tuning}
 	\label{table:1}
 \end{table}
-
-We notice that a model has a better performance when he has more hidden layers. This is normal because more layers means bigger capacity for the model.
-
-The next table (\ref{table:2}) gives a comparison of the model's performance using different kernel sizes. This hyperparameter influence drasticly the architecture of the model, that is a bigger kernel shorten the depth of the model and it could'nt be deeper unless we add 0 padding. We notice that in general a smaller kernel size gives a better result!
+%
+We notice that a model has a better performance when it has more hidden layers. This is normal because more layers means bigger capacity for the model.
+%
+The next Table~\ref{table:2} gives a comparison of the model's performance using different kernel sizes. This hyperparameter influence drastically the architecture of the model, that is a bigger kernel shorten the depth of the model and it could not be deeper unless we add 0 padding. We notice that in general a smaller kernel size gives a better result!
 
 \begin{table}[h!]
 	\centering
@@ -346,8 +373,8 @@ The next table (\ref{table:2}) gives a comparison of the model's performance usi
 	\label{table:2}
 \end{table}
 
-The next table (\ref{table:3}) gives a comparison of the model's performance as a function of the batch size. We notice that a small batch size push the model to make more iterations, and thus the SGD has a bigger chance to converge with enough epochs. Wheras, with a larger batch size, the SGD makes less iteration and may not get its minima within the same number of epochs.
-
+Table~\ref{table:3} gives a comparison of the model's performance as a function of the batch size. We notice that a small batch size push the model to make more iterations, and thus the SGD has a bigger chance to converge with enough epochs. Wheras, with a larger batch size, the SGD makes less iteration and may not get its minima within the same number of epochs.
+%
 \begin{table}[h!]
 	\centering
 	\begin{tabular}{||c c c||} 
@@ -364,7 +391,7 @@ The next table (\ref{table:3}) gives a comparison of the model's performance as 
 	\label{table:3}
 \end{table}
 
-And finally, table (\ref{table:4}) gives a comparison of the model's performance as a function of the learning rate. We notice, that the model converges slowly with a small learning rate and faster with a relatively bigger one like 0.03.
+And finally, Table~\ref{table:4} gives a comparison of the model's performance as a function of the learning rate. We notice, that the model converges slowly with a small learning rate and faster with a relatively bigger one like 0.03.
 
 \begin{table}[h!]
 	\centering
@@ -382,16 +409,18 @@ And finally, table (\ref{table:4}) gives a comparison of the model's performance
 	\label{table:4}
 \end{table}
 
-Our final model has those values as hyperparameters:
-- Number of hidden layers: 13 convolutions and 3 FC
-- Size of the kernels: (3,3)
-- Learning rate: 0.03
-- Batch size: 16
-
-This model give an accuracy of : $95\%$ on validation set and $94\%$ on the public leaderboard (see Figure \ref{fig:kaggle}). The model was trained for 200 but get his best parameters around 150 epochs.
-
+According to our hyperparameter search, we set the final model as follows:
+\begin{itemize}
+\setlength\itemsep{0em}
+\item[-]Number of hidden layers: 13 convolutions and 3 FC
+\item[-]Size of the kernels: (3,3)
+\item[-]Learning rate: 0.03
+\item[-]Batch size: 16
+\end{itemize}
+%
+This model give an accuracy of : $95\%$ on validation set and $94\%$ on the public leaderboard (see Figure \ref{fig:kaggle}). The model was trained for 200 epochs but get its best parameters around 150 epochs.
+%
 As we haven't used any regularization strategies, on the training phase, we have used the early stopping strategy, that is taking the best model's parameters before it starts overfitting.
-
 
 \begin{figure}[h!]
 	\centering
@@ -401,7 +430,7 @@ As we haven't used any regularization strategies, on the training phase, we have
 \end{figure}
 
 \subsubsection{Feature map visualization}
-The feature map visualization gives in some sens an intuition on how a CNN learns from images. Across the layers, the feature map go from high level pattern to low level as we go deeper in the model. The following image shows for each layers the feature map after each activation layer
+The feature map visualization gives in some sens and intuition on how a CNN learns from images. Across the layers, the feature map go from high level pattern to low level as we go deeper in the model. The following image shows for each layers the feature map after each activation layer
 
 \begin{figure}[h!]
 	\centering
@@ -436,7 +465,7 @@ Our model has misclassified nearly $5\%$ of the validation set images, as shown 
 	\label{fig:confusion}
 \end{figure}
 
-To understand why the model have done such misclassification, we will display a sample of two kind of mislcassifications:
+To understand why the model has done such misclassification, we will display a sample of two kind of mislcassifications:
 
 \begin{itemize}
 	\item[(a)] The model clearly misclassified images:\\
