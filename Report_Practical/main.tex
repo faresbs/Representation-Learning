@@ -274,7 +274,18 @@ Figures \ref{fig:vggloss} and \ref{fig:vggacc} show respectively the training an
 %
 Before starting training the model, we have split the input images randomly to training and validation sets with a ratio of $80\%-20\%$ respectively. (see the code on appendix).
 %
-We have also used data augmentation strategy to improve the variance of the model.
+We have also used data augmentation strategy to improve the variance of the model. The transformation used were:
+\begin{itemize}
+\setlength\itemsep{0em}
+\item[-]rotation with a range of 15 degrees
+\item[-]rescale by up to 1/255
+\item[-]width shift by up to 0.2
+\item[-]height shift by up to 0.2
+\item[-]zoom by up to 0.1
+\item[-]shear by up to 0.1,
+\item[-]horizontal flip
+
+\end{itemize}
 %
 The learning curves above show that the model reaches its optimal value around epoch 150. After that point, the model starts overfitting as the loss on validation set starts growing.
 %
