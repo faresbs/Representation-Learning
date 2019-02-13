@@ -23,7 +23,7 @@ Jorge A. Gutierrez Ortega
 \maketitle
 
 \begin{abstract}
-This report explain our approaches to solving the problems of the practical assignment 1. the experiments we performed, results and conclusion of our work.
+This report ourlines are our approach to solving the problems in the practical assignment 1, the experiments we performed, our results and conclusions.
 \end{abstract}
 
 \section{Problem 1 (MLP)}
@@ -32,28 +32,28 @@ This report explain our approaches to solving the problems of the practical assi
 \subsection{Building model}
 
 \begin{enumerate}
-  \item (using the python script mlp.py under the folder problem1), we build an MLP with two hidden layers h1(24 hidden units) and h2(12 hidden units).The total number of parameters of the network $= 784*512 + 512 + 512*1024 + 1024 + 1024*10 + 10 = 937,482 \approx 0.9 M$.
+  \item Using the python script mlp.py under the folder problem1, we built an MLP with two hidden layers h1 (1024 hidden units), and h2 (512 hidden units).The total number of the parameters of this network is: 
+  $$ 784*512 + 512 + 512*1024 + 1024 + 1024*10 + 10 = 937,482 \approx 0.9 M$$
   
-  \item We Implemented the forward and backward propagation in a generalized way (can work in any number of layers) of the MLP in numpy without the use of a deep learning framework and using the provided class structure. (See python script mlp.py under problem 1 folder).
+  \item We implemented the forward and backward propagation for a flexible network that can include  any number of layers. This was done with the numpy package follwing the provided class structure and without the use of deep learning framework. (See python script mlp.py under problem 1 folder).
   
-  \item We trained the MLP using the probability loss (cross entropy) as training criterion (See loss method in the NN class) and minimize this criterion to optimize the model parameters using stochastic gradient descent (See the update method in the NN class). (See python script mlp.py under problem 1 folder).
+  \item We trained the MLP using cross entropy as the training criterion (See loss method in the NN class in the mlp.py script) which is then minimized in order to find the optimal model parameters. To this end we used  stochastic gradient descent (See the update method in the NN class in the mlp.py script). 
   
 \end{enumerate}
 
 \subsection{Initialization}
-We consider a model architecture of two hidden layers h1 = 24 hidden units and h2 = 12 hidden units and a total number of parameters of 19270. We chose RELU as an activation function, a learning
-rate of 0.01 and a mini-batch size of 1000.
+We consider a model architecture of two hidden layers h1  with 24 hidden units and h2  with 12 hidden units, and a total number of 19270 parameters. We chose RELU as an activation function, a learning rate of 0.01 and a mini-batch size of 1000.
 \begin{enumerate}
   \item We trained the model for 10 epochs using the 3 initialization methods (Zero, normal and glorot) and we recorded the average
 loss measured for each method.
 
 \begin{itemize}
-  \item Zero initialization: 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3
-  \item Normal initialization: 3.41, 2.25, 2.20, 2.18, 2.16, 2.15, 2.13, 2.11, 2.08, 2.03
-  \item Glorot initialization: 1.55, 0.55, 0.40, 0.35, 0.32, 0.30, 0.29, 0.27, 0.26, 0.25
+  \item Zero initialization(Figure 1): 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3
+  \item Normal initialization(Figure 2): 3.41, 2.25, 2.20, 2.18, 2.16, 2.15, 2.13, 2.11, 2.08, 2.03
+  \item Glorot initialization(Figure 3): 1.55, 0.55, 0.40, 0.35, 0.32, 0.30, 0.29, 0.27, 0.26, 0.25
 \end{itemize}
 
-\item We plot the losses against the training time (epoch) using each initialization method (Figures \ref{fig:init1}, \ref{fig:init2} and \ref{fig:init3}). We conclude from the plots that the glorot initialization is the best among the methods in which the loss decreases rapidly at each epoch whereas, for the zero initialization, the loss decreases very very slowly. An explanation for this is that by initializing all the weights to zero. All the hidden nodes will end up with the same value and therefore we end up learning just one function. This is called the symmetry problem. We break the symmetry problem by initializing the weights randomly (like we did in the glorot and normal initializations).
+\item We plot the losses against the training time (epoch) using each initialization method (Figures \ref{fig:init1}, \ref{fig:init2} and \ref{fig:init3}). We conclude from the plots that the glorot initialization is the best among the methods in which the loss decreases rapidly at each epoch whereas, for the zero initialization, the loss decreases very slowly. An explanation for this is that by initializing all the weights to zero, all the hidden nodes will have the same value and the network will learn just one function. This is called the symmetry problem, which is dealt with by initializing the weights randomly (as in the cases of Glorot and normal initializations)\cite{weights}.
 
 \end{enumerate}
 
@@ -82,18 +82,17 @@ loss measured for each method.
 
 \item
 The combination of hyper-parameters that we found in which the average accuracy rate on the validation set reach 97.2\% accuracy:
-A network with 2 hidden layers h1 = 64 hidden units and h2 = 32 hidden units with a total number of parameters of 52650. A Relu activation function, a learning rate of 0.01, a mini batch size of 64, a number of epochs of 50. (See Figure \ref{fig:lr1} plotting the training/validation accuracy over epochs).
+Since we have the freedom to examine a variation of different architectures and hyperparameters, we chose a network with 2 hidden layers h1 (64 hidden units) and h2 (32 hidden units) with a total number of 52650 parameters. We chose Relu activation, a learning rate of 0.01, a mini batch size of 64, and the number of epochs as 50. (See Figure \ref{fig:hyper}).
 
 \item 
-We tried different hyper-parameters for learning rate, number of epochs {\color{red}{Number of epochs is not an hyperparameter, see slack channel tp1 01/29}}, network architecture and batch size. We consider the same model architecture.
+We tried different hyper-parameters for learning rate, different network architectures, batch sizes and activation functions (Tanh, Relu, Sigmoid).
 
-\subsubsection{Learning rate}
+\subsubsection{Changing the Learning rate}
 
-We keep the same settings and we only change the learning rate.
 
 \begin{itemize}
 
-\item learning rate of 0.01: validation accuracy = 97.2\% (See Figure \ref{fig:lr1}).
+\item learning rate of 0.01: validation accuracy = 97.2\% (See Figure \ref{fig:hyper}).
 
 \item learning rate of 0.1: validation accuracy = 97.6\% (See Figure \ref{fig:lr2}).
 
@@ -119,6 +118,7 @@ We keep the same settings and we only change the learning rate.
 \caption{\label{fig:lr3}Validation accuracy against the training time (epoch) using a learning rate of 0.001.}
 \end{figure}
 
+We observe that when the learning rate is 0.1, the model overfits the training set while doing badly on the validation set. On the other hand, choosing a smaller learning rate (0.01) leads to a better performance on both training and validation sets i.e. not overfitting the training set while doing better on the validation set. 
 
 %\subsubsection{Number of epochs}
 %We keep the same settings and we only change the number of epochs.
@@ -145,8 +145,8 @@ We keep the same settings and we only change the learning rate.
 %\caption{\label{fig:epoch3}Validation/training accuracy against the training time (epoch) using a number of epochs of 150.}
 %\end{figure}
 
-\subsubsection{Number of mini-batches}
-We keep the same settings and we only change the number of mini-batches.
+\subsubsection{Changing the Number of mini-batches}
+
 
 \begin{itemize}
 
@@ -157,7 +157,7 @@ We keep the same settings and we only change the number of mini-batches.
 \item number of mini-batches of 512: validation accuracy = 93.4\% (See Figure \ref{fig:batch3}).  
   
 \end{itemize}
-
+We observe that the model performs better when the batch size is large.
 \begin{figure}
 \centering
 \includegraphics[width=0.7\textwidth]{batch2.png}
@@ -171,7 +171,7 @@ We keep the same settings and we only change the number of mini-batches.
 \end{figure}
 
 \subsubsection{Non-linearity activation function}
-We keep the same settings and we only change the activation function.
+
 
 \begin{itemize}
 
@@ -182,7 +182,7 @@ We keep the same settings and we only change the activation function.
 \item tanh activation function: validation accuracy = 93.9\% (See Figure \ref{fig:tanh}).  
   
 \end{itemize}
-
+Obviously Relu and tanh perform better in terms of accuracy. 
 \begin{figure}
 \centering
 \includegraphics[width=0.7\textwidth]{epoch2.png}
@@ -195,18 +195,19 @@ We keep the same settings and we only change the activation function.
 \caption{\label{fig:tanh}Validation/training accuracy against the training time (epoch) using a tanh activation function.}
 \end{figure}
 
-\subsubsection{Network architecture (number of hidden units)}
-We keep the same settings and we only change the hidden layers dimensions.
+\subsubsection{Network architecture (Chaning the number of hidden units)}
+
 
 \begin{itemize}
 
 \item Network with 2 hidden layers h1 = 64, h2 = 32: validation accuracy = 97.2\% (See Figure \ref{fig:hyper}).
 
-\item Sigmoid activation function: validation accuracy = 92.2\% (See Figure \ref{fig:lr2}).
+\item Network with 2 hidden layers h1 = 32, h2 = 64: validation accuracy = 96.85\% (See Figure \ref{fig:arch2}).
 
-\item tanh activation function: validation accuracy = 93.9\% (See Figure \ref{fig:lr3}).  
-  
+\item Network with 2 hidden layers h1 = 10, h2 = 5: validation accuracy = 91.77\% (See Figure \ref{fig:arch3}).
+
 \end{itemize}
+
 
 \subsection{Gradient validation using finite difference approximation}
 We implemented a gradient validation function \emph{grad\_check} which returns the maximum difference between the true gradient and the finite difference gradient approximation for a given number of elements of a network parameter and a given precision $\epsilon$.
@@ -466,13 +467,9 @@ In the Figure \ref{fig:50misclass} we can see some images that the model have be
 As a conclusion, the classifier that we have build was able to classify correctly $94\%$ of images which is a good result without even using any regularization or fancy optimization algorithm. However, the model couldn't classify some images because of it's complexity, like having other objects around or taking just a part of the animal. In that case, we may suggest to add more data by sampling over those kind of misclassified images and give train the model on them, or use the K-Fold cross validation in order to train the model on all kind of images.
  
  \newpage
-\begin{thebibliography}
-@online{,
-  author = {Thayumanav Jayadevan},
-  title = {Why don't we initialize the weights of a neural network to zero?},
-  year = 2018,
-  url = {https://www.quora.com/Why-dont-we-initialize-the-weights-of-a-neural-network-to-zero},
-  urldate = {2019-02-05}
-}
+\begin{thebibliography}{9}
+\bibitem{weights} 
+  Jayadevan Thayumanav: Why don't we initialize the weights of a neural network to zero?, 2018.
+  \\\texttt{https://www.quora.com/Why-dont-we-initialize-the-weights-of-a-neural-network-to-zero}, urldate = {2019-02-05}
 \end{thebibliography}
 \end{document}
