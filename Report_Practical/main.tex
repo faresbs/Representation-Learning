@@ -10,7 +10,10 @@
 \title{Report Practical assignment 1}
 
 \author{Machinists:\\
-Fares Ben Slimane}
+Fares Ben Slimane
+Parviz Haggi
+Mohammed Loukili
+}
 
 \date{\today}
 
@@ -245,7 +248,7 @@ Figure~\ref{fig:CNN_accuracy} shows the training and validation accuracy of the 
 The model's architecture that we have used is inspired from VGG model, which has the following components (see Figure \ref{fig:vgg}) :
 
 \begin{itemize}
-	\item[-] 13 convolutions layers, with 0 padding at each layer, with a kernel of size (3,3) and stride of 1.
+	\item[-] 13 convolutions layers, with 0 padding at each layer, and a kernel of size (3,3) and stride of 1.
 	\item[-] 5 max pooling with kernel of size (2,2) and stride of 2.
 	\item[-] 2 fully connected layers with 4096 hidden units
 	\item[-] 1 output layer
@@ -258,12 +261,12 @@ The model's architecture that we have used is inspired from VGG model, which has
 \label{fig:vgg}
 \end{figure}
 
-The total parameters of this model is 23,111,490, which is a medium size in comparison of the more recent deep models.
+The total parameters of this model is 23,111,490, which is a medium size in comparison with the most recent deep learning models.
 
-It worth saying that our experimentation has shown that a model with more layers performs better than a model with a fewer ones. In fact, for this competition, we have found that the VGG model above have performed better than AlexNet-based architecture.
+IOur experimentation has shown that a model with more layers performs better than a model with fewer ones. In fact, for this competition, we have found that the VGG model above have performed better than AlexNet-based architecture.
 
 \subsection{Learning curves}
-The following figures (\ref{fig:vggloss},\ref{fig:vggacc}) show respectively the training and validation loss and accuracy by epochs:
+The following figures (\ref{fig:vggloss},\ref{fig:vggacc}) show respectively the training and validation loss and accuracy per epochs:
 
 \begin{figure}[h!]
 	\centering
@@ -283,31 +286,25 @@ Before starting training the model, we have split the input images randomly to t
 
 We have also used data augmentation strategy to improve the variance of the model.
 
-The learning curves show that the model has a high bias and high variance at the beginning of the training and then starts learning till an optimal value around 150 epochs. After that point, the model starts overfitting as the accuracy and loss on the training set was bigger than those on the validation set.
-
-
-\begin{figure}[h!]
-	\centering
-	\includegraphics[scale=.5]{150epoch.png}
-	\caption{Accuracy and Loss after 150 epochs}
-	\label{fig:150epoch}
-\end{figure}
+The learning curves above show that the model reaches its optimal value around epoch 150. After that point, the model starts overfitting as the loss on validation set starts growing.
 
 
 We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 150 epochs without overfitting.
 
-Notice that the accuracy on the testset is better than the accuracy on the validation set, which is a proof that the model generalize well, and the data augmentation strategy was a good one to improve the model's performance on unseen data.
+Notice that the accuracy on the testset is better than the accuracy on the validation set, which is a proof that the model generalize well, and the data augmentation strategy did well to improve the model's performance.
 
 \subsection{Hyperparameters settings}
-We have selected different hyperparameters to tune on the validation set in order to get the best model configuration, which are:
+In order to get a better performance, we have to choose the most relevent values for the hyperparameters during validation phase. That is, computing the accuracy and the loss of the model on validation set for multiple values of these hyperparameters.
+
+The hyperparameters that we have decided to tune are:
 - Number of hidden layers
 - Size of the kernels
 - Learning rate
 - Batch size
 
-The following table gives a comparison of the model's performance while for each parameter while keeping the others fixed.
+We will give for each of these hyperparameters the accuracy and the loss of the model while keeping the others fixed.
 
-The table below (\ref{table:1}) show the accuracy of the model for given different model architecture while keeping fixed the other parameters : kernel size, number of epoch, ...
+The table (\ref{table:1}) shows the performance of the model with different number of convolutional layers.
 
 \begin{table}[h!]
 	\centering
@@ -326,9 +323,9 @@ The table below (\ref{table:1}) show the accuracy of the model for given differe
 	\label{table:1}
 \end{table}
 
-We notice that a model has a better performance when he has more hidden layers. This is normal because more layers means more capacity for the model.
+We notice that a model has a better performance when he has more hidden layers. This is normal because more layers means bigger capacity for the model.
 
-The next table (\ref{table:2}) gives a comparison for different kernel size. This hyperparameter influence drasticly the architecture of the model, that is a bigger kernel shorten the model and it could'nt be deeper unless we add 0 padding which gives a poorer feature map. We notice that in general a smaller kernel size gives a better result!
+The next table (\ref{table:2}) gives a comparison of the model's performance using different kernel sizes. This hyperparameter influence drasticly the architecture of the model, that is a bigger kernel shorten the depth of the model and it could'nt be deeper unless we add 0 padding. We notice that in general a smaller kernel size gives a better result!
 
 \begin{table}[h!]
 	\centering
@@ -346,7 +343,7 @@ The next table (\ref{table:2}) gives a comparison for different kernel size. Thi
 	\label{table:2}
 \end{table}
 
-The next table (\ref{table:3}) gives a comparison of the model performance as a function of the batch size. We notice that a small batch size push the model to make more iterations which make the SGD converge better than with bigger batch size.
+The next table (\ref{table:3}) gives a comparison of the model's performance as a function of the batch size. We notice that a small batch size push the model to make more iterations, and thus the SGD has a bigger chance to converge with enough epochs. Wheras, with a larger batch size, the SGD makes less iteration and may not get its minima within the same number of epochs.
 
 \begin{table}[h!]
 	\centering
@@ -364,7 +361,7 @@ The next table (\ref{table:3}) gives a comparison of the model performance as a 
 	\label{table:3}
 \end{table}
 
-And finally, table (\ref{table:4}) gives a comparison of the model performance as a function of the learning rate. We notice, that the model convergence is very slow with a small learning rate and faster with a relatively bigger one like 0.03.
+And finally, table (\ref{table:4}) gives a comparison of the model's performance as a function of the learning rate. We notice, that the model converges slowly with a small learning rate and faster with a relatively bigger one like 0.03.
 
 \begin{table}[h!]
 	\centering
@@ -388,11 +385,10 @@ Our final model has those values as hyperparameters:
 - Learning rate: 0.03
 - Batch size: 16
 
-This model give an accuracy of : $94\%$ on validation set and $93.7\%$ on the public leaderboard. The model was trained for 200 but get his best parameters around 150 epochs.
+This model give an accuracy of : $95\%$ on validation set and $94\%$ on the public leaderboard (see Figure \ref{fig:kaggle}). The model was trained for 200 but get his best parameters around 150 epochs.
 
-As we haven't used any regularization strategies, on the training phase, we have used the early stopping strategy the use the best model's parameters before he starts overfitting.
+As we haven't used any regularization strategies, on the training phase, we have used the early stopping strategy, that is taking the best model's parameters before it starts overfitting.
 
-The model get a decent performance (not expected though) of $91\%$ on validation set and $92\%$ (see Figure \ref{fig:150epoch} on the public leader board (see Figure \ref{fig:kaggle}) which is a very good result.
 
 \begin{figure}[h!]
 	\centering
@@ -402,7 +398,7 @@ The model get a decent performance (not expected though) of $91\%$ on validation
 \end{figure}
 
 \subsubsection{Feature map visualization}
-The feature map visualization give in some sens an intuition on how a CNN works to learn from images. Across the layers, the feature map go from high level pattern recognition to low level as we go deeper in the model. The following image shows for each layers the feature map after each activation layer
+The feature map visualization gives in some sens an intuition on how a CNN learns from images. Across the layers, the feature map go from high level pattern to low level as we go deeper in the model. The following image shows for each layers the feature map after each activation layer
 
 \begin{figure}[h!]
 	\centering
@@ -426,7 +422,7 @@ The feature map visualization give in some sens an intuition on how a CNN works 
 \end{figure}
 
 \subsubsection{Performance of the model}
-The model get nearly $94\%$ accuracy on test set (public leaderboard) which is not bad given that we haven't used any fancy techniques like regularization. It is interesting to investigate which images the model has misclassified, in order to identify ways to improve the model's performance. 
+The model gets $94\%$ accuracy on test set (public leaderboard) which is not bad given that we haven't used any fancy techniques like regularization. It is interesting to investigate which images the model has misclassified, in order to identify ways to improve the model's performance. 
 
 Our model has misclassified nearly $5\%$ of the validation set images, as shown in the confusion matrix (see Figure \ref{fig:confusion}). We notice that the model has misclassified more Dogs than Cats.
 
@@ -441,7 +437,7 @@ To understand why the model have done such misclassification, we will display a 
 
 \begin{itemize}
 	\item[(a)] The model clearly misclassified images:\\
-	In the Figure \ref{fig:100misclass}, we displayed a sample of images that the model has misclassified with probability $>= 0.6$.
+	In the Figure \ref{fig:100misclass}, we can see a sample of images that the model has misclassified with probability $>= 0.6$.
 	We notice that these images are noisy and doesn't show clearly the animal's figure or they contains other objects like human or fences.
 	
 	\begin{figure}[h!]
@@ -465,7 +461,7 @@ In the Figure \ref{fig:50misclass} we can see some images that the model have be
 
 \end{itemize}
 
-As a conclusion, the classifier that we have build was able to classify correctly 94\% of images which is a good result without even using any regularization or fancy optimization algorithm. However, the model couldn't classify some images because of it's complexity, like having other objects around or taking just a part of the animal. In that case, we may suggest to add more data by sampling over those kind of misclassified images and give train the model on them, or use the K-Fold cross validation in order to train the model on all kind of images.
+As a conclusion, the classifier that we have build was able to classify correctly $94\%$ of images which is a good result without even using any regularization or fancy optimization algorithm. However, the model couldn't classify some images because of it's complexity, like having other objects around or taking just a part of the animal. In that case, we may suggest to add more data by sampling over those kind of misclassified images and give train the model on them, or use the K-Fold cross validation in order to train the model on all kind of images.
  
  \newpage
 \begin{thebibliography}
