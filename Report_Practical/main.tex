@@ -10,7 +10,7 @@
 
 \title{Report Practical assignment 1}
 
-\author{Machinists:\vspace{0.5cm}\\
+\author{TheMachinists team:\vspace{0.5cm}\\
 Fares Ben Slimane \\
 Parviz Haggi \\
 Mohammed Loukili \\
@@ -23,11 +23,7 @@ Jorge A. Gutierrez Ortega
 \maketitle
 
 \begin{abstract}
-<<<<<<< HEAD
-This report ourlines are our approach to solving the problems in the practical assignment 1, the experiments we performed, our results and conclusions.
-=======
-This report explains our approaches to solving the problems of the practical assignment 1. the experiments we performed, results and conclusion of our work.
->>>>>>> ce3238cb42cbd222e3df2841037128ef8330b90d
+This report explains our approaches to solving the problems of the practical assignment~1, the experiments we performed, the results and conclusion of our work. The code we developped is uploaded to our Github repository \cite{github}
 \end{abstract}
 
 \section{Problem 1 (MLP)}
@@ -36,7 +32,7 @@ This report explains our approaches to solving the problems of the practical ass
 \subsection{Building model}
 
 \begin{enumerate}
-  \item Using the python script mlp.py under the folder problem1, we built an MLP with two hidden layers h1 (1024 hidden units), and h2 (512 hidden units).The total number of the parameters of this network is: 
+  \item Using the python script mlp.py under the folder problem~1  \cite{github}, we built an MLP with two hidden layers h1 (1024 hidden units), and h2 (512 hidden units).The total number of the parameters of this network is: 
   $$ 784*512 + 512 + 512*1024 + 1024 + 1024*10 + 10 = 937,482 \approx 0.9 M$$
   
   \item We implemented the forward and backward propagation for a flexible network that can include  any number of layers. This was done with the numpy package follwing the provided class structure and without the use of deep learning framework. (See python script mlp.py under problem 1 folder).
@@ -264,23 +260,24 @@ For similar number of parameters the CNN here performs better than the MLP in pr
 
 \subsection{Architecture of the model}
 The model's architecture that we have used is inspired from VGG model, which has the following components (see Figure \ref{fig:vgg}) :
-%
+
 \begin{itemize}
 \setlength\itemsep{0em}
 	\item[-] 13 convolutions layers, with 0 padding at each layer, and a kernel of size (3,3) and stride of 1.
+	\item[-] The number of filters goes from 64 to 640 accross the layers
 	\item[-] 5 max pooling with kernel of size (2,2) and stride of 2.
 	\item[-] 2 fully connected layers with 4096 hidden units
 	\item[-] 1 output layer
 \end{itemize}
-%
+
 \begin{figure}[h!]
 \centering
-\includegraphics[scale=0.4]{VGG_arch.png}
+\includegraphics[scale=0.3]{VGG_arch.png}
 \caption{Model architecture}
 \label{fig:vgg}
 \end{figure}
-%
-The total parameters of this model is 23,111,490, which is a medium size in comparison with the most recent deep learning models.
+
+The total parameters of this model is $45,238,466$, which is a medium size in comparison with the most recent deep learning models.
 %
 Our experimentation has shown that a model with more layers performs better than a model with fewer ones. In fact, for this competition, we have found that the VGG model above have performed better than AlexNet-based architecture.
 
@@ -293,12 +290,11 @@ Before starting training the model, we have split the input images randomly to t
 We have also used data augmentation strategy to improve the variance of the model. The transformation used were:
 \begin{itemize}
 \setlength\itemsep{0em}
-\item[-]rotation with a range of 15 degrees
 \item[-]rescale by up to 1/255
 \item[-]width shift by up to 0.2
 \item[-]height shift by up to 0.2
-\item[-]zoom by up to 0.1
-\item[-]shear by up to 0.1,
+\item[-]zoom by up to 0.5
+\item[-]shear by up to 0.2,
 \item[-]horizontal flip
 
 \end{itemize}
@@ -308,23 +304,24 @@ The learning curves above show that the model reaches its optimal value around e
 We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 150 epochs without overfitting.
 %
 Notice that the accuracy on the test set is better than the accuracy on the validation set, which is a proof that the model generalize well, and the data augmentation strategy did well to improve the model's performance.
+
 \begin{figure}[h!]
 	\centering
-	\includegraphics[scale=.6]{VGGLoss_of.png}
+	\includegraphics[scale=.6]{VGGLoss_of2.png}
 	\caption{Loss of the model by epoch}
 	\label{fig:vggloss}
 \end{figure}
-%
+
 \begin{figure}[h!]
 	\centering
-	\includegraphics[scale=.6]{VGGAccu_of.png}
+	\includegraphics[scale=.6]{VGGAccu_of2.png}
 	\caption{Accuracy of the model by epoch}
 	\label{fig:vggacc}
 \end{figure}
+
+\newpage
 \subsection{Hyperparameters settings}
-In order to get a better performance, we have to choose the most relevent values for the hyperparameters during validation phase. That is, computing the accuracy and the loss of the model on validation set for multiple values of these hyperparameters.
-%
-The hyperparameters that we have decided to tune are:
+In order to get a better performance, we have to choose the most relevent values for the hyperparameters during validation phase. That is, computing the accuracy and the loss of the model on validation set for multiple values of these hyperparameters. The hyperparameters that we have decided to tune are:
 \begin{itemize}
 \setlength\itemsep{0em}
 \item[-]Number of hidden layers
@@ -346,15 +343,15 @@ The Table~\ref{table:1} shows the performance of the model with different number
 		6 & 0.3109 & 0.8574 & 2,736,066\\ 
 		10 & 0.2713 & 0.8841 & 5,147,458\\ 
 		13 & 0.2068 & 0.9078 & 17,076,546\\ 
-		16 lite & 0.1984 & 0.9158 & 23,111,490\\ 
-		16 & ? & ? & 39,896,898\\  [1ex] 
+		16 & 0.9445 & ? & 23,111,490\\
+		19 & 0.9304 & 0.1922 & 39,896,898\\  [1ex] 
 		\hline
 	\end{tabular}
 	\caption{Number of layers tuning}
 	\label{table:1}
 \end{table}
 %
-We notice that a model has a better performance when it has more hidden layers. This is normal because more layers means bigger capacity for the model.
+We notice that a model has a better performance when it has more hidden layers. This is normal because more layers means bigger capacity for the model. But this is not leanier, that is a deeper model is more likely to overfit if there is no regularization. That is what we have noticed with VGG with 19 layers.
 %
 The next Table~\ref{table:2} gives a comparison of the model's performance using different kernel sizes. This hyperparameter influence drastically the architecture of the model, that is a bigger kernel shorten the depth of the model and it could not be deeper unless we add 0 padding. We notice that in general a smaller kernel size gives a better result!
 
@@ -415,8 +412,9 @@ According to our hyperparameter search, we set the final model as follows:
 \setlength\itemsep{0em}
 \item[-]Number of hidden layers: 13 convolutions and 3 FC
 \item[-]Size of the kernels: (3,3)
-\item[-]Learning rate: 0.03
+\item[-]Learning rate: 0.015
 \item[-]Batch size: 16
+\item[-]Number of epochs: 300
 \end{itemize}
 %
 This model give an accuracy of : $95\%$ on validation set and $94\%$ on the public leaderboard (see Figure \ref{fig:kaggle}). The model was trained for 200 epochs but get its best parameters around 150 epochs.
@@ -431,7 +429,7 @@ As we haven't used any regularization strategies, on the training phase, we have
 \end{figure}
 
 \subsubsection{Feature map visualization}
-The feature map visualization gives in some sens and intuition on how a CNN learns from images. Across the layers, the feature map go from high level pattern to low level as we go deeper in the model. The following image shows for each layers the feature map after each activation layer
+The feature map visualization gives in some sens an intuition on how a CNN learns from images. Across the layers, feature map go from high level pattern to low level as we go deeper in the model. The following image shows for each layers the feature map after each activation layer. The code used to display these images was taken from the blog \cite{featuremap}.
 
 \begin{figure}[h!]
 	\centering
@@ -457,49 +455,44 @@ The feature map visualization gives in some sens and intuition on how a CNN lear
 \subsubsection{Performance of the model}
 The model gets $94\%$ accuracy on test set (public leaderboard) which is not bad given that we haven't used any fancy techniques like regularization. It is interesting to investigate which images the model has misclassified, in order to identify ways to improve the model's performance. 
 
-Our model has misclassified nearly $5\%$ of the validation set images, as shown in the confusion matrix (see Figure \ref{fig:confusion}). We notice that the model has misclassified more Dogs than Cats.
-
-\begin{figure}[h!]
-	\centering
-	\includegraphics[scale=.5]{confusion.png}
-	\caption{Confusion matrix of the model}
-	\label{fig:confusion}
-\end{figure}
-
 To understand why the model has done such misclassification, we will display a sample of two kind of mislcassifications:
 
 \begin{itemize}
 	\item[(a)] The model clearly misclassified images:\\
 	In the Figure \ref{fig:100misclass}, we can see a sample of images that the model has misclassified with probability $>= 0.6$.
 	We notice that these images are noisy and doesn't show clearly the animal's figure or they contains other objects like human or fences.
-	
+	%
 	\begin{figure}[h!]
 		\centering
-		\includegraphics[scale=.4]{100misclass.png}
+		\includegraphics[scale=.36]{100misclass.png}
 		\caption{100\% miclassification}
 		\label{fig:100misclass}
 	\end{figure}
-
-\item[(b)] The model predicts around $50\%$ on both classes:\\
-In the Figure \ref{fig:50misclass} we can see some images that the model have bearly misclassified them. We notice the same pattern as the item (a) where the animals took different position in the picture with other objects or half captured.
-
-
+%
 \begin{figure}[h!]
 	\centering
-	\includegraphics[scale=.4]{50misclass.png}
-	\caption{50\% miclassification}
-		\label{fig:50misclass}
-	\end{figure}
-
-
+	\includegraphics[scale=.36]{50misclass.png}
+	\caption{Around 50\% miclassification}
+	\label{fig:50misclass}
+\end{figure}
+%
+\item[(b)] The model predicts around $50\%$ on both classes:\\
+In the Figure \ref{fig:50misclass} we can see some images that the model have bearly misclassified them. We notice the same pattern as the item (a) where the animals took different position in the picture with other objects or half captured.
+%
 \end{itemize}
-
+%
 As a conclusion, the classifier that we have build was able to classify correctly $94\%$ of images which is a good result without even using any regularization or fancy optimization algorithm. However, the model couldn't classify some images because of it's complexity, like having other objects around or taking just a part of the animal. In that case, we may suggest to add more data by sampling over those kind of misclassified images and give train the model on them, or use the K-Fold cross validation in order to train the model on all kind of images.
  
  \newpage
 \begin{thebibliography}{9}
 \bibitem{weights} 
   Jayadevan Thayumanav: Why don't we initialize the weights of a neural network to zero?, 2018.
-  \\\texttt{https://www.quora.com/Why-dont-we-initialize-the-weights-of-a-neural-network-to-zero}, urldate = {2019-02-05}
+  \\\texttt{https://www.quora.com/Why-dont-we-initialize-the-weights-of-a-neural-network-to-zero}
+  \bibitem{featuremap} 
+  Applied Deep Learning - Part 4: Convolutional Neural Networks
+  \\\texttt{https://towardsdatascience.com/applied-deep-learning-part-4-convolutional-neural-networks-584bc134c1e2}
+    \bibitem{github} 
+  TheMachinists github repository: Representation-Learning
+  \\\texttt{https://github.com/faresbs/Representation-Learning.git}
 \end{thebibliography}
 \end{document}
