@@ -251,13 +251,13 @@ The approximation of the gradient for each element gets closer to the real parti
 As it is a common practice, we decided to implement our convolutional network using layers that sequentially apply a convolution followed by a ReLU followed by pooling.
 Given the size of the images in the dataset MNIST ($28\times28$ pixels) we decided to use four layers where the convolutions are padded in order to keep the size and the pooling kernels have a spatial size $2\times2$ and stride of 2 to obtain a single spatial dimension at the end. In order to fix some other parameters we chose the convolution kernels to have the spatial size of $3\times3$ and the number of channels at to double at each convolution layer. With these settings the only parameter that controls the size of the network is the number of output channels at the first convolutional layer. 
 
-In order to obtain a similar number of parameters than our mlp of Problem~\ref{sec:problem1} ($\sim50K$ parameters) we set that value to $12$, so the number of channels at the layers of our network are  $1,12,24,48,96$. 
+In order to obtain a similar number of parameters than our mlp of Problem~\ref{sec:problem1} ($\sim0.5M$ parameters) we set that value to $36$, so the number of channels at the layers of our network are  $1,36,72,144,288$. 
 \subsection{Performance}
 Figure~\ref{fig:CNN_accuracy} shows the training and validation accuracy of the model at each epoch. After training the model for 10 epochs we obtain a validation accuracy of $98\%$
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.7\textwidth]{P2_CNN_accuracySGD}
+\includegraphics[width=0.7\textwidth]{P2_CNN_accuracySGD_Ni36}
 \label{fig:CNN_accuracy}
 \caption{Training and validation accuracy of the convolutional model of Section~\ref{sec:problem2}}
 \end{figure}
@@ -313,8 +313,6 @@ The learning curves above show that the model reaches its optimal value around e
 %
 We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 250 epochs without overfitting. Additionnaly, if we have used a K-Fold crossvalidation we could have a better result as the model will be trained on all images given as input.
 %
-The accuracy on the public leaderboard was around $95\%$, which is nearly the same on validation set. However, the accuracy was a little lower on the private leaderboard $93\%$. This result shows that the model had a good training and has not overfitt on training data. Moreover, the data augmentation was a crucial action to improve the model's performance.
-
 \begin{figure}[h!]
 	\centering
 	\includegraphics[scale=.6]{VGGLoss_of2.png}
@@ -427,7 +425,7 @@ According to our hyperparameter search, we set the final model as follows:
 \item[-]Number of epochs: 300
 \end{itemize}
 %
-This model give an accuracy of : $95\%$ on validation set and $94\%$ on the public leaderboard (see Figure \ref{fig:kaggle}). The model was trained for 200 epochs but get its best parameters around 150 epochs.
+The accuracy on the public leaderboard was around $94\%$ (see Figure \ref{fig:kaggle}), which is nearly the same on validation set $95\%$. However, the accuracy, on the private leaderboard, was a little lower  $93\%$ (see Figure \ref{fig:kagpriv}). This result shows that the model had a good training and has not overfit on training set. Moreover, the data augmentation was a crucial action to improve the model's performance.
 %
 As we haven't used any regularization strategies, on the training phase, we have used the early stopping strategy, that is taking the best model's parameters before it starts overfitting.
 
@@ -436,6 +434,13 @@ As we haven't used any regularization strategies, on the training phase, we have
 	\includegraphics[scale=.4]{kaggle.png}
 	\caption{Rank at the public leaderboard}
 	\label{fig:kaggle}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.4]{kagglepriv.png}
+	\caption{Rank at the private leaderboard}
+	\label{fig:kagpriv}
 \end{figure}
 
 \subsubsection{Feature map visualization}
