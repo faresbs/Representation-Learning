@@ -172,8 +172,19 @@ class NN(object):
 		#y_hat is the probability after softmax
 		#y is one hot vector
 		log_likelihood = -np.log(y_hat)*y
-		loss = np.sum(log_likelihood) / m
+		#print(type(log_likelihood))
 
+		#Transform nan values to 0 (nan = infinity * 0), this is optional
+		a = np.isnan(log_likelihood)
+		log_likelihood[a] = 0
+		#print(y_hat[0, :])
+		#print(-np.log(y_hat)[0, :])
+		#print(log_likelihood[0, :])
+
+		#print(y[0, :])
+	
+		#print(np.sum(log_likelihood))
+		loss = np.sum(log_likelihood) / m
 		return loss
 
 
@@ -312,7 +323,7 @@ class NN(object):
 
 		return parameters
 
-	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=64, act_function="relu"):
+	def train(self, iterations, init_method, learning_rate, X, labels, mini_batch=512, act_function="relu"):
 
 		#One hot encoding of labels
 		y = np.eye(self.n_class)[labels]
@@ -390,7 +401,7 @@ class NN(object):
 			val_acc.append(acc)
 
 		#Plot loss curve
-		self.visualize_loss(avg_loss, iterations, 'Training loss')
+		self.visualize_loss(avg_loss, init_method, 'Training loss')
 
 		#Plot training & validation accuracy curve
 		self.visualize_acc(train_acc, val_acc, 'Training', 'Validation')
@@ -404,7 +415,7 @@ class NN(object):
 		plt.figure()
 
 		plt.plot(epochs, x, 'b', label=label)
-		plt.title(str(title)+" epochs")
+		plt.title(str(title)+" initializaton method")
 		plt.xlabel('epoch')
 		plt.ylabel('loss')
 		plt.legend()
@@ -483,18 +494,11 @@ class NN(object):
 
 if __name__ == '__main__':
 
-	nn = NN(hidden_dims=(64, 32), n_hidden=2, datapath='./datasets/mnist.pkl.npy')
+	nn = NN(hidden_dims=(512, 256), n_hidden=2, datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
-	#parameters = nn.initialize_weights(init_method='zeros')
-
-	#for key, value in parameters.iteritems() :
-	#	print key, value.shape
-
-	#out, cache = nn.forward(nn.D_train[0], parameters)
-
-	#for key, value in cache.iteritems() :
-	#	print key, value.shape
+	parameters = nn.train(10,'glorot', 20, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="relu")
+	sd
 
 	# parameters = nn.train(50,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="tanh")
 	#print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
