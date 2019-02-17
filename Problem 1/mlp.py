@@ -182,7 +182,7 @@ class NN(object):
 		#print(log_likelihood[0, :])
 
 		#print(y[0, :])
-	
+
 		#print(np.sum(log_likelihood))
 		loss = np.sum(log_likelihood) / m
 		return loss
@@ -498,24 +498,12 @@ if __name__ == '__main__':
 	print("train/val/test: "+str(nn.dim_data))
 
 	parameters = nn.train(30,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=8, act_function="relu")
-	sd
 
-	# parameters = nn.train(50,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="tanh")
-	#print('Test Acc : %.3f ' % nn.test(nn.D_train[0], nn.D_train[1], parameters))
-	#parameters = nn.train(20, 'glarot', 0.01, nn.D_train[0], nn.D_train[1])
-	#print('-----training')
-	#nn.test(nn.D_train[0],nn.D_train[1],parameters)
-	#print('-----validation')
-	#nn.test(nn.D_val[0],nn.D_val[1],parameters)
-
-	#gd = nn.grad_check(0.000001,parameters,'b1', nn.D_train[0][:,2:3], nn.D_train[1][2:3])
-
-	#parameters = nn.train(100, 'normal', 0.1, nn.D_train[0], nn.D_train[1])
-	parameters = nn.train(100, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
-	print('-----training')
-	print(nn.test(nn.D_train[0],nn.D_train[1],parameters))
-	print('-----validation')
-	print(nn.test(nn.D_val[0],nn.D_val[1],parameters))
+	# parameters = nn.train(100, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
+	# print('-----training')
+	# print(nn.test(nn.D_train[0],nn.D_train[1],parameters))
+	# print('-----validation')
+	# print(nn.test(nn.D_val[0],nn.D_val[1],parameters))
 
 
 	K = 5
