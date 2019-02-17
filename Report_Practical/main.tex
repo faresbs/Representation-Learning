@@ -251,13 +251,13 @@ The approximation of the gradient for each element gets closer to the real parti
 As it is a common practice, we decided to implement our convolutional network using layers that sequentially apply a convolution followed by a ReLU followed by pooling.
 Given the size of the images in the dataset MNIST ($28\times28$ pixels) we decided to use four layers where the convolutions are padded in order to keep the size and the pooling kernels have a spatial size $2\times2$ and stride of 2 to obtain a single spatial dimension at the end. In order to fix some other parameters we chose the convolution kernels to have the spatial size of $3\times3$ and the number of channels at to double at each convolution layer. With these settings the only parameter that controls the size of the network is the number of output channels at the first convolutional layer. 
 
-In order to obtain a similar number of parameters than our mlp of Problem~\ref{sec:problem1} ($\sim50K$ parameters) we set that value to $12$, so the number of channels at the layers of our network are  $1,12,24,48,96$. 
+In order to obtain a similar number of parameters than our mlp of Problem~\ref{sec:problem1} ($\sim0.5M$ parameters) we set that value to $36$, so the number of channels at the layers of our network are  $1,36,72,144,288$. 
 \subsection{Performance}
 Figure~\ref{fig:CNN_accuracy} shows the training and validation accuracy of the model at each epoch. After training the model for 10 epochs we obtain a validation accuracy of $98\%$
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.7\textwidth]{P2_CNN_accuracySGD}
+\includegraphics[width=0.7\textwidth]{P2_CNN_accuracySGD_Ni36}
 \label{fig:CNN_accuracy}
 \caption{Training and validation accuracy of the convolutional model of Section~\ref{sec:problem2}}
 \end{figure}
