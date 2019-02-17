@@ -32,8 +32,8 @@ This report explains our approaches to solving the problems of the practical ass
 \subsection{Building model}
 
 \begin{enumerate}
-  \item Using the python script mlp.py under the folder problem~1  \cite{github}, we built an MLP with two hidden layers h1 (1024 hidden units), and h2 (512 hidden units).The total number of the parameters of this network is: 
-  $$ 784*512 + 512 + 512*1024 + 1024 + 1024*10 + 10 = 937,482 \approx 0.9 M$$
+  \item Using the python script mlp.py under the folder problem~1  \cite{github}, we built an MLP with two hidden layers h1 (512 hidden units), and h2 (256 hidden units).The total number of the parameters of this network is: 
+  $$ 784*512 + 512 + 512*256 + 256 + 256*10 + 10 = 535,818 \approx 0.5 M$$
   
   \item We implemented the forward and backward propagation for a flexible network that can include  any number of layers. This was done with the numpy package follwing the provided class structure and without the use of deep learning framework. (See python script mlp.py under problem 1 folder).
   
@@ -42,15 +42,15 @@ This report explains our approaches to solving the problems of the practical ass
 \end{enumerate}
 
 \subsection{Initialization}
-We consider a model architecture of two hidden layers h1  with 24 hidden units and h2  with 12 hidden units, and a total number of 19270 parameters. We chose RELU as an activation function, a learning rate of 0.01 and a mini-batch size of 1000.
+We consider a model architecture of two hidden layers h1  with 512 hidden units and h2  with 256 hidden units, and a total number of 535,818 parameters. We chose RELU as an activation function, a learning rate of 0.01 and a mini-batch size of 64.
 \begin{enumerate}
   \item We trained the model for 10 epochs using the 3 initialization methods (Zero, normal and glorot) and we recorded the average
 loss measured for each method.
 
 \begin{itemize}
   \item Zero initialization(Figure 1): 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3, 2.3
-  \item Normal initialization(Figure 2): 3.41, 2.25, 2.20, 2.18, 2.16, 2.15, 2.13, 2.11, 2.08, 2.03
-  \item Glorot initialization(Figure 3): 1.55, 0.55, 0.40, 0.35, 0.32, 0.30, 0.29, 0.27, 0.26, 0.25
+  \item Normal initialization(Figure 2): inf, inf, 4.37, 2.90, 2.15, 1.67, 1.35, 1.11, 0.94, 0.80
+  \item Glorot initialization(Figure 3): 0.85, 0.36, 0.30, 0.27, 0.24, 0.22, 0.21, 0.19, 0.18, 0.17
 \end{itemize}
 
 \item We plot the losses against the training time (epoch) using each initialization method (Figures \ref{fig:init1}, \ref{fig:init2} and \ref{fig:init3}). We conclude from the plots that the glorot initialization is the best among the methods in which the loss decreases rapidly at each epoch whereas, for the zero initialization, the loss decreases very slowly. An explanation for this is that by initializing all the weights to zero, all the hidden nodes will have the same value and the network will learn just one function. This is called the symmetry problem, which is dealt with by initializing the weights randomly (as in the cases of Glorot and normal initializations)\cite{weights}.
@@ -81,8 +81,8 @@ loss measured for each method.
 \begin{enumerate}
 
 \item
-The combination of hyper-parameters that we found in which the average accuracy rate on the validation set reach 97.2\% accuracy:
-Since we have the freedom to examine a variation of different architectures and hyperparameters, we chose a network with 2 hidden layers h1 (64 hidden units) and h2 (32 hidden units) with a total number of 52650 parameters. We chose Relu activation, a learning rate of 0.01, a mini batch size of 64, and the number of epochs as 50. (See Figure \ref{fig:hyper}).
+The combination of hyper-parameters that we found in which the average accuracy rate on the validation set reach 97.3\% accuracy:
+Since we have the freedom to examine a variation of different architectures and hyperparameters, we chose a network with 2 hidden layers h1 (512 hidden units) and h2 (256 hidden units) with a total number of 535,818 parameters. We chose Relu activation, a learning rate of 0.01, a mini batch size of 64, the number of epochs as 30 and the glorot initialization. (See Figure \ref{fig:hyper}).
 
 \item 
 We tried different hyper-parameters for learning rate, different network architectures, batch sizes and activation functions (Tanh, Relu, Sigmoid).
@@ -92,12 +92,14 @@ We tried different hyper-parameters for learning rate, different network archite
 
 \begin{itemize}
 
-\item learning rate of 0.01: validation accuracy = 97.2\% (See Figure \ref{fig:hyper}).
+\item learning rate of 0.01: validation accuracy = 97.3\% (See Figure \ref{fig:hyper}).
 
-\item learning rate of 0.1: validation accuracy = 97.6\% (See Figure \ref{fig:lr2}).
+\item learning rate of 0.1: validation accuracy = 98.1\% (See Figure \ref{fig:lr2}).
 
-\item learning rate of 0.001: validation accuracy = 93\% (See Figure \ref{fig:lr3}).  
-  
+\item learning rate of 0.001: validation accuracy = 92.6\% (See Figure \ref{fig:lr3}).  
+ 
+\item learning rate of 0.7: validation accuracy = 98.4\% (See Figure \ref{fig:lr4}). 
+ 
 \end{itemize}
 
 \begin{figure}
@@ -118,7 +120,15 @@ We tried different hyper-parameters for learning rate, different network archite
 \caption{\label{fig:lr3}Validation accuracy against the training time (epoch) using a learning rate of 0.001.}
 \end{figure}
 
-We observe that when the learning rate is 0.1, the model overfits the training set while doing badly on the validation set. On the other hand, choosing a smaller learning rate (0.01) leads to a better performance on both training and validation sets i.e. not overfitting the training set while doing better on the validation set. 
+\begin{figure}
+	\centering
+	\includegraphics[width=0.7\textwidth]{lr4.png}
+	\caption{\label{fig:lr4}Validation accuracy against the training time (epoch) using a learning rate of 0.7.}
+\end{figure}
+
+We observe that when the learning rate is low, training is more reliable, however, it takes much more time to converge. On the other hand, if the learning rate is high, then training may not converge and we observe unstable learning curve (since the weight changes is big and overshoot the local min).   
+
+%We observe that when the learning rate is 0.1, the model overfits the training set while doing badly on the validation set. On the other hand, choosing a smaller learning rate (0.01) leads to a better performance on both training and validation sets i.e. not overfitting the training set while doing better on the validation set. 
 
 %\subsubsection{Number of epochs}
 %We keep the same settings and we only change the number of epochs.
@@ -150,11 +160,11 @@ We observe that when the learning rate is 0.1, the model overfits the training s
 
 \begin{itemize}
 
-\item number of mini-batches of 64: validation accuracy = 97.2\% (See Figure \ref{fig:hyper}).
+\item number of mini-batches of 64: validation accuracy = 97.3\% (See Figure \ref{fig:hyper}).
 
 \item number of mini-batches of 8: validation accuracy = 97.4\% (See Figure \ref{fig:batch2}).
 
-\item number of mini-batches of 512: validation accuracy = 93.4\% (See Figure \ref{fig:batch3}).  
+\item number of mini-batches of 512: validation accuracy = 93.1\% (See Figure \ref{fig:batch3}).  
   
 \end{itemize}
 We observe that the model performs better when the batch size is large.
