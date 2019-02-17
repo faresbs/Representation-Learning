@@ -28,27 +28,27 @@ class Classifier(nn.Module):
         super(Classifier, self).__init__()
         self.conv = nn.Sequential(
             # Layer 1
-            nn.Conv2d(in_channels=1, out_channels=12, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(in_channels=1, out_channels=36, kernel_size=(3, 3), padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2),
 
             # Layer 2
-            nn.Conv2d(in_channels=12, out_channels=24, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(in_channels=36, out_channels=72, kernel_size=(3, 3), padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2),
 
             # Layer 3
-            nn.Conv2d(in_channels=24, out_channels=48, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(in_channels=72, out_channels=144, kernel_size=(3, 3), padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2),
 
             # Layer 4
-            nn.Conv2d(in_channels=48, out_channels=96, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(in_channels=144, out_channels=288, kernel_size=(3, 3), padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2)
         )
         # Logistic Regression
-        self.clf = nn.Linear(96, 10)
+        self.clf = nn.Linear(288, 10)
 
     def forward(self, x):
         return self.clf(self.conv(x).squeeze())
