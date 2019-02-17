@@ -20,7 +20,7 @@ python mlp.py
 ### Problem 2: CNN
 For this part of the assignment we will train a convolutional network on MNIST using Pytorch.
 
-You can find the code for the second problem in the python script(cnn.py) under the folder problem 2.
+You can find the code for the second problem in the python script under the folder problem 2.
 
 ```
 python cnn.py
