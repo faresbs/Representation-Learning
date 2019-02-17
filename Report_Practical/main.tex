@@ -259,7 +259,7 @@ For similar number of parameters the CNN here performs better than the MLP in pr
 \label{sec:problem3}
 
 \subsection{Architecture of the model}
-The model's architecture that we have used is inspired from VGG model, which has the following components (see Figure \ref{fig:vgg}) :
+The model's architecture that we have used is inspired from VGG model with 16 layers, which has the following components (see Figure \ref{fig:vgg}) :
 
 \begin{itemize}
 \setlength\itemsep{0em}
@@ -285,7 +285,7 @@ Our experimentation has shown that a model with more layers performs better than
 Figures \ref{fig:vggloss} and \ref{fig:vggacc} show respectively the training and validation loss and accuracy per epoch.
 %
 %
-Before starting training the model, we have split the input images randomly to training and validation sets with a ratio of $80\%-20\%$ respectively. (see the code on appendix).
+Before starting the training phase, we have split the input images randomly to training and validation sets with a ratio of $80\%-20\%$ respectively.
 %
 We have also used data augmentation strategy to improve the variance of the model. The transformation used were:
 \begin{itemize}
@@ -299,11 +299,11 @@ We have also used data augmentation strategy to improve the variance of the mode
 
 \end{itemize}
 %
-The learning curves above show that the model reaches its optimal value around epoch 150. After that point, the model starts overfitting as the loss on validation set starts growing.
+The learning curves above show that the model reaches its optimal value around epoch 250. After that point, the model starts slightly overfitting as the loss on validation set starts growing.
 %
-We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 150 epochs without overfitting.
+We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 250 epochs without overfitting. Additionnaly, if we have used a K-Fold crossvalidation we could have a better result as the model will be trained on all images given as input.
 %
-Notice that the accuracy on the test set is better than the accuracy on the validation set, which is a proof that the model generalize well, and the data augmentation strategy did well to improve the model's performance.
+The accuracy on the public leaderboard was around $95\%$, which is nearly the same on validation set. However, the accuracy was a little lower on the private leaderboard $93\%$. This result shows that the model had a good training and has not overfitt on training data. Moreover, the data augmentation was a crucial action to improve the model's performance.
 
 \begin{figure}[h!]
 	\centering
@@ -343,15 +343,15 @@ The Table~\ref{table:1} shows the performance of the model with different number
 		6 & 0.3109 & 0.8574 & 2,736,066\\ 
 		10 & 0.2713 & 0.8841 & 5,147,458\\ 
 		13 & 0.2068 & 0.9078 & 17,076,546\\ 
-		16 & 0.9445 & ? & 23,111,490\\
-		19 & 0.9304 & 0.1922 & 39,896,898\\  [1ex] 
+		16 & 0.9445 & 0.1501 & 39,896,898\\
+		19 & 0.9304 & 0.1922 & 45,206,594\\  [1ex] 
 		\hline
 	\end{tabular}
 	\caption{Number of layers tuning}
 	\label{table:1}
 \end{table}
 %
-We notice that a model has a better performance when it has more hidden layers. This is normal because more layers means bigger capacity for the model. But this is not leanier, that is a deeper model is more likely to overfit if there is no regularization. That is what we have noticed with VGG with 19 layers.
+We notice that a model has generally a better performance when it has more hidden layers. This is normal because more layers mean bigger capacity and then better result. However, this is not always true, that is a deeper model is more likely to overfit especially when there is no regularization that controls it. In fact, the VGG-19 has overfitted the data in comparison with VGG-16, given the same amount of training data.
 %
 The next Table~\ref{table:2} gives a comparison of the model's performance using different kernel sizes. This hyperparameter influence drastically the architecture of the model, that is a bigger kernel shorten the depth of the model and it could not be deeper unless we add 0 padding. We notice that in general a smaller kernel size gives a better result!
 
