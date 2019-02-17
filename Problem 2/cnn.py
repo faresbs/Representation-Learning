@@ -63,8 +63,8 @@ print('total number of parameters in the network = ' + str(total_parameters))
 if cuda_available:
     model = model.cuda()
 
-# optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
+
+optimizer = torch.optim.SGD(model.parameters(), lr = 0.01, momentum=0.0)
 criterion = nn.CrossEntropyLoss()
 
 print("Training...")
