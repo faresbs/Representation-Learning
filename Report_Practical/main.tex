@@ -313,8 +313,6 @@ The learning curves above show that the model reaches its optimal value around e
 %
 We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 250 epochs without overfitting. Additionnaly, if we have used a K-Fold crossvalidation we could have a better result as the model will be trained on all images given as input.
 %
-The accuracy on the public leaderboard was around $95\%$, which is nearly the same on validation set. However, the accuracy was a little lower on the private leaderboard $93\%$. This result shows that the model had a good training and has not overfitt on training data. Moreover, the data augmentation was a crucial action to improve the model's performance.
-
 \begin{figure}[h!]
 	\centering
 	\includegraphics[scale=.6]{VGGLoss_of2.png}
@@ -427,7 +425,7 @@ According to our hyperparameter search, we set the final model as follows:
 \item[-]Number of epochs: 300
 \end{itemize}
 %
-This model give an accuracy of : $95\%$ on validation set and $94\%$ on the public leaderboard (see Figure \ref{fig:kaggle}). The model was trained for 200 epochs but get its best parameters around 150 epochs.
+The accuracy on the public leaderboard was around $94\%$ (see Figure \ref{fig:kaggle}), which is nearly the same on validation set $95\%$. However, the accuracy, on the private leaderboard, was a little lower  $93\%$ (see Figure \ref{fig:kagpriv}). This result shows that the model had a good training and has not overfit on training set. Moreover, the data augmentation was a crucial action to improve the model's performance.
 %
 As we haven't used any regularization strategies, on the training phase, we have used the early stopping strategy, that is taking the best model's parameters before it starts overfitting.
 
@@ -436,6 +434,13 @@ As we haven't used any regularization strategies, on the training phase, we have
 	\includegraphics[scale=.4]{kaggle.png}
 	\caption{Rank at the public leaderboard}
 	\label{fig:kaggle}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[scale=.4]{kagglepriv.png}
+	\caption{Rank at the private leaderboard}
+	\label{fig:kagpriv}
 \end{figure}
 
 \subsubsection{Feature map visualization}
