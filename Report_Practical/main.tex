@@ -167,7 +167,7 @@ We observe that when the learning rate is low, training is more reliable, howeve
 \item number of mini-batches of 512: validation accuracy = 93.1\% (See Figure \ref{fig:batch3}).  
   
 \end{itemize}
-We observe that the model performs better when the batch size is large.
+We observe that the model performs better when the batch size is small.But it takes much more time to converge.
 \begin{figure}
 \centering
 \includegraphics[width=0.7\textwidth]{batch2.png}
@@ -185,11 +185,11 @@ We observe that the model performs better when the batch size is large.
 
 \begin{itemize}
 
-\item Relu activation function: validation accuracy = 97.2\% (See Figure \ref{fig:hyper}).
+\item Relu activation function: validation accuracy = 97.3\% (See Figure \ref{fig:hyper}).
 
-\item Sigmoid activation function: validation accuracy = 92.2\% (See Figure \ref{fig:sigmoid}).
+\item Sigmoid activation function: validation accuracy = 92.8\% (See Figure \ref{fig:sigmoid}).
 
-\item tanh activation function: validation accuracy = 93.9\% (See Figure \ref{fig:tanh}).  
+\item tanh activation function: validation accuracy = 95.8\% (See Figure \ref{fig:tanh}).  
   
 \end{itemize}
 Obviously Relu and tanh perform better in terms of accuracy. 
@@ -207,7 +207,7 @@ Obviously Relu and tanh perform better in terms of accuracy.
 \begin{figure}
 	\centering
 	\includegraphics[width=0.7\textwidth]{arch2.png}
-	\caption{\label{fig:arch2}Validation/training accuracy against the training time (epoch) using a network architecture with h1=32 and h2=64}
+	\caption{\label{fig:arch2}Validation/training accuracy against the training time (epoch) using a network architecture with h1=256 and h2=512}
 \end{figure}
 \begin{figure}
 	\centering
@@ -220,13 +220,15 @@ Obviously Relu and tanh perform better in terms of accuracy.
 
 \begin{itemize}
 
-\item Network with 2 hidden layers h1 = 64, h2 = 32: validation accuracy = 97.2\% (See Figure \ref{fig:hyper}).
+\item Network with 2 hidden layers h1 = 512, h2 = 256: validation accuracy = 97.3\% (See Figure \ref{fig:hyper}).
 
-\item Network with 2 hidden layers h1 = 32, h2 = 64: validation accuracy = 96.85\% (See Figure \ref{fig:arch2}).
+\item Network with 2 hidden layers h1 = 256, h2 = 512: validation accuracy = 97.1\% (See Figure \ref{fig:arch2}).
 
-\item Network with 2 hidden layers h1 = 10, h2 = 5: validation accuracy = 91.77\% (See Figure \ref{fig:arch3}).
+\item Network with 2 hidden layers h1 = 10, h2 = 5: validation accuracy = 91.4\% (See Figure \ref{fig:arch3}).
 
 \end{itemize}
+
+Having a more complex network results in better performs. But it takes more time to train.
 
 
 \subsection{Gradient validation using finite difference approximation}

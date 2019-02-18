@@ -497,7 +497,7 @@ if __name__ == '__main__':
 	nn = NN(hidden_dims=(512, 256), n_hidden=2, datapath='./datasets/mnist.pkl.npy')
 	print("train/val/test: "+str(nn.dim_data))
 
-	parameters = nn.train(30,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=8, act_function="relu")
+	parameters = nn.train(30,'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=64, act_function="relu")
 
 	# parameters = nn.train(100, 'glorot', 0.01, nn.D_train[0], nn.D_train[1], mini_batch=105)
 	# print('-----training')
