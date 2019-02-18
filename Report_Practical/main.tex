@@ -274,19 +274,19 @@ For similar number of parameters the CNN here performs better than the MLP in pr
 The model's architecture that we have used is inspired from VGG model with 16 layers, which has the following components (see Figure \ref{fig:vgg}) :
 
 \begin{itemize}
-\setlength\itemsep{0em}
+	\setlength\itemsep{0em}
 	\item[-] 13 convolutions layers, with 0 padding at each layer, and a kernel of size (3,3) and stride of 1.
-	\item[-] The number of filters goes from 64 to 640 accross the layers
+	\item[-] The number of filters goes from 64 to 640 across the layers
 	\item[-] 5 max pooling with kernel of size (2,2) and stride of 2.
 	\item[-] 2 fully connected layers with 4096 hidden units
 	\item[-] 1 output layer
 \end{itemize}
 
 \begin{figure}[h!]
-\centering
-\includegraphics[scale=0.3]{VGG_arch.png}
-\caption{Model architecture}
-\label{fig:vgg}
+	\centering
+	\includegraphics[scale=0.3]{VGG_arch.png}
+	\caption{Model architecture}
+	\label{fig:vgg}
 \end{figure}
 
 The total parameters of this model is $45,238,466$, which is a medium size in comparison with the most recent deep learning models.
@@ -301,19 +301,19 @@ Before starting the training phase, we have split the input images randomly to t
 %
 We have also used data augmentation strategy to improve the variance of the model. The transformation used were:
 \begin{itemize}
-\setlength\itemsep{0em}
-\item[-]rescale by up to 1/255
-\item[-]width shift by up to 0.2
-\item[-]height shift by up to 0.2
-\item[-]zoom by up to 0.5
-\item[-]shear by up to 0.2,
-\item[-]horizontal flip
-
+	\setlength\itemsep{0em}
+	\item[-]rescale by up to 1/255
+	\item[-]width shift by up to 0.2
+	\item[-]height shift by up to 0.2
+	\item[-]zoom by up to 0.5
+	\item[-]shear by up to 0.2,
+	\item[-]horizontal flip
+	
 \end{itemize}
 %
-The learning curves above show that the model reaches its optimal value around epoch 250. After that point, the model starts slightly overfitting as the loss on validation set starts growing.
+The learning curves, in Figures~\ref{fig:vggloss} and ~\ref{fig:vggacc}, show that the model reaches its optimal value around epoch 250. After that point, the model starts slightly overfitting as the loss on validation set starts growing.
 %
-We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 250 epochs without overfitting. Additionnaly, if we have used a K-Fold crossvalidation we could have a better result as the model will be trained on all images given as input.
+We believe that a regularization strategy as \textit{Weight decay} could potentially get a better result, as it will push the model to learn beyond 250 epochs without overfitting. Additionally, if we have used a K-Fold cross validation we could have a better result as the model will be trained on all images given as input.
 %
 \begin{figure}[h!]
 	\centering
@@ -331,13 +331,13 @@ We believe that a regularization strategy as \textit{Weight decay} could potenti
 
 \newpage
 \subsection{Hyperparameters settings}
-In order to get a better performance, we have to choose the most relevent values for the hyperparameters during validation phase. That is, computing the accuracy and the loss of the model on validation set for multiple values of these hyperparameters. The hyperparameters that we have decided to tune are:
+In order to get a better performance, we have to choose the most relevant values for the hyperparameters during validation phase. That is, computing the accuracy and the loss of the model on validation set for multiple values of these hyperparameters. The hyperparameters that we have decided to tune are:
 \begin{itemize}
-\setlength\itemsep{0em}
-\item[-]Number of hidden layers
-\item[-]Size of the kernels
-\item[-]Learning rate
-\item[-]Batch size
+	\setlength\itemsep{0em}
+	\item[-]Number of hidden layers
+	\item[-]Size of the kernels
+	\item[-]Learning rate
+	\item[-]Batch size
 \end{itemize}
 %
 We will give for each of these hyperparameters the accuracy and the loss of the model while keeping the others fixed.
@@ -381,7 +381,7 @@ The next Table~\ref{table:2} gives a comparison of the model's performance using
 	\label{table:2}
 \end{table}
 
-Table~\ref{table:3} gives a comparison of the model's performance as a function of the batch size. We notice that a small batch size push the model to make more iterations, and thus the SGD has a bigger chance to converge with enough epochs. Wheras, with a larger batch size, the SGD makes less iteration and may not get its minima within the same number of epochs.
+Table~\ref{table:3} gives a comparison of the model's performance as a function of the batch size. We notice that a small batch size push the model to make more iterations, and thus the SGD has a bigger chance to converge with enough epochs. Whereas, with a larger batch size, the SGD makes less iteration and may not get its minima within the same number of epochs.
 %
 \begin{table}[h!]
 	\centering
@@ -419,12 +419,12 @@ And finally, Table~\ref{table:4} gives a comparison of the model's performance a
 
 According to our hyperparameter search, we set the final model as follows:
 \begin{itemize}
-\setlength\itemsep{0em}
-\item[-]Number of hidden layers: 13 convolutions and 3 FC
-\item[-]Size of the kernels: (3,3)
-\item[-]Learning rate: 0.015
-\item[-]Batch size: 16
-\item[-]Number of epochs: 300
+	\setlength\itemsep{0em}
+	\item[-]Number of hidden layers: 13 convolutions and 3 FC
+	\item[-]Size of the kernels: (3,3)
+	\item[-]Learning rate: 0.015
+	\item[-]Batch size: 16
+	\item[-]Number of epochs: 300
 \end{itemize}
 %
 The accuracy on the public leaderboard was around $94\%$ (see Figure \ref{fig:kaggle}), which is nearly the same on validation set $95\%$. However, the accuracy, on the private leaderboard, was a little lower  $93\%$ (see Figure \ref{fig:kagpriv}). This result shows that the model had a good training and has not overfit on training set. Moreover, the data augmentation was a crucial action to improve the model's performance.
@@ -446,7 +446,7 @@ As we haven't used any regularization strategies, on the training phase, we have
 \end{figure}
 
 \subsubsection{Feature map visualization}
-The feature map visualization gives in some sens an intuition on how a CNN learns from images. Across the layers, feature map go from high level pattern to low level as we go deeper in the model. The following image shows for each layers the feature map after each activation layer. The code used to display these images was taken from the blog \cite{featuremap}.
+The feature map visualization gives in some sense an intuition on how a CNN learns from images. Across the layers, feature map go from high level pattern to low level as we go deeper in the model. The following image shows for each layers the feature map after each activation layer. The code used to display these images was taken from the blog \cite{featuremap}.
 
 \begin{figure}[h!]
 	\centering
@@ -472,7 +472,7 @@ The feature map visualization gives in some sens an intuition on how a CNN learn
 \subsubsection{Performance of the model}
 The model gets $94\%$ accuracy on test set (public leaderboard) which is not bad given that we haven't used any fancy techniques like regularization. It is interesting to investigate which images the model has misclassified, in order to identify ways to improve the model's performance. 
 
-To understand why the model has done such misclassification, we will display a sample of two kind of mislcassifications:
+To understand why the model has done such misclassification, we will display a sample of two kind of misclassifications:
 
 \begin{itemize}
 	\item[(a)] The model clearly misclassified images:\\
@@ -482,24 +482,24 @@ To understand why the model has done such misclassification, we will display a s
 	\begin{figure}[h!]
 		\centering
 		\includegraphics[scale=.36]{100misclass.png}
-		\caption{100\% miclassification}
+		\caption{Misclassification with high certainty}
 		\label{fig:100misclass}
 	\end{figure}
-%
-\begin{figure}[h!]
-	\centering
-	\includegraphics[scale=.36]{50misclass.png}
-	\caption{Around 50\% miclassification}
-	\label{fig:50misclass}
-\end{figure}
-%
-\item[(b)] The model predicts, around $50\%$ on both classes:\\
-In the Figure \ref{fig:50misclass} we can see some images that the model have bearly misclassified them. We notice the same pattern as the item (a) where the animals took different position in the picture with other objects or half captured.
-%
+	%
+	\begin{figure}[h!]
+		\centering
+		\includegraphics[scale=.36]{50misclass.png}
+		\caption{Misclassification with low certainty}
+		\label{fig:50misclass}
+	\end{figure}
+	%
+	\item[(b)] The model predicts, around $50\%$ on both classes:\\
+	In the Figure \ref{fig:50misclass} we can see some images that the model have barely misclassified them. We notice the same pattern as the item (a) where the animals took different position in the picture with other objects or half captured.
+	%
 \end{itemize}
 %
-As a conclusion, the classifier that we have build was able to classify correctly $94\%$ of images which is a good result without even using any regularization or fancy optimization algorithm. However, the model couldn't classify some images because of it's complexity, like having other objects around or taking just a part of the animal. In that case, we may suggest to add more data by sampling over those kind of misclassified images and give train the model on them, or use the K-Fold cross validation in order to train the model on all kind of images.
- 
+As a conclusion, the classifier that we have built was able to classify correctly $93\%$ of images which is a good result without even using any regularization or fancy optimization algorithm. However, the model couldn't classify some images because of its complexity, like having other objects around or taking just a part of the animal. In that case, we may suggest getting more data sampled from misclassified images using more intelligently data augmentation parameters or use the K-Fold cross validation in order to train the model on all kind of images. If we could use regularization, we could use a model with higher capacity, if the current model was not able to improve its performance using more data. In addition, we can also experiment other architecture like ResNet, or YOLO ~\cite{yolo} to detect object among other objects in the same images to prevent misclassification.
+
  \newpage
 \begin{thebibliography}{9}
 \bibitem{weights} 
@@ -511,5 +511,10 @@ As a conclusion, the classifier that we have build was able to classify correctl
     \bibitem{github} 
   TheMachinists github repository: Representation-Learning
   \\\texttt{https://github.com/faresbs/Representation-Learning.git}
+  \bibitem{yolo} 
+  YOLO (You Only Look Once)
+  \\\texttt{https://pjreddie.com/darknet/yolo/}
+  
+  
 \end{thebibliography}
 \end{document}
