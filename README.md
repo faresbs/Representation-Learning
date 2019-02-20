@@ -30,7 +30,7 @@ python cnn.py
 (https://www.kaggle.com/c/ift6135h19)
 Dogs vs. Cats is an InclassKaggle challenge for image classification. We trained a CNN classifier for this task.
 
-You can find the code for the third problem in the jupyter notebook script (cnn.py) under the folder problem 3.
+You can find the code for the third problem in the jupyter notebook script under the folder problem 3.
 
 
 ## Built With
