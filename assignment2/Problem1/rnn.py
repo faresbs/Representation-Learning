@@ -154,59 +154,61 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 
 #For consistent random values
 torch.manual_seed(0)
-
 class RNN(nn.Module):
-    def __init__(self, n_inputs, n_neurons):
-        super(RNN, self).__init__()
-        
-        #Weights
-        self.Wx = torch.randn(n_inputs, n_neurons)
-        self.Wy = torch.randn(n_neurons, n_neurons)
-        self.Wh = torch.randn(n_neurons, n_neurons)
-        
-        #Bias
-        self.by = torch.zeros(1, n_neurons)
-    	self.bh = torch.zeros(1, n_neurons)
+	def __init__(self, n_inputs, n_class, n_neurons):
+		super(RNN, self).__init__()
+		
+		#Weights
+		self.Wx = torch.randn(n_neurons, n_inputs)
+		self.Wy = torch.randn(n_class, n_neurons)
+		self.Wh = torch.randn(n_neurons, n_neurons)
+		
+		#Bias
+		self.by = torch.zeros(n_class, 1)
+		self.bh = torch.zeros(n_neurons, 1)
 
-    def forward(self, X, h0):
-        self.y = torch.tanh(torch.mm(h0, self.Wy) + self.by)
-        
-        self.h = torch.tanh(torch.mm(X, self.Wx) +
-                            torch.mm(h0, self.Wh) + self.bh)
+	def forward(self, X, h):
 
-        return self.y
+		self.h = torch.tanh(torch.mm(self.Wx, X) +
+							torch.mm(self.Wh, h) + self.bh)
+
+		self.y = torch.nn.Softmax(torch.mm(self.Wy, self.h) + self.by)
+		
+
+		return self.y
 
 
 
 N_INPUT = 3 # number of features in input
 N_NEURONS = 5 # number of units in layer
+N_CLASS = 5 
+N_BATCH = 3
 
-X0_batch = torch.tensor([[0,1,2], [3,4,5], 
-                         [6,7,8], [9,0,1]],
-                        dtype = torch.float) #t=0 => 4 X 3
+X0_batch = torch.randn(N_INPUT, N_BATCH)
 
-model = RNN(N_INPUT, N_NEURONS)
+model = RNN(N_INPUT, N_CLASS, N_NEURONS)
 
-Y0_val = model(X0_batch, 0)
+h = np.zeros((N_NEURONS, N_BATCH))
+h = torch.from_numpy(h).float()
 
-print Y0_val
+Y0_val = model(X0_batch, h)
 
-print '-' * 100
+print (Y0_val)
+
+print ('-' * 100)
+
+sd
 
 rnn = nn.RNNCell(3, 5) # n_input X n_neurons
-
-X_batch = torch.tensor([[0,1,2], [3,4,5], 
-                         [6,7,8], [9,0,1]], dtype = torch.float) # X0 and X1
 
 hx = torch.randn(4, 5) # m X n_neurons
 output = []
 
 # for each time step
-for i in range(2):
-    hx = rnn(X_batch[i], hx)
-    output.append(hx)
+hx = rnn(X0_batch, hx)
+output.append(hx)
 
-print output
+print (output)
 
 
 
