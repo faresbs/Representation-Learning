@@ -84,25 +84,32 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		###Create modules###
 
 		#embeddings layer
-		self.embeddings = nn.Embedding(num_embeddings=5, embedding_dim=20, padding_idx=1)
+		self.embeddings = nn.Embedding(num_embeddings=self.vocab_size, embedding_dim=self.emb_size)
 
 		#recurrent layer
 		self.recurrent = nn.Linear(self.emb_size + self.hidden_size, self.hidden_size, bias=True)
+
+		#Tanh after every rec layer
+		self.tanh = nn.Tanh()
 
 		#TO CHECK: how many fc after recurrent layer?
 		#FC
 		self.fc = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
 
 		#dropout layer
-		self.dropout = nn.Dropout(dp_keep_prob)
+		self.drop = nn.Dropout(dp_keep_prob)
 
-		#output layer
+		#Output layer (logits)
 		self.out = nn.Linear(self.hidden_size, self.vocab_size, bias=True)
+
+		#Softmax to calculate probabilities after every output layer
+		self.softmax = nn.Softmax()
 
 		#Create module
 		module = nn.Sequential(self.recurrent, 
-							self.fc,
-							self.dropout,
+							self.tanh,
+							#self.fc,
+							#self.drop,
 							)
 
 		
@@ -110,12 +117,37 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		self.network = clones(module, self.num_layers)
 		
 		#Add out layer in the end
-		self.network.append(self.out)
+		#self.network.append(self.out)
 		
 		#Add embeddings layer at first
-		self.network = nn.ModuleList([self.embeddings, *self.network])
-		print(self.network)
+		#self.network = nn.ModuleList([self.embeddings, *self.network])
+		#print(self.network)
 
+		self.init_weights_uniform()
+		
+		#input = (batch, timesteps)
+		x = torch.Tensor(20, 200).uniform_(1, 10000)
+
+		x = x.type(torch.LongTensor)
+
+		print(x)
+
+		emb = self.embeddings(x)
+
+		emb = emb.view(200, 20, -1)
+
+		print(emb.shape)
+
+
+		for module in self.network:
+			print(".......")
+			
+			emb = emb[0]
+			print(emb.shape)
+			self.recurrent(emb)
+			
+			#module(emb)
+			sd
 	def init_weights_uniform(self):
 		# TODO ========================
 		# Initialize all the weights uniformly in the range [-0.1, 0.1]
@@ -136,7 +168,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 
 		#Wh = (hidden_size, hidden_size)
 		#self.Wh = (-0.1 - 0.1) * torch.rand(self.hidden_size,self.hidden_size) + 0.1
-		self.Wh = torch.Tensor(self.hidden_size,self.hidden_size).uniform_(-0.1, 0.1)
+		self.Wh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-0.1, 0.1)
 
 		#Wy = (vocab_size, hidden_size)	
 		#self.Wy = (-0.1 - 0.1) * torch.rand(self.vocab_size,self.hidden_size) + 0.1
@@ -146,10 +178,12 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		#print(self.Wx.shape)
 		#print(self.Wh.shape)
 		self.combined = torch.cat((self.Wh, self.Wx), 1)
-		#print(self.Wh.shape)
+		
 
 		#Bias
 		self.by = torch.zeros(self.vocab_size)
+
+		#Bias for the combined 
 		self.bh = torch.zeros(self.hidden_size)
 		#self.bx = torch.zeros(self.hidden_size, 1)
 
@@ -227,9 +261,24 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 						shape: (num_layers, batch_size, hidden_size)
 		"""
 
+		#init weights
+		init_weights_uniform()
+
+		#init hidden state
+		#h0 = init_hidden()
+
+		#Nested for loop
+		for step in range(self.seq_len):
+
+			# Lookup word embeddings in source
+			emb = self.embeddings(inputs)
+			
+			for module in self.network:
+				print(module)
 
 
-		return logits.view(self.seq_len, self.batch_size, self.vocab_size), hidden
+
+		return logits.view(self.seq_len, self.batch_size, self.vocab_size)
 
 	def generate(self, input, hidden, generated_seq_len):
 		# TODO ========================
@@ -260,8 +309,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		return samples
 
 
-rnn = RNN(emb_size=1000, hidden_size=10, seq_len=100, batch_size=32, vocab_size=10000, num_layers=20, dp_keep_prob=0.5)
-rnn.init_weights_uniform()
+rnn = RNN(emb_size=200, hidden_size=200, seq_len=35, batch_size=20, vocab_size=10000, num_layers=2, dp_keep_prob=0.35)
 
 
 """
