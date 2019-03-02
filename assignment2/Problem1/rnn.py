@@ -74,7 +74,8 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		#TO CHECK:
 		#is this what he mean by Initialization of the parameters of the recurrent and fc layers ??
 
-		self.emb_size = emb_size   
+		self.emb_size = emb_size 
+		self.batch_size = batch_size
 		self.hidden_size = hidden_size
 		self.seq_len = seq_len
 		self.vocab_size = vocab_size
@@ -86,68 +87,58 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		#embeddings layer
 		self.embeddings = nn.Embedding(num_embeddings=self.vocab_size, embedding_dim=self.emb_size)
 
-		#recurrent layer
-		self.recurrent = nn.Linear(self.emb_size + self.hidden_size, self.hidden_size, bias=True)
+		#(hidden_size * emb_size + hidden_size) for first layer
+		self.f_layer = nn.Linear(self.emb_size + self.hidden_size, self.hidden_size, bias=True)
 
-		#Tanh after every rec layer
-		self.tanh = nn.Tanh()
-
-		#TO CHECK: how many fc after recurrent layer?
-		#FC
-		self.fc = nn.Linear(self.hidden_size, self.hidden_size, bias=True)
-
-		#dropout layer
-		self.drop = nn.Dropout(dp_keep_prob)
+		#(hidden_size * hidden_size + hidden_size) for hidden layers
+		self.rec_layer = nn.Linear(self.hidden_size + self.hidden_size, self.hidden_size, bias=True)
 
 		#Output layer (logits)
-		self.out = nn.Linear(self.hidden_size, self.vocab_size, bias=True)
+		self.logit = nn.Linear(self.hidden_size, self.vocab_size, bias=True)
 
 		#Softmax to calculate probabilities after every output layer
-		self.softmax = nn.Softmax()
+		#self.softmax = nn.Softmax()
+
+		#TO CHECK: fc after each recurrent layer?
 
 		#Create module
-		module = nn.Sequential(self.recurrent, 
-							self.tanh,
-							#self.fc,
-							#self.drop,
+		
+		module = nn.Sequential(
+							#(hidden_size * hidden_size + hidden_size) for hidden layers
+							self.rec_layer, 
+							nn.Tanh(),
+							nn.Dropout(dp_keep_prob),
+							nn.Linear(self.hidden_size, self.hidden_size, bias=True),
+							nn.Tanh(),
 							)
 
 		
 		#Create k hidden layers for 1 time step
 		self.network = clones(module, self.num_layers)
-		
+		"""
+		#Create the recurrent layers
+		rec_module = nn.Sequential(self.rec_layer, nn.Tanh())
+		self.network = clones(rec_module, self.num_layers)
+
+		#Add fc layers
+		fc_module = nn.Sequential(
+							nn.Dropout(dp_keep_prob),
+							nn.Linear(self.hidden_size, self.hidden_size, bias=True),
+							nn.Tanh(),
+							)
+
+		fc_modules = clones(fc_module, self.num_layers)
+
+		self.network.append(fc_modules)
+		"""
 		#Add out layer in the end
 		#self.network.append(self.out)
 		
-		#Add embeddings layer at first
-		#self.network = nn.ModuleList([self.embeddings, *self.network])
+		#Add input recurrent layer at first
+		#self.network = nn.ModuleList([self.i_rec, *self.network])
 		#print(self.network)
-
-		self.init_weights_uniform()
-		
-		#input = (batch, timesteps)
-		x = torch.Tensor(20, 200).uniform_(1, 10000)
-
-		x = x.type(torch.LongTensor)
-
-		print(x)
-
-		emb = self.embeddings(x)
-
-		emb = emb.view(200, 20, -1)
-
-		print(emb.shape)
-
-
-		for module in self.network:
-			print(".......")
 			
-			emb = emb[0]
-			print(emb.shape)
-			self.recurrent(emb)
-			
-			#module(emb)
-			sd
+
 	def init_weights_uniform(self):
 		# TODO ========================
 		# Initialize all the weights uniformly in the range [-0.1, 0.1]
@@ -158,10 +149,13 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		#Wx = (hidden_size, emb_size) if k = 0 and (hidden_size,hidden_size) otherwise ?
 		#DO we only take h0 in the other layers?
 		
-		#Wx = (hidden_size, emb_size)
-		self.Wx = (-0.1 - 0.1) * torch.rand(self.hidden_size, self.emb_size) + 0.1
-		#x = torch.Tensor(self.hidden_size, self.emb_size).uniform_(-0.1, 0.1)
+		#Wx = (hidden_size, emb_size) for the first layer
+		#self.Wx = (-0.1 - 0.1) * torch.rand(self.hidden_size, self.emb_size) + 0.1
+		self.Wx = torch.Tensor(self.hidden_size, self.emb_size).uniform_(-0.1, 0.1)
 		
+		#Whh = (hidden_size, hidden_size) for the other layers
+		self.Whh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-0.1, 0.1)
+
 		## NOTE: linear will already have randomly init weights then if you init another time with init.uniform you get different random values
 		#linear_X = nn.Linear(self.emb_size, self.hidden_size, bias=False)
 		#torch.nn.init.uniform_(linear_X.weight, -0.1, 0.1)
@@ -174,16 +168,14 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		#self.Wy = (-0.1 - 0.1) * torch.rand(self.vocab_size,self.hidden_size) + 0.1
 		self.Wy = torch.Tensor(self.vocab_size,self.hidden_size).uniform_(-0.1, 0.1)
 
-		#Combine the two weights Wx and Wh in combined = [Wh, Wx]
-		#print(self.Wx.shape)
-		#print(self.Wh.shape)
-		self.combined = torch.cat((self.Wh, self.Wx), 1)
-		
+		#Combine the two weights Wx and Wh in combined = [Wh, Wx] in the case of the first layer
+		self.i_combined = torch.cat((self.Wh, self.Wx), 1)
+
+		#Combine the two weights Whh and Wh in combined = [Wh, Whh] in the case of the other layers
+		self.h_combined = torch.cat((self.Wh, self.Whh), 1)
 
 		#Bias
 		self.by = torch.zeros(self.vocab_size)
-
-		#Bias for the combined 
 		self.bh = torch.zeros(self.hidden_size)
 		#self.bx = torch.zeros(self.hidden_size, 1)
 
@@ -198,11 +190,19 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		#Fill the linear layers with init weights and biases
 		#To avoid problems of grads
 		with torch.no_grad():
-			self.recurrent.weight.copy_(self.combined)
-			self.recurrent.bias.copy_(self.bh)
 
-			self.out.weight.copy_(self.Wy)
-			self.out.bias.copy_(self.by)
+			#print(self.combined.shape)
+			#print(self.recurrent.weight.shape)
+
+			self.f_layer.weight.copy_(self.i_combined)
+			self.f_layer.bias.copy_(self.bh)
+
+			#loop to copy all weights?
+			self.rec_layer.weight.copy_(self.h_combined)
+			self.rec_layer.bias.copy_(self.bh)
+
+			self.logit.weight.copy_(self.Wy)
+			self.logit.bias.copy_(self.by)
 
 
 		#TO CHECK: sequential vs modules
@@ -261,24 +261,63 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 						shape: (num_layers, batch_size, hidden_size)
 		"""
 
-		#init weights
-		init_weights_uniform()
+		#Init weights and biases
+		self.init_weights_uniform()
 
-		#init hidden state
-		#h0 = init_hidden()
+		#print(self.network)
 
-		#Nested for loop
-		for step in range(self.seq_len):
+		#TO CHECK: embedding all X (seqlen, batch) vs embeddings X each time step (batch) is the same? 
 
-			# Lookup word embeddings in source
-			emb = self.embeddings(inputs)
-			
-			for module in self.network:
-				print(module)
+		#Save logits
+		logits = torch.zeros(self.seq_len, self.batch_size, self.vocab_size)
+
+		#TO DO: take the hidden state for previous step
 
 
+		#Loop over the timesteps
+		for step in range(0, self.seq_len):
+
+			##Go through the first layer first
+
+			#take embeddings of current timestep
+			#(batch_size)
+			inp = inputs[step]
+
+			#Take initial hidden state for first layer
+			h = hidden[0]
+
+			# Lookup word embeddings
+			#(batch_size, enb_size)
+			emb = self.embeddings(inp)
+
+			#Combine embeddings and last hidden state
+			combined = torch.cat((h, emb), 1)
+
+			out = self.network[0](combined)
+
+			#save final hidden state for next layer
+			hidden[0] = out
+
+			#Loop over the rest of the layers
+			for layer in range(1, self.num_layers):
+				
+				#Take the hidden state of the current layer
+				h = hidden[layer]
+
+				#Combine hidden state of l-th layer and current hidden state
+				combined = torch.cat((h, out), 1)
+
+				out = self.network[layer](combined)
+
+				#save final hidden state for next layer
+				hidden[layer] = out
+
+
+			#last layer to calculate the logits
+			logits[step] = self.logit(out)
 
 		return logits.view(self.seq_len, self.batch_size, self.vocab_size)
+
 
 	def generate(self, input, hidden, generated_seq_len):
 		# TODO ========================
@@ -311,6 +350,13 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 
 rnn = RNN(emb_size=200, hidden_size=200, seq_len=35, batch_size=20, vocab_size=10000, num_layers=2, dp_keep_prob=0.35)
 
+#input = (batch, timesteps)
+x = torch.Tensor(35, 20).uniform_(1, 10000)
+x = x.type(torch.LongTensor)
+
+h0 = rnn.init_hidden()
+
+rnn.forward(x, h0)
 
 """
 class RNN(nn.Module):
