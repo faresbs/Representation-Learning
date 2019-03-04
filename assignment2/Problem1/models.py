@@ -11,8 +11,6 @@ import math, copy, time
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
 
-#For consistent random values
-torch.manual_seed(0)
 
 # NOTE ==============================================
 #
@@ -197,11 +195,11 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
                         shape: (num_layers, batch_size, hidden_size)
         """
 
-        #Init weights and biases
-        self.init_weights_uniform()
+        #init tensor for logits with the same dtype as hidden (tensor cuda or longtensor)
+        if torch.cuda.is_available():
+            device = torch.device("cuda")
 
-        #Save logits
-        logits = torch.zeros(self.seq_len, self.batch_size, self.vocab_size)
+        logits = torch.zeros([self.seq_len, self.batch_size, self.vocab_size], device=device)
 
         #Loop over the timesteps
         for step in range(0, self.seq_len):
@@ -230,8 +228,8 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
             #Loop over the rest of the layers
             for layer in range(self.num_layers-1):
                 
-                #Take the hidden state of the current layer
-                h = hidden[layer]
+                #Take the initial hidden state of the current layer
+                h = hidden[layer+1]
 
                 #Combine hidden state of l-th layer and current hidden state
                 combined = torch.cat((h, out), 1)
@@ -242,7 +240,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
                 hidden[layer] = out
 
             #last layer to calculate the logits
-            #(seq_len, batch_size, vocab_size)
+            #(batch_size, vocab_size)
             logits[step] = self.logit(out)
             
         return logits.view(self.seq_len, self.batch_size, self.vocab_size), hidden
