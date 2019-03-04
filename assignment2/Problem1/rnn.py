@@ -91,10 +91,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		self.f_layer = nn.Linear(self.emb_size + self.hidden_size, self.hidden_size, bias=True)
 
 		#(hidden_size * hidden_size + hidden_size) for hidden layers
-		self.rec_layer = nn.Linear(self.hidden_size + self.hidden_size, self.hidden_size, bias=True)
-
-		#Output layer (logits)
-		self.logit = nn.Linear(self.hidden_size, self.vocab_size, bias=True)
+		#rec_layer = nn.Linear(self.hidden_size + self.hidden_size, self.hidden_size, bias=True)
 
 		#Softmax to calculate probabilities after every output layer
 		#self.softmax = nn.Softmax()
@@ -102,10 +99,9 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		#TO CHECK: fc after each recurrent layer?
 
 		#Create module
-		
 		module = nn.Sequential(
 							#(hidden_size * hidden_size + hidden_size) for hidden layers
-							self.rec_layer, 
+							nn.Linear(self.hidden_size + self.hidden_size, self.hidden_size, bias=True), 
 							nn.Tanh(),
 							nn.Dropout(dp_keep_prob),
 							nn.Linear(self.hidden_size, self.hidden_size, bias=True),
@@ -114,7 +110,12 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 
 		
 		#Create k hidden layers for 1 time step
-		self.network = clones(module, self.num_layers)
+		self.network = clones(module, self.num_layers-1)
+
+		#Output layer (logits)
+		self.logit = nn.Linear(self.hidden_size, self.vocab_size, bias=True)
+
+
 		"""
 		#Create the recurrent layers
 		rec_module = nn.Sequential(self.rec_layer, nn.Tanh())
@@ -198,8 +199,12 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 			self.f_layer.bias.copy_(self.bh)
 
 			#loop to copy all weights?
-			self.rec_layer.weight.copy_(self.h_combined)
-			self.rec_layer.bias.copy_(self.bh)
+			#If we have many layers 
+			if(self.num_layers > 1):
+
+				for layer in self.network:
+					layer[0].weight.copy_(self.h_combined)
+					layer[0].bias.copy_(self.bh)
 
 			self.logit.weight.copy_(self.Wy)
 			self.logit.bias.copy_(self.by)
@@ -293,13 +298,13 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 			#Combine embeddings and last hidden state
 			combined = torch.cat((h, emb), 1)
 
-			out = self.network[0](combined)
+			out = self.f_layer(combined)
 
 			#save final hidden state for next layer
 			hidden[0] = out
 
 			#Loop over the rest of the layers
-			for layer in range(1, self.num_layers):
+			for layer in range(self.num_layers-1):
 				
 				#Take the hidden state of the current layer
 				h = hidden[layer]
@@ -314,8 +319,9 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 
 
 			#last layer to calculate the logits
+			#(seq_len, batch_size, vocab_size)
 			logits[step] = self.logit(out)
-
+		#print(logits.shape)
 		return logits.view(self.seq_len, self.batch_size, self.vocab_size)
 
 
@@ -348,7 +354,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		return samples
 
 
-rnn = RNN(emb_size=200, hidden_size=200, seq_len=35, batch_size=20, vocab_size=10000, num_layers=2, dp_keep_prob=0.35)
+rnn = RNN(emb_size=200, hidden_size=100, seq_len=35, batch_size=20, vocab_size=10000, num_layers=2, dp_keep_prob=0.35)
 
 #input = (batch, timesteps)
 x = torch.Tensor(35, 20).uniform_(1, 10000)
