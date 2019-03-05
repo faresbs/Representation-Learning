@@ -266,10 +266,6 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 						shape: (num_layers, batch_size, hidden_size)
 		"""
 
-		#Init weights and biases
-		self.init_weights_uniform()
-
-		#print(self.network)
 
 		#TO CHECK: embedding all X (seqlen, batch) vs embeddings X each time step (batch) is the same? 
 

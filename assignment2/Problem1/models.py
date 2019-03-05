@@ -101,7 +101,11 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 
         #Output layer (logits)
         self.logit = nn.Linear(self.hidden_size, self.vocab_size, bias=True)
-            
+
+        #Uniform init of weights and biases of model
+        self.init_weights_uniform()
+
+
 
     def init_weights_uniform(self):
         # TODO ========================
@@ -109,44 +113,44 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         # and all the biases to 0 (in place)
 
         #Wx = (hidden_size, emb_size) for the first layer
-        self.Wx = torch.Tensor(self.hidden_size, self.emb_size).uniform_(-0.1, 0.1)
+        Wx = torch.Tensor(self.hidden_size, self.emb_size).uniform_(-0.1, 0.1)
         
         #Whh = (hidden_size, hidden_size) for the other layers
-        self.Whh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-0.1, 0.1)
+        Whh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-0.1, 0.1)
 
         #Wh = (hidden_size, hidden_size)
-        self.Wh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-0.1, 0.1)
+        Wh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-0.1, 0.1)
 
         #Wy = (vocab_size, hidden_size) 
-        self.Wy = torch.Tensor(self.vocab_size,self.hidden_size).uniform_(-0.1, 0.1)
+        Wy = torch.Tensor(self.vocab_size,self.hidden_size).uniform_(-0.1, 0.1)
 
         #Combine the two weights Wx and Wh in combined = [Wh, Wx] in the case of the first layer
-        self.i_combined = torch.cat((self.Wh, self.Wx), 1)
+        i_combined = torch.cat((Wh, Wx), 1)
 
         #Combine the two weights Whh and Wh in combined = [Wh, Whh] in the case of the other layers
-        self.h_combined = torch.cat((self.Wh, self.Whh), 1)
+        h_combined = torch.cat((Wh, Whh), 1)
 
         #Bias
-        self.by = torch.zeros(self.vocab_size)
-        self.bh = torch.zeros(self.hidden_size)
+        by = torch.zeros(self.vocab_size)
+        bh = torch.zeros(self.hidden_size)
 
         #Fill the linear layers with init weights and biases
         #To avoid problems of grads
         with torch.no_grad():
 
-            self.f_layer.weight.copy_(self.i_combined)
-            self.f_layer.bias.copy_(self.bh)
+            self.f_layer.weight.copy_(i_combined)
+            self.f_layer.bias.copy_(bh)
 
             #If we have many layers 
             if(self.num_layers > 1):
 
                 for layer in self.network:
-                    layer[0].weight.copy_(self.h_combined)
-                    layer[0].bias.copy_(self.bh)
+                    layer[0].weight.copy_(h_combined)
+                    layer[0].bias.copy_(bh)
 
-            self.logit.weight.copy_(self.Wy)
-            self.logit.bias.copy_(self.by)
-        
+            self.logit.weight.copy_(Wy)
+            self.logit.bias.copy_(by)
+            
     
     def init_hidden(self):
         # TODO ========================
@@ -195,14 +199,13 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
                         shape: (num_layers, batch_size, hidden_size)
         """
 
-        #init tensor for logits with the same dtype as hidden (tensor cuda or longtensor)
         if torch.cuda.is_available():
             device = torch.device("cuda")
 
         logits = torch.zeros([self.seq_len, self.batch_size, self.vocab_size], device=device)
 
         #Loop over the timesteps
-        for step in range(0, self.seq_len):
+        for step in range(self.seq_len):
 
             ##Go through the first layer first
 
@@ -222,8 +225,9 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 
             out = self.f_layer(combined)
 
-            #save final hidden state for next layer
+            #save final hidden state for next timestep
             hidden[0] = out
+
 
             #Loop over the rest of the layers
             for layer in range(self.num_layers-1):
@@ -237,11 +241,13 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
                 out = self.network[layer](combined)
 
                 #save final hidden state for next layer
-                hidden[layer] = out
+                hidden[layer+1] = out
+
 
             #last layer to calculate the logits
             #(batch_size, vocab_size)
             logits[step] = self.logit(out)
+            
             
         return logits.view(self.seq_len, self.batch_size, self.vocab_size), hidden
 

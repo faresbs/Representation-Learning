@@ -368,7 +368,10 @@ def run_epoch(model, data, is_train=False, lr=1.0):
     epoch_size = ((len(data) // model.batch_size) - 1) // model.seq_len
     start_time = time.time()
     if args.model != 'TRANSFORMER':
+
+        #HERE: modified !!!
         hidden = model.init_hidden()
+        
         hidden = hidden.to(device)
     costs = 0.0
     iters = 0
@@ -399,6 +402,7 @@ def run_epoch(model, data, is_train=False, lr=1.0):
         #at each time-step separately. 
         loss = loss_fn(outputs.contiguous().view(-1, model.vocab_size), tt)
         costs += loss.data.item() * model.seq_len
+        print(loss)
         losses.append(costs)
         iters += model.seq_len
         if args.debug:
