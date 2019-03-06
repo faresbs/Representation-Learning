@@ -82,10 +82,17 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         #embeddings layer
         self.embeddings = nn.Embedding(num_embeddings=self.vocab_size, embedding_dim=self.emb_size)
 
-        """
-        #(hidden_size * emb_size + hidden_size) for first layer
-        self.f_layer = nn.Linear(self.emb_size + self.hidden_size, self.hidden_size, bias=True)
+        #Apply dropout to embeddings and to the non recurrent hidden connexions
+        self.dropout = nn.Dropout(dp_keep_prob)
+        
+        #For only the first layer
+        self.f_layer = nn.Sequential(
+                            #(hidden_size * emb_size + hidden_size)
+                            nn.Linear(self.emb_size + self.hidden_size, self.hidden_size, bias=True),
+                            nn.Tanh()
+                            )
 
+        """
         #Create module
         module = nn.Sequential(
                             #FC + dropout
@@ -99,20 +106,20 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         """
 
         #FC + dropout
-        self.fc = nn.Sequential(
-                        nn.Linear(self.emb_size, self.hidden_size, bias=True),
-                        nn.Dropout(dp_keep_prob)
-            )
+        #self.fc = nn.Sequential(
+                        #nn.Linear(self.emb_size, self.hidden_size, bias=True),
+        #                nn.Dropout(dp_keep_prob)
+        #    )
 
-        #Recurrent layer
+        #For the rest of the layers
         module = nn.Sequential(
-                            #Sum the output of the fc with the previous hidden output
+                            #Sum the output of the last hidden output (in same timestep) with the previous hidden state
                             nn.Linear(self.hidden_size + self.hidden_size, self.hidden_size, bias=True), 
-                            nn.Tanh()
+                            nn.Tanh(),
                             )
         
-        #Create k hidden layers for 1 time step
-        self.rec = clones(module, self.num_layers)
+        #Create self.num_layers - 1 (excluding the first layer) hidden layers for 1 time step
+        self.rec = clones(module, self.num_layers-1)
 
         #Output layer (logits)
         self.logit = nn.Linear(self.hidden_size, self.vocab_size, bias=True)
@@ -127,7 +134,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         # Initialize all the weights uniformly in the range [-0.1, 0.1]
         # and all the biases to 0 (in place)
 
-        #Wx = (hidden_size, emb_size) for the first layer (fc ?)
+        #Wx = (hidden_size, emb_size) for the first layer
         Wx = torch.Tensor(self.hidden_size, self.emb_size).uniform_(-0.1, 0.1)
         
         #Whh = (hidden_size, hidden_size) for the other layers
@@ -140,7 +147,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         Wy = torch.Tensor(self.vocab_size,self.hidden_size).uniform_(-0.1, 0.1)
 
         #Combine the two weights Wx and Wh in combined = [Wh, Wx] in the case of the first layer
-        #i_combined = torch.cat((Wh, Wx), 1)
+        i_combined = torch.cat((Wh, Wx), 1)
 
         #Combine the two weights Whh and Wh in combined = [Wh, Whh] in the case of the other layers
         h_combined = torch.cat((Wh, Whh), 1)
@@ -149,18 +156,15 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         by = torch.zeros(self.vocab_size)
         bh = torch.zeros(self.hidden_size)
 
-        bx = torch.zeros(self.hidden_size)
-
         #Fill the linear layers with init weights and biases
         #To avoid problems of grads
         with torch.no_grad():
 
-            #self.f_layer.weight.copy_(i_combined)
-            #self.f_layer.bias.copy_(bh)
+            #First layer that gets the embedding
+            self.f_layer[0].weight.copy_(i_combined)
+            self.f_layer[0].bias.copy_(bh)
 
-            self.fc[0].weight.copy_(Wx)
-            self.fc[0].bias.copy_(bx)
-
+            #The rest of the layers in timestep
             #If we have many layers 
             if(self.num_layers > 1):
 
@@ -168,6 +172,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
                     layer[0].weight.copy_(h_combined)
                     layer[0].bias.copy_(bh)
 
+            #Last output layer that outputs logits
             self.logit.weight.copy_(Wy)
             self.logit.bias.copy_(by)
             
@@ -236,25 +241,31 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
             inp = inputs[step]
 
             #Take initial hidden state for first layer
-            #h = hidden[0]
+            h = hidden[0]
 
             # Lookup word embeddings
             #(batch_size, enb_size)
             emb = self.embeddings(inp)
 
-            #Combine embeddings and last hidden state
-            #combined = torch.cat((h, emb), 1)
+            #Apply dropout to embeddings
+            emb = self.dropout(emb)
 
-            out = self.fc(emb)
+            #Combine embeddings and last hidden state
+            combined = torch.cat((h, emb), 1)
+
+            out = self.f_layer(combined)
 
             #save final hidden state for next timestep
-            #hidden[0] = out
+            hidden[0] = out
 
             #Loop over the rest of the layers
-            for layer in range(self.num_layers):
+            for layer in range(self.num_layers-1):
+
+                #Apply dropout to non recurrent connexion
+                out = self.dropout(out)
                 
                 #Take the initial hidden state of the current layer
-                h = hidden[layer]
+                h = hidden[layer+1]
 
                 #Combine hidden state of l-th layer and current hidden state
                 combined = torch.cat((h, out), 1)
@@ -262,7 +273,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
                 out = self.rec[layer](combined)
 
                 #save final hidden state for next layer
-                hidden[layer] = out
+                hidden[layer+1] = out
 
             #last layer to calculate the logits
             #(batch_size, vocab_size)
@@ -389,43 +400,71 @@ and a linear layer followed by a softmax.
 
 #----------------------------------------------------------------------------------
 
-# TO CHECK: is it ok to create to seperate classes for single attention head and multi ?
+# TO CHECK: is it ok to create seperate classes for single attention head and multi ?
 
 #For one single attention head
 class AttentionHead(nn.Module):
     """A single attention head"""
-    def __init__(self, inp, n_units, dropout=0.1):
+    def __init__(self, inp, d_k, dropout=0.1):
         
         super().__init__()
 
-        self.attn = self.ScaledDotProductAttention(dropout)
+        self.attn = self.ScaledDotProductAttention()
+
+        self.dropout = dropout
 
         #Assuming that the queries, keys, and values have the same nb of units
-        #Linear transformations for queries, keys, and values to get the matrices 
-        self.query = nn.Sequential(nn.Linear(inp, n_units),
-                                        nn.Dropout(dropout))
-            
-        self.key = nn.Sequential(nn.Linear(inp, n_units),
-                                        nn.Dropout(dropout))
+        #affine transformations for queries, keys, and values to get the matrices 
 
-        self.value = nn.Sequential(nn.Linear(inp, n_units),
-                                        nn.Dropout(dropout))
+        #inp = n units?
+        # no bias?
+        #d_k = n_units / n_heads
+        self.query = nn.Linear(inp, d_k, bias=False)
+            
+        self.key = nn.Linear(inp, d_k, bias=False)
+
+        self.value = nn.Linear(inp, d_k, bias=False)
 
  
     def forward(self, queries, keys, values, mask=None):
         ##For a single attention
-        #(batch_size, seq_len, self.n_units)
-        Q = self.query(query)
-        K = self.key(key) 
-        V = self.value(value) 
-        #Compute attention score and then weighted sums using the chosen attention mechanism
-        z = self.attn(Q, K, V)
         
-        return z
+        Q = self.query(queries) # (Batch, Seq, d_k)
+        K = self.key(keys) # (Batch, Seq, d_k)
+        V = self.value(values) # (Batch, Seq, d_k)
+        #Compute attention score and then weighted sums using the chosen attention mechanism
+        z = self.attn(Q, K, V, mask, dropout)
+        
+        return z #(batch_size, seq_len, d_k) and #(batch_size, seq_len, self.units) if we are doing multiheads
 
 
-    def ScaledDotProductAttention(dropout):
-        pass
+    def ScaledDotProductAttention(Q, K, V, mask, dropout):
+        # get size of key
+        d_k = K.size(-1)
+
+        #Should equal size of queries also 
+        assert Q.size(-1) == d_k
+ 
+        # compute the dot product between queries and keys for
+        # each batch and position in the sequence
+        attn = torch.bmm(Q, K.transpose(Dim.seq, Dim.feature)) # (Batch, Seq, Seq)
+        # we get an attention score between each position in the sequence
+        # for each batch
+ 
+        # scale the dot products by the dimensionality (see the paper for why we do this!)
+        attn = attn / math.sqrt(d_k)
+        # normalize the weights across the sequence dimension
+        # (Note that since we transposed, the sequence and feature dimensions are switched)
+        attn = torch.exp(attn)
+        # fill attention weights with 0s where padded
+        if mask is not None: attn = attn.masked_fill(mask, 0)
+        attn = attn / attn.sum(-1, keepdim=True)
+
+        #TO DO : just apply softmax
+
+        attn = self.dropout(attn)
+        output = torch.bmm(attn, v) # (Batch, Seq, Feature)
+        return output
 
 
 
@@ -443,28 +482,32 @@ class MultiHeadedAttention(nn.Module):
 
         # This sets the size of the keys, values, and queries (self.d_k) to all 
         # be equal to the number of output units divided by the number of heads.
+        #d_k = dim of key
         self.d_k = n_units // n_heads
+
         # This requires the number of n_heads to evenly divide n_units.
         assert n_units % n_heads == 0
+        #n_units represent total of units for all the heads
+        
+        #n_units = d_k * heads
         self.n_units = n_units 
+        self.n_heads = n_heads
 
         # TODO: create/initialize any necessary parameters or layers
         # Note: the only Pytorch modules you are allowed to use are nn.Linear 
         # and nn.Dropout
-        
-        self.n_units = n_units
-        self.n_heads = n_heads
 
-        #TO CHECK: HOW TO GET THE INPUT SHAPE ?
-        self.input = self.n_units * self.n_heads
+        #TO CHECK: WY DO WE WANT THE INPUT AS EQUAL TO THE TOTAL NUMBER OF INPUTS?  
+        # n_units is nb of embeddings
+        self.input = self.n_units
  
         # Note that this is very inefficient:
         # I am merely implementing the heads separately because it is 
         # easier to understand this way
         self.attn_heads = nn.ModuleList([
-            AttentionHead(self.input, self.n_units, dropout) for _ in range(self.n_heads)
+            AttentionHead(self.n_units, self.d_k, dropout) for _ in range(self.n_heads)
         ])
-        self.projection = nn.Linear(self.n_units * self.n_heads, self.input) 
+        self.projection = nn.Linear(self.n_units, self.n_units) 
 
         
     def forward(self, query, key, value, mask=None):
@@ -475,23 +518,44 @@ class MultiHeadedAttention(nn.Module):
         # generating the "attention values" (i.e. A_i in the .tex)
         # Also apply dropout to the attention values.
 
+
         #Loop over heads
-        z = [attn(queries, keys, values, mask=mask) # (Batch, Seq, Feature)
+        #TO CHECK : z same as q = (batch_size, seq_len, self.n_units)?
+        z = [attn(query, key, value, mask=mask) #(batch_size, seq_len, self.n_units)
              for i, attn in enumerate(self.attn_heads)]
          
         # reconcatenate
-        z = torch.cat(x, dim=Dim.feature) # (Batch, Seq, D_Feature * n_heads)
+        z = torch.cat(z, dim=Dim.feature) # (Batch, Seq, n_units * n_heads)
 
-        z = self.projection(z) # (Batch, Seq, D_Model)
+        z = self.projection(z) # (Batch, Seq, input)
         
 
-        return z # size: (batch_size, seq_len, self.n_units)
+        return z #(batch_size, seq_len, self.n_units)
 
 
-    #TO CHECK: is it fine to add a function here for attention mechanism ?
-    #Do we apply a different attention mechanism (see equation in problem 3) ?
-    def ScaledDotProductAttention(dropout):
-        pass
+    def ScaledDotProductAttention(Q, K, V, mask, dropout):
+        
+        d_k = k.size(-1) # get the size of the key
+        assert q.size(-1) == d_k
+ 
+        # compute the dot product between queries and keys for
+        # each batch and position in the sequence
+        attn = torch.bmm(q, k.transpose(Dim.seq, Dim.feature)) # (Batch, Seq, Seq)
+        # we get an attention score between each position in the sequence
+        # for each batch
+ 
+        # scale the dot products by the dimensionality (see the paper for why we do this!)
+        attn = attn / math.sqrt(d_k)
+        # normalize the weights across the sequence dimension
+        # (Note that since we transposed, the sequence and feature dimensions are switched)
+        attn = torch.exp(attn)
+        # fill attention weights with 0s where padded
+        if mask is not None: attn = attn.masked_fill(mask, 0)
+        attn = attn / attn.sum(-1, keepdim=True)
+        attn = self.dropout(attn)
+        output = torch.bmm(attn, v) # (Batch, Seq, Feature)
+
+        return output
 
 
 
