@@ -82,22 +82,37 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         #embeddings layer
         self.embeddings = nn.Embedding(num_embeddings=self.vocab_size, embedding_dim=self.emb_size)
 
+        """
         #(hidden_size * emb_size + hidden_size) for first layer
         self.f_layer = nn.Linear(self.emb_size + self.hidden_size, self.hidden_size, bias=True)
 
         #Create module
         module = nn.Sequential(
+                            #FC + dropout
+                            nn.Linear(self.hidden_size, self.hidden_size, bias=True),
+                            nn.Dropout(dp_keep_prob),
                             #(hidden_size * hidden_size + hidden_size) for hidden layers
                             nn.Linear(self.hidden_size + self.hidden_size, self.hidden_size, bias=True), 
-                            nn.Tanh(),
-                            nn.Dropout(dp_keep_prob),
-                            nn.Linear(self.hidden_size, self.hidden_size, bias=True),
+                            #nn.Tanh(),
                             nn.Tanh(),
                             )
+        """
 
+        #FC + dropout
+        self.fc = nn.Sequential(
+                        nn.Linear(self.emb_size, self.hidden_size, bias=True),
+                        nn.Dropout(dp_keep_prob)
+            )
+
+        #Recurrent layer
+        module = nn.Sequential(
+                            #Sum the output of the fc with the previous hidden output
+                            nn.Linear(self.hidden_size + self.hidden_size, self.hidden_size, bias=True), 
+                            nn.Tanh()
+                            )
         
         #Create k hidden layers for 1 time step
-        self.network = clones(module, self.num_layers-1)
+        self.rec = clones(module, self.num_layers)
 
         #Output layer (logits)
         self.logit = nn.Linear(self.hidden_size, self.vocab_size, bias=True)
@@ -112,7 +127,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         # Initialize all the weights uniformly in the range [-0.1, 0.1]
         # and all the biases to 0 (in place)
 
-        #Wx = (hidden_size, emb_size) for the first layer
+        #Wx = (hidden_size, emb_size) for the first layer (fc ?)
         Wx = torch.Tensor(self.hidden_size, self.emb_size).uniform_(-0.1, 0.1)
         
         #Whh = (hidden_size, hidden_size) for the other layers
@@ -125,7 +140,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         Wy = torch.Tensor(self.vocab_size,self.hidden_size).uniform_(-0.1, 0.1)
 
         #Combine the two weights Wx and Wh in combined = [Wh, Wx] in the case of the first layer
-        i_combined = torch.cat((Wh, Wx), 1)
+        #i_combined = torch.cat((Wh, Wx), 1)
 
         #Combine the two weights Whh and Wh in combined = [Wh, Whh] in the case of the other layers
         h_combined = torch.cat((Wh, Whh), 1)
@@ -134,17 +149,22 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         by = torch.zeros(self.vocab_size)
         bh = torch.zeros(self.hidden_size)
 
+        bx = torch.zeros(self.hidden_size)
+
         #Fill the linear layers with init weights and biases
         #To avoid problems of grads
         with torch.no_grad():
 
-            self.f_layer.weight.copy_(i_combined)
-            self.f_layer.bias.copy_(bh)
+            #self.f_layer.weight.copy_(i_combined)
+            #self.f_layer.bias.copy_(bh)
+
+            self.fc[0].weight.copy_(Wx)
+            self.fc[0].bias.copy_(bx)
 
             #If we have many layers 
             if(self.num_layers > 1):
 
-                for layer in self.network:
+                for layer in self.rec:
                     layer[0].weight.copy_(h_combined)
                     layer[0].bias.copy_(bh)
 
@@ -201,6 +221,8 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 
         if torch.cuda.is_available():
             device = torch.device("cuda")
+        else:
+            device = torch.device("cpu")
 
         logits = torch.zeros([self.seq_len, self.batch_size, self.vocab_size], device=device)
 
@@ -214,41 +236,38 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
             inp = inputs[step]
 
             #Take initial hidden state for first layer
-            h = hidden[0]
+            #h = hidden[0]
 
             # Lookup word embeddings
             #(batch_size, enb_size)
             emb = self.embeddings(inp)
 
             #Combine embeddings and last hidden state
-            combined = torch.cat((h, emb), 1)
+            #combined = torch.cat((h, emb), 1)
 
-            out = self.f_layer(combined)
+            out = self.fc(emb)
 
             #save final hidden state for next timestep
-            hidden[0] = out
-
+            #hidden[0] = out
 
             #Loop over the rest of the layers
-            for layer in range(self.num_layers-1):
+            for layer in range(self.num_layers):
                 
                 #Take the initial hidden state of the current layer
-                h = hidden[layer+1]
+                h = hidden[layer]
 
                 #Combine hidden state of l-th layer and current hidden state
                 combined = torch.cat((h, out), 1)
 
-                out = self.network[layer](combined)
+                out = self.rec[layer](combined)
 
                 #save final hidden state for next layer
-                hidden[layer+1] = out
-
+                hidden[layer] = out
 
             #last layer to calculate the logits
             #(batch_size, vocab_size)
             logits[step] = self.logit(out)
-            
-            
+                      
         return logits.view(self.seq_len, self.batch_size, self.vocab_size), hidden
 
 
@@ -370,6 +389,46 @@ and a linear layer followed by a softmax.
 
 #----------------------------------------------------------------------------------
 
+# TO CHECK: is it ok to create to seperate classes for single attention head and multi ?
+
+#For one single attention head
+class AttentionHead(nn.Module):
+    """A single attention head"""
+    def __init__(self, inp, n_units, dropout=0.1):
+        
+        super().__init__()
+
+        self.attn = self.ScaledDotProductAttention(dropout)
+
+        #Assuming that the queries, keys, and values have the same nb of units
+        #Linear transformations for queries, keys, and values to get the matrices 
+        self.query = nn.Sequential(nn.Linear(inp, n_units),
+                                        nn.Dropout(dropout))
+            
+        self.key = nn.Sequential(nn.Linear(inp, n_units),
+                                        nn.Dropout(dropout))
+
+        self.value = nn.Sequential(nn.Linear(inp, n_units),
+                                        nn.Dropout(dropout))
+
+ 
+    def forward(self, queries, keys, values, mask=None):
+        ##For a single attention
+        #(batch_size, seq_len, self.n_units)
+        Q = self.query(query)
+        K = self.key(key) 
+        V = self.value(value) 
+        #Compute attention score and then weighted sums using the chosen attention mechanism
+        z = self.attn(Q, K, V)
+        
+        return z
+
+
+    def ScaledDotProductAttention(dropout):
+        pass
+
+
+
 # TODO: implement this class
 class MultiHeadedAttention(nn.Module):
     def __init__(self, n_heads, n_units, dropout=0.1):
@@ -379,6 +438,9 @@ class MultiHeadedAttention(nn.Module):
         dropout: probability of DROPPING units
         """
         super(MultiHeadedAttention, self).__init__()
+
+        #TO CHECK: why dk and not the number of heads?
+
         # This sets the size of the keys, values, and queries (self.d_k) to all 
         # be equal to the number of output units divided by the number of heads.
         self.d_k = n_units // n_heads
@@ -390,6 +452,21 @@ class MultiHeadedAttention(nn.Module):
         # Note: the only Pytorch modules you are allowed to use are nn.Linear 
         # and nn.Dropout
         
+        self.n_units = n_units
+        self.n_heads = n_heads
+
+        #TO CHECK: HOW TO GET THE INPUT SHAPE ?
+        self.input = self.n_units * self.n_heads
+ 
+        # Note that this is very inefficient:
+        # I am merely implementing the heads separately because it is 
+        # easier to understand this way
+        self.attn_heads = nn.ModuleList([
+            AttentionHead(self.input, self.n_units, dropout) for _ in range(self.n_heads)
+        ])
+        self.projection = nn.Linear(self.n_units * self.n_heads, self.input) 
+
+        
     def forward(self, query, key, value, mask=None):
         # TODO: implement the masked multi-head attention.
         # query, key, and value all have size: (batch_size, seq_len, self.n_units, self.d_k)
@@ -398,10 +475,23 @@ class MultiHeadedAttention(nn.Module):
         # generating the "attention values" (i.e. A_i in the .tex)
         # Also apply dropout to the attention values.
 
-        return # size: (batch_size, seq_len, self.n_units)
+        #Loop over heads
+        z = [attn(queries, keys, values, mask=mask) # (Batch, Seq, Feature)
+             for i, attn in enumerate(self.attn_heads)]
+         
+        # reconcatenate
+        z = torch.cat(x, dim=Dim.feature) # (Batch, Seq, D_Feature * n_heads)
+
+        z = self.projection(z) # (Batch, Seq, D_Model)
+        
+
+        return z # size: (batch_size, seq_len, self.n_units)
 
 
-
+    #TO CHECK: is it fine to add a function here for attention mechanism ?
+    #Do we apply a different attention mechanism (see equation in problem 3) ?
+    def ScaledDotProductAttention(dropout):
+        pass
 
 
 
