@@ -49,7 +49,7 @@
 #      perplexities:
 #                  RNN: train:  120  val: 157
 #                  GRU: train:   65  val: 104
-#          TRANSFORMER:  train:  77  val: 152
+#          TRANSFORMER:  train:  67  val: 146
 #    - For Problem 4.2 (exploration of optimizers), you will make use of the 
 #      experiments from 4.1, and should additionally run the following experiments:
 #          --model=RNN --optimizer=SGD --initial_lr=0.0001 --batch_size=20 --seq_len=35 --hidden_size=1500 --num_layers=2 --dp_keep_prob=0.35 
@@ -123,7 +123,7 @@ parser.add_argument('--hidden_size', type=int, default=200,
 parser.add_argument('--save_best', action='store_true',
                     help='save the model for the best validation performance')
 parser.add_argument('--num_layers', type=int, default=2,
-                    help='number of LSTM layers')
+                    help='number of hidden layers in RNN/GRU, or number of transformer blocks in TRANSFORMER')
 
 # Other hyperparameters you may want to tune in your exploration
 parser.add_argument('--emb_size', type=int, default=200,
@@ -131,7 +131,8 @@ parser.add_argument('--emb_size', type=int, default=200,
 parser.add_argument('--num_epochs', type=int, default=40,
                     help='number of epochs to stop after')
 parser.add_argument('--dp_keep_prob', type=float, default=0.35,
-                    help='dropout *keep* probability (dp_keep_prob=0 means no dropout')
+                    help='dropout *keep* probability. drop_prob = 1-dp_keep_prob \
+                    (dp_keep_prob=1 means no dropout)')
 
 # Arguments that you may want to make use of / implement more code for
 parser.add_argument('--debug', action='store_true') 
@@ -254,7 +255,7 @@ def ptb_iterator(raw_data, batch_size, num_steps):
 
 class Batch:
     "Data processing for the transformer. This class adds a mask to the data."
-    def __init__(self, x, pad=0):
+    def __init__(self, x, pad=-1):
         self.data = x
         self.mask = self.make_mask(self.data, pad)
     
@@ -320,7 +321,7 @@ elif args.model == 'TRANSFORMER':
 else:
   print("Model type not recognized.")
 
-model.to(device)
+model = model.to(device)
 
 # LOSS FUNCTION
 loss_fn = nn.CrossEntropyLoss()
@@ -368,12 +369,8 @@ def run_epoch(model, data, is_train=False, lr=1.0):
     epoch_size = ((len(data) // model.batch_size) - 1) // model.seq_len
     start_time = time.time()
     if args.model != 'TRANSFORMER':
-
         hidden = model.init_hidden()
-        
-        #HERE: modified !!!        
         hidden = hidden.to(device)
-    
     costs = 0.0
     iters = 0
     losses = []
@@ -389,9 +386,7 @@ def run_epoch(model, data, is_train=False, lr=1.0):
             inputs = torch.from_numpy(x.astype(np.int64)).transpose(0, 1).contiguous().to(device)#.cuda()
             model.zero_grad()
             hidden = repackage_hidden(hidden)
-
             outputs, hidden = model(inputs, hidden)
-
 
         targets = torch.from_numpy(y.astype(np.int64)).transpose(0, 1).contiguous().to(device)#.cuda()
         tt = torch.squeeze(targets.view(-1, model.batch_size * model.seq_len))
@@ -403,9 +398,6 @@ def run_epoch(model, data, is_train=False, lr=1.0):
         #at each time-step separately. 
         loss = loss_fn(outputs.contiguous().view(-1, model.vocab_size), tt)
         costs += loss.data.item() * model.seq_len
-
-        print(loss)
-        
         losses.append(costs)
         iters += model.seq_len
         if args.debug:
@@ -454,10 +446,6 @@ for epoch in range(num_epochs):
     if args.optimizer == 'SGD_LR_SCHEDULE':
         lr_decay = lr_decay_base ** max(epoch - m_flat_lr, 0)
         lr = lr * lr_decay # decay lr if it is time
-
-    #ADD HERE
-    #VISUALIZE model
-    print(model)
 
     # RUN MODEL ON TRAINING DATA
     train_ppl, train_loss = run_epoch(model, train_data, True, lr)

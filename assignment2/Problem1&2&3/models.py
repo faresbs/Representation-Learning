@@ -125,23 +125,32 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         self.logit = nn.Linear(self.hidden_size, self.vocab_size, bias=True)
 
         #Uniform init of weights and biases of model
-        self.init_weights_uniform()
+        self.init_weights()
 
 
 
-    def init_weights_uniform(self):
+    def init_weights(self):
         # TODO ========================
-        # Initialize all the weights uniformly in the range [-0.1, 0.1]
-        # and all the biases to 0 (in place)
+        # Initialize the embedding and output weights uniformly in the range [-0.1, 0.1]
+        # and output biases to 0 (in place). The embeddings should not use a bias vector.
+        # Initialize all other (i.e. recurrent and linear) weights AND biases uniformly 
+        # in the range [-k, k] where k is the square root of 1/hidden_size
+
+        #k is the square root of 1/hidden_size
+        k = 1 / self.hidden_size
+
+        #Weights for embeddings
+        #We = (vacab_size, emb_size)
+        We = torch.Tensor(self.vocab_size, self.emb_size).uniform_(-0.1, 0.1)
 
         #Wx = (hidden_size, emb_size) for the first layer
-        Wx = torch.Tensor(self.hidden_size, self.emb_size).uniform_(-0.1, 0.1)
+        Wx = torch.Tensor(self.hidden_size, self.emb_size).uniform_(-k, k)
         
         #Whh = (hidden_size, hidden_size) for the other layers
-        Whh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-0.1, 0.1)
+        Whh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-k, k)
 
         #Wh = (hidden_size, hidden_size)
-        Wh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-0.1, 0.1)
+        Wh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-k, k)
 
         #Wy = (vocab_size, hidden_size) 
         Wy = torch.Tensor(self.vocab_size,self.hidden_size).uniform_(-0.1, 0.1)
@@ -160,7 +169,10 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         #To avoid problems of grads
         with torch.no_grad():
 
-            #First layer that gets the embedding
+            #Embeddings (doesn't have bias)
+            self.embeddings.weight.copy_(We)
+
+            #First layer
             self.f_layer[0].weight.copy_(i_combined)
             self.f_layer[0].bias.copy_(bh)
 
@@ -708,4 +720,3 @@ class MLP(nn.Module):
 
     def forward(self, x):
         return self.w_2(self.dropout(F.relu(self.w_1(x))))
-
