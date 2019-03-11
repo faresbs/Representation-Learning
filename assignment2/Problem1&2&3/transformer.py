@@ -5,7 +5,7 @@ class AttentionHead(nn.Module):
     """A single attention head"""
     def __init__(self, inp, d_k, dropout):
         
-        super().__init__()
+        super(AttentionHead, self).__init__()
 
         self.dropout = nn.Dropout(dropout)
 
@@ -64,13 +64,16 @@ class AttentionHead(nn.Module):
         #Apply mask to attention values
         attn = attn * mask
 
+        #For numerical stability issues
+        attn = attn - (10**9) * (1 - mask) 
+
         #Normalize where row values add up to 1
         attn = attn / attn.sum(-1, keepdim=True)
 
         #print (attn)
 
         #For numerical stability issues
-        attn = attn - (10**9) * (1 - mask) 
+        #attn = attn - (10**9) * (1 - mask) 
         #print (attn)
 
         #Apply dropout to attention output
@@ -120,7 +123,7 @@ class MultiHeadedAttention(nn.Module):
             AttentionHead(self.n_units, self.d_k, dropout) for _ in range(self.n_heads)
         ])
         #input dim = n_units/size_hidden from previous attention block and outpul dim = n_units
-        self.projection = nn.Linear(self.n_units, self.n_units) 
+        self.projection = nn.Linear(self.n_units, self.n_units, bias=True) 
 
         
     def forward(self, query, key, value, mask=None):
@@ -314,4 +317,3 @@ class MLP(nn.Module):
 
     def forward(self, x):
         return self.w_2(self.dropout(F.relu(self.w_1(x))))
-

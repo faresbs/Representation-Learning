@@ -418,7 +418,7 @@ class AttentionHead(nn.Module):
     """A single attention head"""
     def __init__(self, inp, d_k, dropout):
         
-        super().__init__()
+        super(AttentionHead, self).__init__()
 
         self.dropout = nn.Dropout(dropout)
 

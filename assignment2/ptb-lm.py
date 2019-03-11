@@ -368,12 +368,8 @@ def run_epoch(model, data, is_train=False, lr=1.0):
     epoch_size = ((len(data) // model.batch_size) - 1) // model.seq_len
     start_time = time.time()
     if args.model != 'TRANSFORMER':
-
         hidden = model.init_hidden()
-        
-        #HERE: modified !!!        
-        hidden = hidden.to(device)
-    
+        hidden.to(device)
     costs = 0.0
     iters = 0
     losses = []
@@ -389,9 +385,7 @@ def run_epoch(model, data, is_train=False, lr=1.0):
             inputs = torch.from_numpy(x.astype(np.int64)).transpose(0, 1).contiguous().to(device)#.cuda()
             model.zero_grad()
             hidden = repackage_hidden(hidden)
-
             outputs, hidden = model(inputs, hidden)
-
 
         targets = torch.from_numpy(y.astype(np.int64)).transpose(0, 1).contiguous().to(device)#.cuda()
         tt = torch.squeeze(targets.view(-1, model.batch_size * model.seq_len))
@@ -403,9 +397,6 @@ def run_epoch(model, data, is_train=False, lr=1.0):
         #at each time-step separately. 
         loss = loss_fn(outputs.contiguous().view(-1, model.vocab_size), tt)
         costs += loss.data.item() * model.seq_len
-
-        print(loss)
-        
         losses.append(costs)
         iters += model.seq_len
         if args.debug:
@@ -454,10 +445,6 @@ for epoch in range(num_epochs):
     if args.optimizer == 'SGD_LR_SCHEDULE':
         lr_decay = lr_decay_base ** max(epoch - m_flat_lr, 0)
         lr = lr * lr_decay # decay lr if it is time
-
-    #ADD HERE
-    #VISUALIZE model
-    print(model)
 
     # RUN MODEL ON TRAINING DATA
     train_ppl, train_loss = run_epoch(model, train_data, True, lr)
