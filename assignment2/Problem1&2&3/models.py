@@ -83,7 +83,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
         self.embeddings = nn.Embedding(num_embeddings=self.vocab_size, embedding_dim=self.emb_size)
 
         #Apply dropout to embeddings and to the non recurrent hidden connexions
-        self.dropout = nn.Dropout(dp_keep_prob)
+        self.dropout = nn.Dropout(1 - dp_keep_prob)
         
         #For only the first layer
         self.f_layer = nn.Sequential(
@@ -428,11 +428,11 @@ class AttentionHead(nn.Module):
         #d_k = n_units / n_heads
         #inp = n_units/size_hidden from previous attention block or embeddings
 
-        self.query = nn.Linear(inp, d_k, bias=False)
+        self.query = nn.Linear(inp, d_k, bias=True)
             
-        self.key = nn.Linear(inp, d_k, bias=False)
+        self.key = nn.Linear(inp, d_k, bias=True)
 
-        self.value = nn.Linear(inp, d_k, bias=False)
+        self.value = nn.Linear(inp, d_k, bias=True)
 
  
     def forward(self, queries, keys, values, mask=None):
@@ -477,13 +477,12 @@ class AttentionHead(nn.Module):
         #Apply mask to attention values
         attn = attn * mask
 
+        #For numerical stability issues
+        attn = attn - (10**9) * (1 - mask) 
+
         #Normalize where row values add up to 1
         attn = attn / attn.sum(-1, keepdim=True)
 
-        #print (attn)
-
-        #For numerical stability issues
-        attn = attn - (10**9) * (1 - mask) 
         #print (attn)
 
         #Apply dropout to attention output
@@ -533,7 +532,7 @@ class MultiHeadedAttention(nn.Module):
             AttentionHead(self.n_units, self.d_k, dropout) for _ in range(self.n_heads)
         ])
         #input dim = n_units/size_hidden from previous attention block and outpul dim = n_units
-        self.projection = nn.Linear(self.n_units, self.n_units) 
+        self.projection = nn.Linear(self.n_units, self.n_units, bias=True) 
 
         
     def forward(self, query, key, value, mask=None):
