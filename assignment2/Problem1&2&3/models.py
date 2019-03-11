@@ -413,16 +413,14 @@ and a linear layer followed by a softmax.
 
 #----------------------------------------------------------------------------------
 
-# TO CHECK: is it ok to create seperate classes for single attention head and multi ?
-
 #For one single attention head
 class AttentionHead(nn.Module):
     """A single attention head"""
-    def __init__(self, inp, d_k):
+    def __init__(self, inp, d_k, dropout):
         
         super().__init__()
 
-        #self.dropout = dropout
+        self.dropout = nn.Dropout(dropout)
 
         #Assuming that the queries, keys, and values have the same nb of units
         #affine transformations for queries, keys, and values to get the matrices 
@@ -465,21 +463,36 @@ class AttentionHead(nn.Module):
         #scale the dot products by d_k for numerical stability (more stable gradients)
         attn = attn / math.sqrt(d_k)
 
-        #Normalize using Softmax where values add up to 1
-        m = nn.Softmax()
-        attn = m(attn)
+        #Apply softmax
+        attn = torch.exp(attn)
 
-        #fill attention weights with 0s through the mask using the pytorch method masked_fill
-        if mask is not None: attn = attn.masked_fill(mask, 0)
-        
-        #TO UNDERSTAND
-        #print(attn[:,:,1])
-        
-        #attn = self.dropout(attn)
+        #fill attention weights with 0s where padded
+        #Which is the opposite of what we want to do
+        #if mask is not None: 
+        #    attn = attn.masked_fill(mask, 0)
+
+        #Cast to float tensor from byte tensor to perform multiplication
+        mask = mask.type(torch.FloatTensor).cuda()
+
+        #Apply mask to attention values
+        attn = attn * mask
+
+        #Normalize where row values add up to 1
+        attn = attn / attn.sum(-1, keepdim=True)
+
+        #print (attn)
+
+        #For numerical stability issues
+        attn = attn - (10**9) * (1 - mask) 
+        #print (attn)
+
+        #Apply dropout to attention output
+        attn = self.dropout(attn)
         
         #Multiply value matrix V with attention scores: 
         #Keep value of words (having high score) we want to focus on and get rid of irrelevant ones (having low score)
         #And Sum up through matrix multiplication
+        #Each row corresponds to a single query
         output = torch.bmm(attn, V) 
         
         return output #(Batch, Seq, n_k)
@@ -495,9 +508,6 @@ class MultiHeadedAttention(nn.Module):
         dropout: probability of DROPPING units
         """
         super(MultiHeadedAttention, self).__init__()
-
-
-        self.dropout = nn.Dropout(dropout)
 
         
         # This sets the size of the keys, values, and queries (self.d_k) to all 
@@ -520,7 +530,7 @@ class MultiHeadedAttention(nn.Module):
 
         #Create the attention heads
         self.attn_heads = nn.ModuleList([
-            AttentionHead(self.n_units, self.d_k) for _ in range(self.n_heads)
+            AttentionHead(self.n_units, self.d_k, dropout) for _ in range(self.n_heads)
         ])
         #input dim = n_units/size_hidden from previous attention block and outpul dim = n_units
         self.projection = nn.Linear(self.n_units, self.n_units) 
@@ -543,9 +553,6 @@ class MultiHeadedAttention(nn.Module):
         z = torch.cat(z, dim=2) # (Batch, Seq, n_k * n_heads)
 
         z = self.projection(z) # (Batch, Seq, self.n_units)
-        
-        #TO CHECK: Apply dropout here?
-        z = self.dropout(z)
 
         return z #(batch_size, seq_len, self.n_units)
 
