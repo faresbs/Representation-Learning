@@ -452,9 +452,9 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 
 		#Biases
 		by = torch.zeros(self.vocab_size)
-		bh = torch.zeros(self.hidden_size)
-		br = torch.zeros(self.hidden_size)
-		bz = torch.zeros(self.hidden_size)
+		bh = torch.Tensor(self.hidden_size).uniform_(-k, k)
+		br = torch.Tensor(self.hidden_size).uniform_(-k, k)
+		bz = torch.Tensor(self.hidden_size).uniform_(-k, k)
 
 
 		#Fill the fill first layer with init weights and biases
@@ -604,13 +604,14 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 			out = ((1-z) * hidden[0]) + (z * out_tilda)
 
 			#save final hidden state for next timestep
+			#IS IT SAFE T DO DETACH HERE? don't mess up backprop?
 			hidden[0] = out.detach()
 
 			#Loop over the rest of the layers
 			for layer in range(self.num_layers-1):
 
 				#Apply dropout to non recurrent connexion
-				out = self.dropout(out_tilda)
+				out = self.dropout(out)
 				
 				#Take the initial hidden state of the current layer
 				h = hidden[layer+1]
@@ -639,6 +640,8 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 				#save final hidden state for next layer
 				hidden[layer+1] = out.detach()
 
+			#Apply dropout before output layer
+			out = self.dropout(out)
 			#last layer to calculate the logits
 			#(batch_size, vocab_size)
 			logits[step] = self.logit(out.detach())
