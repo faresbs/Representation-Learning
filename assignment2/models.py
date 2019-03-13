@@ -271,6 +271,9 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 				#save final hidden state for next layer
 				hidden[layer+1] = out
 
+			#Apply dropout before output layer
+			out = self.dropout(out)
+
 			#last layer to calculate the logits
 			#(batch_size, vocab_size)
 			logits[step] = self.logit(out)
