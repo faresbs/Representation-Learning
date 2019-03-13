@@ -128,24 +128,24 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		#Wx = (hidden_size, emb_size) for the first layer
 		Wx = torch.Tensor(self.hidden_size, self.emb_size).uniform_(-k, k)
 		
-		#Whh = (hidden_size, hidden_size) for the other layers
+		#Whh = (hidden_size, hidden_size), initial hidden state
 		Whh = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-k, k)
 
-		#Wih = (hidden_size, hidden_size)
+		#Wih = (hidden_size, hidden_size) from the previous hidden layer
 		Wih = torch.Tensor(self.hidden_size, self.hidden_size).uniform_(-k, k)
 
 		#Wy = (vocab_size, hidden_size) 
 		Wy = torch.Tensor(self.vocab_size,self.hidden_size).uniform_(-0.1, 0.1)
 
-		#Combine the two weights Wx and Wh in combined = [Wh, Wx] in the case of the first layer
-		i_combined = torch.cat((Wih, Wx), 1)
+		#Combine the two weights Wx and Whh in combined = [Whh, Wx] in the case of the first layer
+		i_combined = torch.cat((Whh, Wx), 1)
 
-		#Combine the two weights Whh and Wh in combined = [Wh, Whh] in the case of the other layers
-		h_combined = torch.cat((Wih, Whh), 1)
+		#Combine the two weights Whh and Wih in combined = [Whh, Wih] in the case of the other layers
+		h_combined = torch.cat((Whh, Wih), 1)
 
 		#Bias
 		by = torch.zeros(self.vocab_size)
-		bh = torch.zeros(self.hidden_size)
+		bh = torch.Tensor(self.hidden_size).uniform_(-k, k)
 
 		#Fill the linear layers with init weights and biases
 		#To avoid problems of grads
@@ -158,7 +158,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 			self.f_layer[0].weight.copy_(i_combined)
 			self.f_layer[0].bias.copy_(bh)
 
-			#The rest of the layers in timestep
+			#The rest of the layers 
 			#If we have many layers 
 			if(self.num_layers > 1):
 
