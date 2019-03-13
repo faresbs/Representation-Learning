@@ -1,0 +1,36 @@
+% (meta)
+% Exercise contributed by Philippe Lacaille 
+% label: ch9
+
+\Exercise{
+\label{ex:template}
+Assume we are given data of size $3\times64\times64$. 
+In what follows, provide the correct configuration of a convolutional neural network layer that satisfies the specified assumption. 
+Answer with the window size of kernel ($k$), stride ($s$), padding ($p$), and dilation ($d$, with convention $d=1$ for no dilation).
+Use square windows only (e.g. same $k$ for both width and height). 
+\begin{enumerate}
+\item The output shape of the first layer is $(64,32,32)$. 
+\begin{enumerate}
+    \item Assume $k=8$ without dilation.
+    \item Assume $d=7$, and $s=2$.
+\end{enumerate}
+\item The output shape of the second layer is $(64,8,8)$. 
+Assume $p=0$ and $d=1$.
+\begin{enumerate}
+    \item Specify $k$ and $s$ for pooling with non-overlapping window.
+    \item What is output shape if $k=8$ and $s=4$ instead?
+\end{enumerate} 
+\item The output shape of the last layer is $(128,4,4)$. 
+\begin{enumerate}
+    \item Assume we are not using padding or dilation.
+    \item Assume $d=2$, $p=2$.
+    \item Assume $p=1$, $d=1$. 
+\end{enumerate}
+
+\end{enumerate}
+}
+
+\Answer{
+${}$%placeholder
+Write your answer here.
+}

@@ -1,0 +1,23 @@
+% (meta)
+% Exercise contributed by chinwei
+% label: ch3
+
+\Exercise{
+\label{ex:template}
+Let $X\in\gX$ be a random variable with density function $f_X$, 
+and $g:\gX\rightarrow\gY$ be continuously differentiable, where $\gX$ and $\gY$ are subsets of $\R$.
+Let $Y:=g(X)$, which is continuously distributed with density function $f_Y$. 
+\begin{enumerate}
+\item Show that if $g$ is monotonic, $f_Y(y)= f_X(g^{-1}(y))\left|\frac{d g^{-1}(y)}{d y}\right|$.
+\item Let $f_X(x)=\mathbf{1}_{x\in[0,1]}(x)$ and $f_Y(y)=\mathbf{1}_{y\in[0,2]}(y)\cdot\frac{y}{2}$. 
+Find a monotonic mapping $g$ that translates $f_X$ and $f_Y$.
+\staritem Let $N_Y=\{y\in\gY:g(x)=y,\,g(x)'=0\textnormal{ for some }x\in\gX\}$.
+Show that in general if $g'(x)=0$ at most finitely many times, for $y\in\gY\setminus N_Y$,
+$$f_Y(y)=\sum_{x\in\{x:g(x)=y\}} \frac{f_X(x)}{|g'(x)|}$$ 
+\item Let $X\sim\gN(0,1)$, i.e. $f_X(x)=\frac{1}{\sqrt{2\pi}}\exp(-\frac{x^2}{2})$, and $g(x)=x^2$. 
+Determine $f_Y(y)$.
+\end{enumerate}
+}
+
+\Answer{
+}

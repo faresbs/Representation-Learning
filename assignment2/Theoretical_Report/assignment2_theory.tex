@@ -1,0 +1,163 @@
+\documentclass[12pt]{article}
+\usepackage[canadien]{babel} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{enumerate}
+%\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{subfigure}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{url}
+\usepackage{todonotes}
+
+% If your paper is accepted, change the options for the package
+% aistats2e as follows:
+%
+%\usepackage[accepted]{aistats2e}
+%
+% This option will print headings for the title of your paper and
+% headings for the authors names, plus a copyright note at the end of
+% the first column of the first page.
+\setlength{\parindent}{0cm}
+\addtolength{\oddsidemargin}{-2cm}
+\addtolength{\evensidemargin}{-2cm}
+\setlength{\textwidth}{17.78cm}
+\addtolength{\topmargin}{-2.25cm}
+\setlength{\textheight}{24.24cm}
+\addtolength{\parskip}{5mm}
+\pagestyle{fancy}
+
+%************
+%* COMMANDS *
+%************
+
+\input{math_commands.tex}
+
+\newif\ifexercise
+\exercisetrue
+%\exercisefalse
+
+\newif\ifsolution
+%\solutiontrue
+\solutionfalse
+
+\usepackage{booktabs}
+%\usepackage[chapter]{algorithm}
+\usepackage{algorithmic}
+% Include chapter number in algorithm number
+%\renewcommand{\thealgorithm}{\arabic{chapter}.\arabic{algorithm}}
+
+\usepackage{amsthm}
+\theoremstyle{definition}
+\newtheorem{exercise}{Question}%[chapter]
+\newtheorem{answer}{Answer} % asterisk to remove ordering
+%\newcommand{\Exercise}[1]{
+%\begin{exercise}
+%\ifexercise#1\fi
+%\end{exercise}
+%}
+
+\newcommand{\Exercise}[1]{
+\ifexercise#1\fi
+}
+
+\newcommand{\Answer}[1]{
+\ifsolution\begin{answer}#1\end{answer}\fi
+}
+
+\newif\ifexercise
+\exercisetrue
+%\exercisefalse
+
+\newif\ifsolution
+\solutiontrue
+%\solutionfalse
+
+\usepackage{enumitem}
+\newcommand{\staritem}{
+\addtocounter{enumi}{1}
+\item[$\phantom{x}^{*}$\theenumi]}
+
+\setlist[enumerate,1]{leftmargin=*, label=\arabic*.}
+
+\begin{document}
+
+
+\fancyhead{}
+\fancyfoot{}
+
+\fancyhead[L]{
+  \begin{tabular}[b]{l}
+    IFT6135-H2019  \\
+    Prof: Aaron Courville \\
+  \end{tabular}
+}
+\fancyhead[R]{
+  \begin{tabular}[b]{r}
+    Assignment 2, Theoretical Part   \\
+    Optimization, Regularization, and Recurrent Neural networks (RNNs) \\
+  \end{tabular}
+}
+
+\vspace{1cm}
+
+\shorthandoff{:}
+{\bf Due Date: March 22nd 23:59, 2019}\\
+%\shorthandoff{:}
+
+\vspace{-0.5cm}
+\underline{Instructions}
+%Laissez des traces de votre démarche pour toutes les questions! \\
+\renewcommand{\labelitemi}{\textbullet}
+\begin{itemize}
+\item \emph{For all questions, show your work!}
+%\item \emph {Note that harder questions are often worth} fewer \emph{points}
+\item \emph{Starred questions are \textbf{hard} questions, not \textbf{bonus} questions.}
+\item \emph{Please use a document preparation system such as LaTeX, unless noted otherwise.}
+\item \emph{Unless noted that questions are related, assume that notation and defintions for each question are self-contained and independent}
+\item \emph{Submit your answers electronically via Gradescope.}
+\item \emph{\textbf{TAs for this assignment are David Krueger, Tegan Maharaj, and Chin-Wei Huang.}}
+\end{itemize}
+
+
+\begin{exercise}[6-10]
+\input{exercises/glorot_forward.tex}
+\end{exercise}
+
+\begin{exercise}[4-6-4-4-3]
+\input{exercises/dropout_weightdecay.tex}
+\end{exercise}
+
+\begin{exercise}[5-5-5]
+\input{exercises/adam_moment.tex}
+\end{exercise}
+
+\begin{exercise}[5-5-5]
+\input{exercises/weightnorm.tex}
+\end{exercise}
+
+\begin{exercise}[5-5-5]
+\input{exercises/rnn_spectral.tex}
+\end{exercise}
+
+\begin{exercise}[6-12]
+\input{exercises/bi_rnn_gradient.tex}
+\end{exercise}
+
+
+
+
+
+\end{document}
+
+
+
+
+
+
+\end{document}
