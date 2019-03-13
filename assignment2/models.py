@@ -560,7 +560,9 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 		logits = torch.zeros([self.seq_len, self.batch_size, self.vocab_size], device=device)
 
 		#Avoid inplace operations error
-		#hr = Variable(torch.Tensor(self.batch_size, self.hidden_size))
+		h_ = Variable(torch.Tensor(hidden.shape))
+
+		#h_ = hidden
 
 		#Loop over the timesteps
 		for step in range(self.seq_len):
@@ -596,17 +598,17 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 			#Avoid inplace operations error
 			#hr = Variable(torch.Tensor(self.batch_size, self.hidden_size))
 			#Inplace operation
-			h *= r
-			combined = torch.cat((h, emb), 1)
+			#h = h * r
+			combined = torch.cat((hidden[0].clone() * r, emb), 1)
 			out_tilda = self.f_layer[2](combined)
 
 			#hidden state of current cell
-			out = ((1-z) * hidden[0]) + (z * out_tilda)
+			out = ((1-z) * hidden[0].clone()) + (z * out_tilda)
 
 			#save final hidden state for next timestep
-			#IS IT SAFE T DO DETACH HERE? don't mess up backprop?
-			hidden[0] = out.detach()
-
+			hidden[0] = out
+			
+			
 			#Loop over the rest of the layers
 			for layer in range(self.num_layers-1):
 
@@ -614,7 +616,7 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 				out = self.dropout(out)
 				
 				#Take the initial hidden state of the current layer
-				h = hidden[layer+1]
+				#h = hidden[layer+1]
 
 				#Combine last output and last hidden state
 				##combine = [h, out]
@@ -628,23 +630,28 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 				#Memory 
 				#Combine embeddings and last hidden state(with the reset gate)
 
-				#INPLACE ERROR HERE
-				#hr = Variable(torch.Tensor(self.batch_size, self.hidden_size))
-				h *= r
-				combined = torch.cat((h, out), 1)
+				combined = torch.cat((hidden[layer+1].clone()*r, out), 1)
 				out_tilda = self.rec[layer][2](combined)
 
 				#hidden state of current cell
-				out = ((1-z) * hidden[layer+1]) + (z * out_tilda)
+				out = ((1-z) * hidden[layer+1].clone()) + (z * out_tilda)
 
 				#save final hidden state for next layer
-				hidden[layer+1] = out.detach()
+				h_[layer+1] = out
+				
+
+			
+			#Save hidden state in variable after looping over all 
+			#print(h_.shape)
+			#print(hidden.shape)
+			#print(step)
+			#hidden = h_
 
 			#Apply dropout before output layer
 			out = self.dropout(out)
 			#last layer to calculate the logits
 			#(batch_size, vocab_size)
-			logits[step] = self.logit(out.detach())
+			logits[step] = self.logit(out)
 
 		return logits.view(self.seq_len, self.batch_size, self.vocab_size), hidden
 
