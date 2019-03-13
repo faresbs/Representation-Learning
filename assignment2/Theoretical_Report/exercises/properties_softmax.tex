@@ -1,0 +1,29 @@
+% (meta) 
+% Exercise contributed by Antoine Lefebvre-Brossard
+% label: ch6
+
+\Exercise{
+\label{ex:properties_softmax}
+Recall the definition of the softmax function:  $S(\vx)_i={e^{\vx_i}}/{\sum_j e^{\vx_j}}$.
+\begin{enumerate}
+\item Show that softmax is translation-invariant, that is: $S(\vx+c) = S(\vx)$, where $c$ is a scalar constant.
+
+\item Show that softmax is not invariant under scalar multiplication.
+Let $S_c(\vx)=S(c\vx)$ where $c\geq0$.
+What are the effects of taking $c$ to be $0$ and arbitrarily large?
+
+\item Let $\vx$ be a 2-dimentional vector. 
+One can represent a 2-class categorical probability using softmax $S(\vx)$. 
+Show that $S(\vx)$ can be reparameterized using sigmoid function, i.e.
+$S(\vx)=[\sigma(z), 1-\sigma(z)]^\top$ where $z$ is a scalar function of $\vx$. 
+
+\item Let $\vx$ be a $K$-dimentional vector ($K\geq2$).
+Show that $S(\vx)$ can be represented using $K-1$ parameters, i.e.
+$S(\vx)=S([0, y_1, y_2, ..., y_{K-1}]^\top)$ where $y_{i}$ is a scalar function of $\vx$ for $i\in\{1,...,K-1\}$. 
+\end{enumerate}
+}
+
+\Answer{
+${}$%placeholder
+Write your answer here.
+}

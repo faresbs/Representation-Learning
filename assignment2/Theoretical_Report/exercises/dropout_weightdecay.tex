@@ -1,0 +1,134 @@
+% (meta)
+% Exercise contributed by Isabela Albuquerque
+% label: ch7
+
+\Exercise{
+\label{ex:dropout_weightdecay} The point of this question is to understand and compare the effects of different regularizers (specifically dropout and weight decay) on the weights of a network.
+Consider a linear regression problem with input data $\mX\in\R^{n\times d}$, weights $\vw\in\R^{d\times 1}$ and targets $\vy\in\R^{n\times 1}$. 
+Suppose that dropout is applied to the input (with probability $1-p$ of dropping the unit i.e. setting it to 0).
+Let $\mR\in\R^{n\times d}$ be the dropout mask such that $\mR_{ij}\sim\textnormal{Bern}(p)$ is sampled i.i.d. from the Bernoulli distribution. 
+\begin{enumerate}
+\item For squared error loss, express the loss function $L(\vw)$ in matrix form (in terms of $\mX, \vy, \vw,$ and $\mR$).
+\item Let $\Gamma$ be a diagonal matrix with $\Gamma_{ii}=(\mX^\top\mX)_{ii}^{1/2}$.
+Show that the \textit{expectation (over $\mR$)} of the loss function can be rewritten as $\E[L(\vw)]=||\vy-p\mX\vw||^2+p(1-p)||\Gamma\vw||^2$.
+\item Show that the solution $\vw^{\mathrm{dropout}}$ that minimizes the expected loss from question 2.2 satisfies
+$$p\vw^{\mathrm{dropout}}=(\mX^\top\mX+\lambda^{\mathrm{dropout}}\Gamma^2)^{-1}\mX^\top\vy$$
+where $\lambda^{\mathrm{dropout}}$ is a regularization coefficient depending on $p$. 
+How does the value of $p$ affect the regularization coefficient, $\lambda^{\mathrm{dropout}}$?
+\item Express the solution $\vw^{L_2}$ for a linear regression problem without dropout and with $L^2$ regularization, with regularization coefficient $\lambda^{L_2}$ in closed form. 
+\item Compare the results of 2.3 and 2.4: identify specific differences in the equations you arrive at, and discuss qualitatively what the equations tell you about the similarities and differences in the effects of weight decay and dropout (1-3 sentences).
+\end{enumerate}
+}
+
+\Answer{
+${}$%placeholder
+\begin{enumerate}
+	\item The loss function is : $$L(\vw)=||\vy - \hat\vy||_2^2$$
+	where $\hat\vy$ is the output of the neural network, which is expressed as following usigng dropout mask $\mR$ on the input $\mX$:
+	$$\hat\vy = (\mX \odot \mR) \cdot \vw$$
+	So, the loss is: \begin{equation} \label{loss}
+	L(\vw)=||\vy - (\mX \odot \mR) \cdot \vw||_2^2
+	\end{equation}
+	
+	\item From equation~\ref{loss} we get:
+	
+	\begin{equation} \label{eq2}
+	\begin{split}
+	L(\vw) & = (\vy - (\mX \odot \mR) \vw)^{\top} (\vy - (\mX \odot \mR) \vw) \\
+	& = \vy^\top\vy - \vy^\top(\mX\odot\mR)\vw-\vw^\top(\mX\odot\mR)^\top\vy+\vw^\top(\mX\odot\mR)^\top(\mX\odot\mR)\vw\\
+	\end{split}
+	\end{equation}
+	
+	The expected value of loss using equation ~\ref{eq2} is:
+	\begin{equation} \label{eq3}
+	\begin{split}
+	\E_{\mR}[L(\vw)] & = \vy^\top\vy - \vy^\top\E_{\mR}[\mX\odot\mR]\vw-\vw^\top\E_{\mR}[(\mX\odot\mR)^\top]\vy+\vw^\top\E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]\vw\\
+	\end{split}
+	\end{equation}
+	
+	Given: 
+	\begin{equation} \label{eq4}
+	\E_{\mR}[\mX\odot\mR]_{ij} = \E_{\mR}[X_{ij} R_{ij}]  = pX_{ij}
+	\end{equation}
+	And $$\E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]_{ij} = \E_{\mR}[\sum_{k=1}^{n} X_{ik}X_{kj} R_{ik}R_{kj}]$$
+	\begin{itemize}
+		\item  If $i=j$: 
+		\begin{equation} \label{eq5}
+		\begin{split}
+		\E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]_{ij} & = p^2 \sum_{k=1}^{n} X_{ik}X_{kj} \E_{\mR}(R_{ij}^2) \\
+		\end{split}
+		\end{equation}
+		
+		We can prove easily that $\E[X^2]=p$, for $X\sim\textnormal{Bern}(p)$:\\
+		We know that $E(X)=p$, $Var(X)=p(1-p)$ and $Var(X)=E(X^2)-E(X)^2$, so:
+		$$E(X^2)=Var(X)+E(X)^2=p-p^2+p^2=p$$
+		
+		back to equation \ref{eq5}, we get:
+		\begin{equation} \label{eq6}
+		\begin{split}
+		\E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]_{ii} & = p \sum_{k=1}^{n} X_{ik}^2 \\
+		& = p (\mX^\top\mX)_{ii}\\
+		& = p \Gamma_{ii}^2
+		\end{split}
+		\end{equation}
+		
+		\item if $i \neq j$:
+		\begin{equation} \label{eq7}
+		\begin{split}
+		\E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]_{ij} & = p \sum_{k=1}^{n} X_{ik}X_{kj}  \E_{\mR}(R_{ik})  \E_{\mR}(R_{kj})\\
+		& = p^2 \sum_{k=1}^{n} X_{ik}X_{kj}\\
+		& = p^2 (\mX^\top\mX)_{ij}\\
+		\end{split}
+		\end{equation}
+	\end{itemize}
+	
+	Using equation~\ref{eq4}, equation~\ref{eq3} become:
+	\begin{equation} \label{eq8}
+	\begin{split}
+	\E_{\mR}[L(\vw)] & = \vy^\top\vy - \vy^\top p\mX\vw-\vw^\top p\mX^\top\vy+\vw^\top\E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]\vw\\
+	& = (\vy - p\mX\vw)^\top(\vy - p\mX\vw)-p^2\vw^\top\mX^\top\mX\vw+\vw^\top\E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]\vw\\
+	& = ||\vy - p\mX\vw)||^2-\vw^\top\left[p^2\mX^\top\mX-\E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]\right]\vw
+	\end{split}
+	\end{equation}
+	
+	From equation~\ref{eq7}, we have shown that $p^2\mX^\top\mX$ and $\E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]$ have the same non-diagonal element, so :
+	$$\left(p^2\mX^\top\mX - \E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]\right)_{i \neq j}=0$$
+	And from equation~\ref{eq6} we have get the following formula for the diagonal elements:
+	$$\left(p^2\mX^\top\mX - \E_{\mR}[(\mX\odot\mR)^\top(\mX\odot\mR)]\right)_{i = j}=p^2\Gamma_{ii}^2 - p\Gamma_{ii}^2 = p(p-1)\Gamma_{ii}^2$$
+	
+	Now let's put all together, and replace the last equations back to equation~\ref{eq8}:
+	\begin{equation} \label{eq9}
+	\begin{split}
+	\E_{\mR}[L(\vw)] & = ||\vy - p\mX\vw)||^2-p(p-1)\vw^\top\Gamma^2\vw\\
+	& = ||\vy - p\mX\vw)||^2+p(1-p)(\vw\Gamma)^\top(\vw\Gamma)\\
+	& = ||\vy - p\mX\vw)||^2+p(1-p)||\Gamma\vw\||^2\\
+	\end{split}
+	\end{equation}
+	
+	\item Let's calculate $\nabla_{\vw}\E_{\mR}(L(\vw))$ from equation~\ref{eq9} and solve the equation $\nabla_{\vw}\E_{\mR}(L(\vw))=0$
+	
+	\begin{equation} \label{eq10}
+	\begin{split}
+	\nabla_{\vw}\E_{\mR}(L(\vw)) & = -2p\mX^\top(\vy-p\mX\vw)+2p(1-p)\Gamma\vw\\
+	\end{split}
+	\end{equation}
+	
+	$$\nabla_{\vw}\E_{\mR}(L(\vw)) = 0 \implies -2p\mX^\top(\vy-p\mX\vw)+2p(1-p)\Gamma\vw = 0$$
+	$$\implies p\vw^{\mathrm{dropout}} = (\mX^\top\mX+\frac{1-p}{p}\Gamma^2)^{-1}X^\top\vy$$
+	$$\implies p\vw^{\mathrm{dropout}} =(\mX^\top\mX+\lambda^{\mathrm{dropout}}\Gamma^2)^{-1}\mX^\top\vy$$
+	Where $\lambda^{\mathrm{dropout}} = \frac{1-p}{p}$
+	
+	Thus, when $p \to 0$, meaning droping all the input units, we get no solution, which means an infinit regularization that makes the model underfit the data.\\
+	If $p \to 1$, meaning there is no dropout, we get the usual analytical solution of the squared error loss with no regularization
+	an intermediate value of $p$ give the model a regularization equivalent to $L_2$ regularization.
+	
+	\item The loss function without dropoutand with $L_2$ regularization is:
+	$$L(\vw) = ||\vy - \mX\vw)||^2 + \lambda^{L_2}||\vw||^2$$
+	which has the analytical solution (derived similarily as 2.3):
+	$$\vw^{L_2} = (\mX^\top\mX+\lambda^{L_2}\mI)^{-1}X^\top\vy$$
+	
+	\item From 2.3 and 2.4 we notice that dropout and $L_2$ regularization have similar analytical solution and thus dropout behave as a regularization method similarily as $L_2$ regularization. The main difference is on the amount of regularization that each method puts on the model. In fact, $L_2$ has a simple real coeficient $\lambda^{L_2}$ that influence the effect of the regularization, instead of a more complexe effect of the dropout which depends on the data that is the value of $\Gamma$ and the binary probability $p$ of the dropout mask.
+	
+	
+\end{enumerate}
+}

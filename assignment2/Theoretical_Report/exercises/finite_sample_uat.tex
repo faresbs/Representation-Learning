@@ -1,0 +1,36 @@
+% (meta)
+% Exercise contributed by Aristide Baratin
+% label: ch6
+
+\Exercise{
+\label{ex:finite_sample_uat}
+Given $N \in \sZ^+$, we want to show that for any $f:\R^n \to \R^m$ and any sample set $\gS\subset \R^n$ of size $N$, there is a set of parameters for a two-layer network such that the output $y(\vx)$ matches $f(\vx)$ for all $\vx \in \gS$.
+That is, we want to interpolate $f$ with $y$ on any finite set of samples $\gS$. 
+\begin{enumerate}
+\item Write the generic form of the function $y: \R^n \to \R^m$ defined by a 2-layer network with $N-1$ hidden units, with linear output and activation function $\phi$, in terms of its weights and biases $(\mW^{(1)}, \vb^{(1)})$ and $(\mW^{(2)}, \vb^{(2)})$.
+\item In what follows, we will restrict $\mW^{(1)}$ to be $\mW^{(1)} = [\vw, \cdots, \vw]^T$ for some $\vw \in \R^n$ (so the rows of  $\mW^{(1)}$ are all the same).
+Show that the interpolation problem on the sample set $\gS=\{\vx^{(1)}, \cdots \vx^{(N)}\} \subset \R^n$ can be reduced to solving a matrix equation: 
+$\mM\tilde{\mW}^{(2)}=\mF$,
+where $\tilde{\mW}^{(2)}$ and $\mF$ are both $N\times m$, given by
+$$\tilde{\mW}^{(2)}=[\mW^{(2)}, \vb^{(2)}]^\top \qquad\qquad \mF=[f(\vx^{(1)}), \cdots, f(\vx^{(N)})]^\top$$
+Express the $N \times N$ matrix $\mM$ in terms of $\vw$, $\vb^{(1)}$, $\phi$ and $\vx^{(i)}$.
+\staritem {\bf Proof with Relu activation.} 
+Assume $\vx^{(i)}$ are all distinct. 
+Choose $\vw$ such that $\vw^\top \vx^{(i)}$ are also all distinct (Try to prove the existence of such a $\vw$, although this is not required for the assignment - See Assignment 0). 
+Set $\vb^{(1)}_j = -\vw^\top \vx^{(j)} + \epsilon$, where $\epsilon >0$. 
+Find a value of $\epsilon$ such that $\mM$ is triangular with non-zero diagonal elements.
+Conclude.
+(Hint: assume an ordering of $\vw^\top\vx^{(i)}$.)
+\staritem {\bf Proof with sigmoid-like activations}. 
+Assume $\phi$ is continuous, bounded, $\phi(-\infty)=0$ and $\phi(0)>0$.
+Decompose $\vw$ as $\vw=\lambda\vu$. 
+Set $\vb^{(1)}_j = -\lambda \vu^\top \vx^{(j)}$.
+Fixing $\vu$, show that $\lim_{\lambda\to +\infty} {\mM}$ is triangular with non-zero diagonal elements. Conclude. 
+(Note that doing so preserves the distinctness of $\vw^\top \vx^{(i)}$.)
+\end{enumerate}
+}
+
+\Answer{
+${}$%placeholder
+Write your answer here.
+}
