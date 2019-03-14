@@ -560,7 +560,7 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 		logits = torch.zeros([self.seq_len, self.batch_size, self.vocab_size], device=device)
 
 		#Avoid inplace operations error
-		h_ = Variable(torch.Tensor(hidden.shape))
+		#h_ = Variable(torch.Tensor(hidden.shape))
 
 		#h_ = hidden
 
@@ -620,7 +620,7 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 
 				#Combine last output and last hidden state
 				##combine = [h, out]
-				combined = torch.cat((h, out), 1)
+				combined = torch.cat((hidden[layer+1], out), 1)
 
 				#Apply GRU equations for the first layer
 				#Reset gate
@@ -637,7 +637,7 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 				out = ((1-z) * hidden[layer+1].clone()) + (z * out_tilda)
 
 				#save final hidden state for next layer
-				h_[layer+1] = out
+				hidden[layer+1] = out
 				
 
 			
