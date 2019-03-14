@@ -730,18 +730,53 @@ class AttentionHead(nn.Module):
 
 		self.dropout = nn.Dropout(dropout)
 
-		#Assuming that the queries, keys, and values have the same nb of units
-		#affine transformations for queries, keys, and values to get the matrices 
+		#Assuming that the queries, keys, and values have the same dim = d_k
+		 
 
 		#d_k = n_units / n_heads
 		#inp = n_units/size_hidden from previous attention block or embeddings
 
-		self.query = nn.Linear(inp, d_k, bias=True)
-			
+		#Affine transformations for queries, keys, and values to get the matrices
+		self.query = nn.Linear(inp, d_k, bias=True)	
 		self.key = nn.Linear(inp, d_k, bias=True)
-
 		self.value = nn.Linear(inp, d_k, bias=True)
 
+		# TODO: create/initialize any necessary parameters or layers
+        # Initialize all weights and biases uniformly in the range [-k, k],
+        # where k is the square root of 1/n_units.
+        # Note: the only Pytorch modules you are allowed to use are nn.Linear 
+        # and nn.Dropout
+
+        #Init the weights and biases
+
+        #k is the square root of 1/n_units in the case of multihead or n_k for 1 head
+		k = np.sqrt(1 / d_k) 
+
+		#Weights of W, K and V matrices
+		Wq = torch.Tensor(d_k, inp).uniform_(-k, k)
+		Wk = torch.Tensor(d_k, inp).uniform_(-k, k)
+		Wv = torch.Tensor(d_k, inp).uniform_(-k, k)
+
+		#biases of W, K and V matrices
+		bq = torch.Tensor(d_k).uniform_(-k, k)
+		bk = torch.Tensor(d_k).uniform_(-k, k)
+		bv = torch.Tensor(d_k).uniform_(-k, k)
+
+		#Fill the linear layers with init weights and biases
+		#To avoid problems of grads
+		with torch.no_grad():
+
+			self.query.weight.copy_(Wq)
+			self.query.bias.copy_(bq)
+
+			self.key.weight.copy_(Wk)
+			self.key.bias.copy_(bk)
+			
+			self.value.weight.copy_(Wv)
+			self.value.bias.copy_(bv)
+
+		
+				
  
 	def forward(self, queries, keys, values, mask=None):
 		##For a single attention
@@ -841,6 +876,23 @@ class MultiHeadedAttention(nn.Module):
 		])
 		#input dim = n_units/size_hidden from previous attention block and outpul dim = n_units
 		self.projection = nn.Linear(self.n_units, self.n_units, bias=True) 
+
+		##Init the weights and biases for the projection layer
+        #k is the square root of 1/n_units
+		k = np.sqrt(1 / self.n_units) 
+
+		#Weights of projection layer
+		W = torch.Tensor(self.n_units, self.n_units).uniform_(-k, k)
+
+		#bias of projection layer
+		b = torch.Tensor(self.n_units).uniform_(-k, k)
+
+		#Fill the linear layers with init weights and biases
+		#To avoid problems of grads
+		with torch.no_grad():
+
+			self.projection.weight.copy_(W)
+			self.projection.bias.copy_(b)
 
 		
 	def forward(self, query, key, value, mask=None):
