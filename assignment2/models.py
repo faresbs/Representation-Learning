@@ -316,6 +316,9 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 			device = torch.device("cpu")
 
 		logits = torch.zeros([self.batch_size, self.vocab_size], device=device)
+
+		#Size of vocabulary
+		vocab = 10000
 		
 		#Loop over the generated seq length, output of timestep will be the input of the next
 		for seq in range(generated_seq_len):
@@ -357,26 +360,21 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 			#(batch_size, vocab_size)
 			logits = self.logit(out)
 
-			#argmax 
-			#(batch_size)
-			_, predicted = torch.max(logits.data, 1)
-			
-			print(predicted.shape)
-
 			#Apply softmax to logits to get probabilities
-			m = nn.Softmax()
+			m = nn.Softmax(dim=1)
 			prob = m(logits)
 
-			print (np.sum(prob,axis=0))
-			sd
-
-			#Sample of size batch_size from the vocab using a prob distribution from softmax
-			inp = np.random.choice(predicted, size=20, replace=True, p=prob)	  
+			#Sample of size batch_size from the vocab using a non-uniform distribution from softmax
+			#inp = np.random.choice(vocab, size=20, replace=True, p=prob)	  
+			
+			#Shape is nb of rows of prob = batch_size
+			#Sample from the multinomial probability distribution located in the corresponding row of tensor input
+			sampled = torch.multinomial(prob, num_samples=1)
 
 			#shape = (batch_size)
-			samples[seq] = predicted  
+			samples[seq] = sampled.squeeze() 
 
-		return samples
+		return samples # (generated_seq_len, batch_size)
 
 
 # Problem 2

@@ -24,7 +24,7 @@ if __name__ == '__main__':
 	print ("Running on " + str(device))
 
 
-	print("Loading RNN model....")
+	print("RNN model loaded..")
 
 	model = models.RNN(emb_size=200, hidden_size=1500, 
                 seq_len=35, batch_size=20,
@@ -42,6 +42,8 @@ if __name__ == '__main__':
 
 	#Sample of size batch_size from the vocab using a uniform distribution
 	inp = np.random.choice(vocab, size=20, replace=True, p=None)
+	#inp = torch.zeros(20)
+	#print(inp)
 	#Transform to tensor
 	inp = torch.from_numpy(inp)
 
@@ -53,4 +55,15 @@ if __name__ == '__main__':
 	generated_seq_len = 20
 
 	#Generate samples with model
-	model.generate(inp, hidden, generated_seq_len)
+	samples = model.generate(inp, hidden, generated_seq_len)
+
+	print("Sequence samples: ")
+
+	#Map the samples sequences index into words sequences using vocab dictionary
+	#TO DO
+	d = {}
+	with open("vocab.txt") as f:
+	    for line in f:
+	       (key, val) = line.split()
+	       d[int(key)] = val
+
