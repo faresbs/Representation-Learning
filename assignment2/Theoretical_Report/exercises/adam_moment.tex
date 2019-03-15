@@ -30,5 +30,69 @@ Show that the running average is biased, i.e. $\E[\vv_t]\neq\E[\vg_t]$. Propose 
 
 \Answer{
 ${}$%placeholder
+\begin{enumerate}
+	\item 
+	\begin{itemize}
+		\item For SGD with momentum:
+		\begin{equation} \label{eq11}
+		\begin{split}
+		\Delta\vtheta_t & =  -\vv_t\\
+		& = -\alpha \vv_{t-1} -  \epsilon \vg_t\\
+		& = \Delta\vtheta_{t-1} - \epsilon \vg_t\\
+		\end{split}
+		\end{equation}
+		
+		\item For SGD with running average:
+		\begin{equation}\label{eq12}
+		\begin{split}
+		\Delta\vtheta_t & = -\delta \vv_t\\
+		& = -\delta \beta \vv_{t-1} -\delta (1-\beta) \vg_t \\
+		& = \beta \Delta\vtheta_{t-1} -\delta (1-\beta) \vg_t\\
+		\end{split}
+		\end{equation}
+		
+		\item The two equations are equivalent if we consider:
+		$$\alpha = \beta\;\; and \quad \epsilon = \delta (1 - \beta)$$
+	\end{itemize}
+
+	\item From equation~\ref{eq12} we have 
+	\begin{equation}
+	\begin{split}
+		 \vv_t & = \beta \vv_{t-1} + (1-\beta) \vg_t \\
+		 & = \beta (\beta \vv_{t-2} + (1-\beta) \vg_{t-1}) + (1-\beta) \vg_t \\
+		 & = \beta^2 \vv_{t-2} + \beta (1-\beta) \vg_{t-1} + (1-\beta) \vg_t \\
+		 & = \beta^2 (\beta \vv_{t-3} + (1-\beta) \vg_{t-2}) + \beta (1-\beta) \vg_{t-1} + (1-\beta) \vg_t \\
+		 & = \beta^3 \vv_{t-3} + \beta^2 (1-\beta) \vg_{t-2} + \beta (1-\beta) \vg_{t-1} + (1-\beta) \vg_t \\
+		 \vdots\\
+		 & = \beta^t \vv_0 + \sum_{i=1}^{t}\beta^{t-i}(1-\beta)\vg_i \\
+	\end{split}
+	\end{equation}
+	Given $\vv_0 = 0$, we finaly get:
+	\begin{equation}\label{eq14}
+	 \vv_t = (1-\beta)\sum_{i=1}^{t}\beta^{t-i}\vg_i
+	\end{equation}
+	
+	\item Using equation~\ref{eq14}, we get:
+	$$\E(\vv_t) = (1-\beta)\sum_{i=1}^{t}\beta^{t-i}\E(\vg_i)$$
+	
+	If we assume $\vg_t$ has a stationary distribution for a sufficiently large $t$, we get:
+	$$\E(\vv_t) = \E(\vg_t)(1-\beta)\sum_{i=1}^{t}\beta^{t-i}$$
+	
+	On other hand, we have:
+	\begin{equation}
+	\begin{split}
+	(1-\beta)\sum_{i=1}^{t}\beta^{t-i} & = (1-\beta)(\beta^{t-1}+\beta^{t-2}+\cdots+\beta^2+\beta+1)\\
+		& = \beta^{t-1}+\beta^{t-2}+\cdots+\beta^2+\beta+1 - \beta^{t}-\beta^{t-1}-\cdots-\beta^2-\beta\\
+		& = 1 - \beta^{t}\\
+	\end{split}
+	\end{equation}
+	
+	Finaly we get:
+	$$\E(\vv_t) = (1 - \beta^{t})\E(\vg_t)$$
+	Which is a biased estimate as $\E(\vv_t) \neq \E(\vg_t)$.\\
+	Instead, if we want an unbaised estimate we can rescale $\vv_t$ by $\frac{1}{1-\beta^{t}}$
+	
+	
+	\end{enumerate}
 }
 
