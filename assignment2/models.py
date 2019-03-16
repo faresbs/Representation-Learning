@@ -281,7 +281,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		return logits.view(self.seq_len, self.batch_size, self.vocab_size), hidden
 
 
-	def generate(self, input, hidden, generated_seq_len):
+	def generate(self, inp, hidden, generated_seq_len):
 		# TODO ========================
 		# Compute the forward pass, as in the self.forward method (above).
 		# You'll probably want to copy substantial portions of that code here.
@@ -306,8 +306,75 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 			- Sampled sequences of tokens
 						shape: (generated_seq_len, batch_size)
 		"""
-	   
-		return samples
+
+		#Generated samples from the model
+		samples = torch.zeros([generated_seq_len, self.batch_size])
+
+		if torch.cuda.is_available():
+			device = torch.device("cuda")
+		else:
+			device = torch.device("cpu")
+
+		logits = torch.zeros([self.batch_size, self.vocab_size], device=device)
+
+		#Size of vocabulary
+		vocab = 10000
+		
+		#Loop over the generated seq length, output of timestep will be the input of the next
+		for seq in range(generated_seq_len):
+
+			##Go through the first layer first
+
+			#Take initial hidden state for first layer
+			h = hidden[0]
+
+			# Lookup word embeddings
+			#(batch_size, enb_size)
+			emb = self.embeddings(inp)
+
+			#Combine embeddings and last hidden state
+			##combine = [h, emb]
+			combined = torch.cat((h, emb), 1)
+
+			out = self.f_layer(combined)
+
+			#save final hidden state for next timestep
+			hidden[0] = out
+
+			#Loop over the rest of the layers
+			for layer in range(self.num_layers-1):
+					
+				#Take the initial hidden state of the current layer
+				h = hidden[layer+1]
+
+				#Combine hidden state of l-th layer and current hidden state
+				#combine = [h, out]
+				combined = torch.cat((h, out), 1)
+
+				out = self.rec[layer](combined)
+
+				#save final hidden state for next layer
+				hidden[layer+1] = out
+
+			#last layer to calculate the logits
+			#(batch_size, vocab_size)
+			logits = self.logit(out)
+
+			#Apply softmax to logits to get probabilities
+			m = nn.Softmax(dim=1)
+			prob = m(logits)
+
+			#Sample of size batch_size from the vocab using a non-uniform distribution from softmax
+			#inp = np.random.choice(vocab, size=20, replace=True, p=prob)	  
+			
+			#Shape is nb of rows of prob = batch_size
+			#Sample from the multinomial probability distribution located in the corresponding row of tensor input
+			sampled = torch.multinomial(prob, num_samples=1)
+
+			#shape = (batch_size)
+			samples[seq] = sampled.squeeze() 
+
+		return samples # (generated_seq_len, batch_size)
 
 
 # Problem 2
