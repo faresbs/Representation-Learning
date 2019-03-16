@@ -116,7 +116,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		# Initialize the embedding and output weights uniformly in the range [-0.1, 0.1]
 		# and output biases to 0 (in place). The embeddings should not use a bias vector.
 		# Initialize all other (i.e. recurrent and linear) weights AND biases uniformly 
-		# in the range [-k, k] where k is the square root of 1/hidden_size
+		# in the range  
 
 		#k is the square root of 1/hidden_size
 		k = np.sqrt(1 / self.hidden_size)
@@ -874,7 +874,7 @@ class AttentionHead(nn.Module):
 		attn = attn / math.sqrt(d_k)
 
 		#Apply softmax
-		attn = torch.exp(attn)
+		#attn = torch.exp(attn)
 
 		#fill attention weights with 0s where padded
 		#Which is the opposite of what we want to do
@@ -889,6 +889,9 @@ class AttentionHead(nn.Module):
 
 		#For numerical stability issues
 		attn = attn - (10**9) * (1 - mask) 
+        
+        #Apply softmax
+		attn = torch.exp(attn)
 
 		#Normalize where row values add up to 1
 		attn = attn / attn.sum(-1, keepdim=True)
