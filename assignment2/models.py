@@ -808,6 +808,8 @@ class AttentionHead(nn.Module):
 		self.key = nn.Linear(inp, d_k, bias=True)
 		self.value = nn.Linear(inp, d_k, bias=True)
 
+		self.softmax = nn.Softmax()
+
 		# TODO: create/initialize any necessary parameters or layers
         # Initialize all weights and biases uniformly in the range [-k, k],
         # where k is the square root of 1/n_units.
@@ -874,7 +876,7 @@ class AttentionHead(nn.Module):
 		attn = attn / math.sqrt(d_k)
 
 		#Apply softmax
-		attn = torch.exp(attn)
+		#attn = torch.exp(attn)
 
 		#fill attention weights with 0s where padded
 		#Which is the opposite of what we want to do
@@ -888,10 +890,13 @@ class AttentionHead(nn.Module):
 		attn = attn * mask
 
 		#For numerical stability issues
-		attn = attn - (10**9) * (1 - mask) 
+		#attn = attn - (10**9) * (1 - mask) 
 
 		#Normalize where row values add up to 1
-		attn = attn / attn.sum(-1, keepdim=True)
+		#attn = attn / attn.sum(-1, keepdim=True)
+
+		#Apply softmax
+		attn = self.softmax(attn)
 
 		#print (attn)
 
