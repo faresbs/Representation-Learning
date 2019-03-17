@@ -34,9 +34,18 @@ import matplotlib.pyplot as plt
 # attention. 
 
 
-#A helper function for producing N identical layers (each with their own parameters).
 def clones(module, N):
-	return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
+    """
+    A helper function for producing N identical layers (each with their own parameters).
+    
+    inputs: 
+        module: a pytorch nn.module
+        N (int): the number of copies of that module to return
+
+    returns:
+        a ModuleList with the copies of the module (the ModuleList is itself also a module)
+    """
+    return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
 # Problem 1
 class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities.
@@ -795,7 +804,7 @@ class AttentionHead(nn.Module):
 		
 		super(AttentionHead, self).__init__()
 
-		self.dropout = nn.Dropout(dropout)
+		#self.dropout = nn.Dropout(dropout)
 
 		#Assuming that the queries, keys, and values have the same dim = d_k
 		 
@@ -808,7 +817,9 @@ class AttentionHead(nn.Module):
 		self.key = nn.Linear(inp, d_k, bias=True)
 		self.value = nn.Linear(inp, d_k, bias=True)
 
-		self.softmax = nn.Softmax()
+		self.attn = ScaledDotProductAttention(dropout)
+
+		#self.dropout = nn.Dropout(dropout)
 
 		# TODO: create/initialize any necessary parameters or layers
         # Initialize all weights and biases uniformly in the range [-k, k],
@@ -818,8 +829,8 @@ class AttentionHead(nn.Module):
 
         #Init the weights and biases
 
-        #k is the square root of 1/n_units in the case of multihead or n_k for 1 head
-		k = np.sqrt(1 / d_k) 
+        #k is the square root of 1/n_units or 1/d_k?
+		k = np.sqrt(1 / inp) 
 
 		#Weights of W, K and V matrices
 		Wq = torch.Tensor(d_k, inp).uniform_(-k, k)
@@ -850,17 +861,31 @@ class AttentionHead(nn.Module):
 	def forward(self, queries, keys, values, mask=None):
 		##For a single attention
 		#d_k is dim of keys
+
 		Q = self.query(queries) # (Batch, Seq, d_k)
 		K = self.key(keys) # (Batch, Seq, d_k)
 		V = self.value(values) # (Batch, Seq, d_k)
 
 		#Compute attention score for the head
-		z = self.ScaledDotProductAttention(Q, K, V, mask)
+		z = self.attn(Q, K, V, mask)
 		
-		return z #(batch_size, seq_len, d_k) and #(batch_size, seq_len, self.units) if we are doing multiheads
+		return z #(batch_size, seq_len, d_k) for 1 attention head
 
 
-	def ScaledDotProductAttention(self, Q, K, V, mask):
+#Attention mechanism
+class ScaledDotProductAttention(nn.Module):
+	def __init__(self, dropout=0.1):
+		super(ScaledDotProductAttention, self).__init__()
+		self.dropout = nn.Dropout(dropout)
+		self.softmax = F.softmax
+	
+	def forward(self, Q, K, V, mask):
+
+		if torch.cuda.is_available():
+			device = torch.device("cuda")
+		else:
+			device = torch.device("cpu")
+
 		# get dim of key
 		d_k = K.size(-1)
 
@@ -873,7 +898,7 @@ class AttentionHead(nn.Module):
 		attn = torch.bmm(Q, torch.transpose(K, 1, 2)) #(batch, Seq, Seq)
  
 		#scale the dot products by d_k for numerical stability (more stable gradients)
-		attn = attn / torch.sqrt(d_k)
+		attn = attn / math.sqrt(d_k)
 
 		#Apply softmax
 		#attn = torch.exp(attn)
@@ -884,13 +909,13 @@ class AttentionHead(nn.Module):
 		#    attn = attn.masked_fill(mask, 0)
 
 		#Cast to float tensor from byte tensor to perform multiplication
-		mask = mask.type(torch.FloatTensor).cuda()
+		mask = mask.type(torch.FloatTensor).to(device)
 
 		#Apply mask to attention values
 		attn = attn * mask
 
 		#For numerical stability issues
-		attn = attn - (10**9) * (1 - mask) 
+		#attn = attn - (10**9) * (1 - mask) 
         
         #Apply softmax
 		#attn = torch.exp(attn)
@@ -901,8 +926,6 @@ class AttentionHead(nn.Module):
 		#Apply softmax
 		attn = self.softmax(attn)
 
-		#print (attn)
-
 		#Apply dropout to attention output
 		attn = self.dropout(attn)
 		
@@ -912,7 +935,7 @@ class AttentionHead(nn.Module):
 		#Each row corresponds to a single query
 		output = torch.bmm(attn, V) 
 		
-		return output #(Batch, Seq, n_k)
+		return output #(Batch, Seq, n_k)	
 
 
 
@@ -946,9 +969,13 @@ class MultiHeadedAttention(nn.Module):
 		# and nn.Dropout
 
 		#Create the attention heads
-		self.attn_heads = nn.ModuleList([
-			AttentionHead(self.n_units, self.d_k, dropout) for _ in range(self.n_heads)
-		])
+		#self.attn_heads = nn.ModuleList([
+		#	AttentionHead(self.n_units, self.d_k, dropout) for _ in range(self.n_heads)
+		#])
+		#Using clones method
+		#Create n_heads of attention head module
+		self.attn_heads = clones(AttentionHead(self.n_units, self.d_k, dropout), self.n_heads)
+
 		#input dim = n_units/size_hidden from previous attention block and outpul dim = n_units
 		self.projection = nn.Linear(self.n_units, self.n_units, bias=True) 
 
@@ -972,15 +999,14 @@ class MultiHeadedAttention(nn.Module):
 		
 	def forward(self, query, key, value, mask=None):
 		# TODO: implement the masked multi-head attention.
-		# query, key, and value all have size: (batch_size, seq_len, self.n_units, self.d_k)
+		# query, key, and value all have size: (batch_size, seq_len, self.n_units)
 		# mask has size: (batch_size, seq_len, seq_len)
 		# As described in the .tex, apply input masking to the softmax 
 		# generating the "attention values" (i.e. A_i in the .tex)
 		# Also apply dropout to the attention values.
 
-
 		#Loop over heads
-		z = [attn(query, key, value, mask=mask) #(batch_size, seq_len, self.n_units)
+		z = [attn(query, key, value, mask=mask) 
 			 for i, attn in enumerate(self.attn_heads)]
 		 
 		# concatenate all attention heads and perform 
