@@ -873,7 +873,7 @@ class AttentionHead(nn.Module):
 		attn = torch.bmm(Q, torch.transpose(K, 1, 2)) #(batch, Seq, Seq)
  
 		#scale the dot products by d_k for numerical stability (more stable gradients)
-		attn = attn / math.sqrt(d_k)
+		attn = attn / torch.sqrt(d_k)
 
 		#Apply softmax
 		#attn = torch.exp(attn)
@@ -890,7 +890,10 @@ class AttentionHead(nn.Module):
 		attn = attn * mask
 
 		#For numerical stability issues
-		#attn = attn - (10**9) * (1 - mask) 
+		attn = attn - (10**9) * (1 - mask) 
+        
+        #Apply softmax
+		#attn = torch.exp(attn)
 
 		#Normalize where row values add up to 1
 		#attn = attn / attn.sum(-1, keepdim=True)
