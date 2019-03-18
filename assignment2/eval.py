@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
 	##Problem 5
 	#Generate samples using RNN
-	dir = 'rnn/best_params.pt'
+	dir = 'best_params.pt'
 
 	# Device configuration
 	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

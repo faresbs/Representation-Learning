@@ -905,14 +905,14 @@ class ScaledDotProductAttention(nn.Module):
 
 		#fill attention weights with 0s where padded
 		#Which is the opposite of what we want to do
-		#if mask is not None: 
-		#    attn = attn.masked_fill(mask, 0)
+		if mask is not None: 
+		    attn = attn.masked_fill(mask, 0)
 
 		#Cast to float tensor from byte tensor to perform multiplication
-		mask = mask.type(torch.FloatTensor).to(device)
+		#mask = mask.type(torch.FloatTensor).to(device)
 
 		#Apply mask to attention values
-		attn = attn * mask
+		#attn = attn * mask
 
 		#For numerical stability issues
 		#attn = attn - (10**9) * (1 - mask) 
