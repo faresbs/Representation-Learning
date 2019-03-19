@@ -325,9 +325,6 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 			device = torch.device("cpu")
 
 		logits = torch.zeros([self.batch_size, self.vocab_size], device=device)
-
-		#Size of vocabulary
-		vocab = 10000
 		
 		#Loop over the generated seq length, output of timestep will be the input of the next
 		for seq in range(generated_seq_len):
@@ -381,8 +378,9 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 			sampled = torch.multinomial(prob, num_samples=1)
 
 			#shape = (batch_size)
-			samples[seq] = sampled.squeeze() 
+			samples[seq] = sampled.squeeze()
 
+		
 		return samples # (generated_seq_len, batch_size)
 
 
@@ -714,14 +712,6 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 
 				#save final hidden state for next layer
 				hidden[layer+1] = out
-				
-
-			
-			#Save hidden state in variable after looping over all 
-			#print(h_.shape)
-			#print(hidden.shape)
-			#print(step)
-			#hidden = h_
 
 			#Apply dropout before output layer
 			out = self.dropout(out)
@@ -732,8 +722,93 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 		return logits.view(self.seq_len, self.batch_size, self.vocab_size), hidden
 
 	def generate(self, input, hidden, generated_seq_len):
-		# TODO ========================
-		return samples
+
+		#Generated samples from the model
+		samples = torch.zeros([generated_seq_len, self.batch_size])
+
+		if torch.cuda.is_available():
+			device = torch.device("cuda")
+		else:
+			device = torch.device("cpu")
+
+		logits = torch.zeros([self.batch_size, self.vocab_size], device=device)
+		
+		#Loop over the generated seq length, output of timestep will be the input of the next
+		for seq in range(generated_seq_len):
+
+			##Go through the first layer first
+
+			#Take initial hidden state for first layer
+			h = hidden[0]
+
+			# Lookup word embeddings
+			#(batch_size, enb_size)
+			emb = self.embeddings(input)
+
+			#Combine embeddings and last hidden state
+			##combine = [h, emb]
+			combined = torch.cat((h, emb), 1)
+
+			#Apply GRU equations for the first layer
+			#Reset gate
+			r = self.f_layer[0](combined)
+			#Forget gate
+			z = self.f_layer[1](combined)
+
+			combined = torch.cat((hidden[0].clone() * r, emb), 1)
+			out_tilda = self.f_layer[2](combined)
+
+			#hidden state of current cell
+			out = ((1-z) * hidden[0].clone()) + (z * out_tilda)
+
+			#save final hidden state for next timestep
+			hidden[0] = out
+			
+			
+			#Loop over the rest of the layers
+			for layer in range(self.num_layers-1):
+
+				#Combine last output and last hidden state
+				##combine = [h, out]
+				combined = torch.cat((hidden[layer+1], out), 1)
+
+				#Apply GRU equations for the first layer
+				#Reset gate
+				r = self.rec[layer][0](combined)
+				#Forget gate
+				z = self.rec[layer][1](combined)
+				#Memory 
+				#Combine embeddings and last hidden state(with the reset gate)
+
+				combined = torch.cat((hidden[layer+1].clone()*r, out), 1)
+				out_tilda = self.rec[layer][2](combined)
+
+				#hidden state of current cell
+				out = ((1-z) * hidden[layer+1].clone()) + (z * out_tilda)
+
+				#save final hidden state for next layer
+				hidden[layer+1] = out
+
+			#last layer to calculate the logits
+			#(batch_size, vocab_size)
+			logits = self.logit(out)
+
+			#Apply softmax to logits to get probabilities
+			m = nn.Softmax(dim=1)
+			prob = m(logits)
+
+			#Sample of size batch_size from the vocab using a non-uniform distribution from softmax
+			#inp = np.random.choice(vocab, size=20, replace=True, p=prob)	  
+			
+			#Shape is nb of rows of prob = batch_size
+			#Sample from the multinomial probability distribution located in the corresponding row of tensor input
+			sampled = torch.multinomial(prob, num_samples=1)
+
+			#shape = (batch_size)
+			samples[seq] = sampled.squeeze()
+
+
+		return samples # (generated_seq_len, batch_size)
 
 
 # Problem 3
@@ -808,7 +883,6 @@ class AttentionHead(nn.Module):
 
 		#Assuming that the queries, keys, and values have the same dim = d_k
 		 
-
 		#d_k = n_units / n_heads
 		#inp = n_units/size_hidden from previous attention block or embeddings
 
@@ -905,8 +979,9 @@ class ScaledDotProductAttention(nn.Module):
 
 		#fill attention weights with 0s where padded
 		#Which is the opposite of what we want to do
-		if mask is not None: 
-		    attn = attn.masked_fill(mask, 0)
+		
+		#if mask is not None: 
+		#    attn = attn.masked_fill(mask, 0)
 
 		#Cast to float tensor from byte tensor to perform multiplication
 		#mask = mask.type(torch.FloatTensor).to(device)
@@ -926,7 +1001,13 @@ class ScaledDotProductAttention(nn.Module):
 		#Apply softmax
 		attn = self.softmax(attn)
 
-		#Apply dropout to attention output
+		#fill attention weights with 0s where padded
+		#Which is the opposite of what we want to do
+
+		if mask is not None: 
+		    attn = attn.masked_fill(~mask, 0)
+
+		#Apply dropout to attention value
 		attn = self.dropout(attn)
 		
 		#Multiply value matrix V with attention scores: 
