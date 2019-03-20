@@ -31,7 +31,6 @@ if __name__ == '__main__':
                 vocab_size=10000, num_layers=2, 
                 dp_keep_prob=0.35) 
 
-
 	model.load_state_dict(torch.load(dir))
 
 	#To remove the dropout 
