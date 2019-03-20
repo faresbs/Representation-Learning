@@ -1,5 +1,5 @@
 """
-Script contains eval/helper functions for both problems 4 and 5
+Script to generate samples using RNN and GRU for problem 5 of assignement 2
 """
 
 import torch 

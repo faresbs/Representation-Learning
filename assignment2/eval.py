@@ -10,59 +10,46 @@ import math, copy, time
 import matplotlib.pyplot as plt
 import models as models
 
-#torch.manual_seed(1111)
-np.random.seed(1111)
+
+#Display learning curve 
+def learning_curve(train_ppl, val_ppl, time, file, save_path):
+
+	epochs = range(len(train_acc))
+
+	plt.figure()
+
+	plt.plot(epochs, train_acc, 'b', label='Training acc')
+	plt.plot(epochs, val_acc, 'g', label='Validation acc')
+	plt.title('Training and validation accuracy')
+	plt.xlabel('epoch')
+	plt.legend()
+	plt.savefig(path+"accuracy.png")
+
+	plt.figure()
+
+	plt.plot(epochs, train_loss, 'b', label='Training loss')
+	plt.plot(epochs, val_loss, 'g', label='Validation loss')
+	plt.title('Training and validation loss')
+	plt.xlabel('epoch')
+	plt.legend()
+	plt.savefig(path+"loss.png")
+
+
+
 
 if __name__ == '__main__':
 
-	##Problem 5
-	#Generate samples using RNN
-	dir = 'best_params.pt'
+	#filepath = 'models/rnn/learning_curves.npy'
+	#file = 'models/gru/learning_curves.npy'	
+	#file = np.load(file)
+	filepath = 'models/rnn/log.txt'
 
-	# Device configuration
-	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-	print ("Running on " + str(device))
+	with open(filepath) as fp:  
+	   line = fp.readline()
+	   cnt = 1
+	   while line:
+	       print("Line {}: {}".format(cnt, line.strip()))
+	       line = fp.readline()
+	       cnt += 1
 
-
-	print("RNN model loaded..")
-
-	model = models.RNN(emb_size=200, hidden_size=1500, 
-                seq_len=35, batch_size=20,
-                vocab_size=10000, num_layers=2, 
-                dp_keep_prob=0.35) 
-
-	model.load_state_dict(torch.load(dir))
-
-	#To remove the dropout 
-	model.eval()
-
-	#Size of vocabulary
-	vocab = 10000
-
-	#Sample of size batch_size from the vocab using a uniform distribution
-	inp = np.random.choice(vocab, size=20, replace=True, p=None)
-	#inp = torch.zeros(20)
-	#print(inp)
-	#Transform to tensor
-	inp = torch.from_numpy(inp)
-
-	#Initial hidden state is 0 ?
-	#(num_layers, batch_size, hidden_size)
-	hidden = torch.zeros(2, 20, 1500)
-
-	#Stop sampling util we reach the seq length or generate an <eos> token
-	generated_seq_len = 20
-
-	#Generate samples with model
-	samples = model.generate(inp, hidden, generated_seq_len)
-
-	print("Sequence samples: ")
-
-	#Map the samples sequences index into words sequences using vocab dictionary
-	#TO DO
-	d = {}
-	with open("vocab.txt") as f:
-	    for line in f:
-	       (key, val) = line.split()
-	       d[int(key)] = val
-
+	
