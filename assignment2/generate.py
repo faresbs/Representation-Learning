@@ -1,5 +1,5 @@
 """
-Script contains eval/helper functions for both problems 4 and 5
+Script to generate samples using RNN and GRU
 """
 
 import torch 
@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 import models as models
 
 import collections
+
+from gtts import gTTS
+import os
 
 #torch.manual_seed(1111)
 np.random.seed(1111)
@@ -38,7 +41,13 @@ def _build_vocab(filename):
 
 if __name__ == '__main__':
 
-	##Problem 5
+	#Google Text-to-Speech
+	speak = True
+
+	#Create folder to save audio
+	if not os.path.exists('audio'):
+		os.mkdir('audio')
+	speak = False
 
 	# Device configuration
 	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -81,18 +90,19 @@ if __name__ == '__main__':
 	vocab = 10000
 
 	#Sample of size batch_size from the vocab using a uniform distribution
-	#inp = np.random.choice(vocab, size=20, replace=True, p=None)
-	inp = np.zeros(20, dtype=int)
+	#Take a random word
+	inp = np.random.choice(vocab, size=20, replace=True, p=None)
+	#inp = np.zeros(20, dtype=int)
 	#print(inp)
 	#Transform to tensor
 	inp = torch.from_numpy(inp)
 
-	#Initial hidden state is 0 ?
+	#Initial hidden state is 0 
 	#(num_layers, batch_size, hidden_size)
 	hidden = torch.zeros(2, 20, 1500)
 
 	#Stop sampling util we reach the seq length or generate an <eos> token
-	generated_seq_len = 5
+	generated_seq_len = 40
 
 	#Generate samples with model
 	# samples = (generated_seq_len, batch_size)
@@ -116,9 +126,27 @@ if __name__ == '__main__':
 		for w in range(samples.shape[0]):
 			array.append(id_to_word[samples[w, s]])
 
+
+		if(speak):
+
+			#Remove unwanted tokens
+			while (array.count('<unk>')): 
+				array.remove('<unk>')
+
+			while (array.count('<eos>')): 
+				array.remove('<eos>')
+
+			#Transform the last sentence to voice
+			text1 = ' '.join(array)
+			print (text1)
+			tts = gTTS(text=text1, lang='en')	
+			tts.save('audio/sentence'+str(s+1)+'.mp3')
+			tts.save('sentence'+str(s)+'.mp3')
+
 		a.append(array)
 		array = []
-
+	
+		
 	if(model_type=='RNN'):
 		np.savetxt('samples_rnn.txt', a,  newline='\n', fmt="%s")
 

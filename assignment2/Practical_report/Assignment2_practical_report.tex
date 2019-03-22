@@ -7,6 +7,10 @@
 \usepackage{color}
 \usepackage{geometry}
 \usepackage[colorinlistoftodos]{todonotes}
+\usepackage{array}
+\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}p{#1}}{\textbf{#2}}}
+\usepackage{float}
+\restylefloat{table}
 
 \title{Report Practical assignment 2}
 
@@ -23,7 +27,8 @@ Jorge A. Gutierrez Ortega
 \maketitle
 
 \begin{abstract}
-This report explains our approaches to solving the problems of the practical assignment~1, the experiments we performed, the results and conclusion of our work. The code we developped is uploaded to our Github repository \cite{github}
+This report explains our approaches to solving the problems of the practical assignment~2, the experiments we performed, the results and conclusion of our work. The code we developped is uploaded to our Github repository \cite{github}.\\
+In this assignment we implement and train sequential language models on the Penn Treebank dataset. Problem1-3 are respectively the implementation of a simple vanilla RNN, an RNN with a gating mechanism(GRU) and a transformer network.
 \end{abstract}
 
 \input{problem1.tex}
@@ -35,9 +40,9 @@ This report explains our approaches to solving the problems of the practical ass
 
  \newpage
 \begin{thebibliography}{9}
-\bibitem{weights} 
-  Jayadevan Thayumanav: Why don't we initialize the weights of a neural network to zero?, 2018.
-  \\\texttt{https://www.quora.com/Why-dont-we-initialize-the-weights-of-a-neural-network-to-zero}
+%\bibitem{weights} 
+%  Jayadevan Thayumanav: Why don't we initialize the weights of a neural network to zero?, 2018.
+%  \\\texttt{https://www.quora.com/Why-dont-we-initialize-the-weights-of-a-neural-network-to-zero}
 
   
   
