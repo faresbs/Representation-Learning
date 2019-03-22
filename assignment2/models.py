@@ -380,7 +380,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 			#shape = (batch_size)
 			samples[seq] = sampled.squeeze()
 
-		
+
 		return samples # (generated_seq_len, batch_size)
 
 
@@ -878,7 +878,7 @@ class ScaledDotProductAttention(nn.Module):
 	def __init__(self, dropout=0.1):
 		super(ScaledDotProductAttention, self).__init__()
 		self.dropout = nn.Dropout(dropout)
-		self.softmax = F.softmax
+		self.softmax = nn.Softmax(dim=2)
 	
 	def forward(self, Q, K, V, mask):
 
@@ -899,7 +899,7 @@ class ScaledDotProductAttention(nn.Module):
 		attn = torch.bmm(Q, torch.transpose(K, 1, 2)) #(batch, Seq, Seq)
  
 		#scale the dot products by d_k for numerical stability (more stable gradients)
-		attn = attn / math.sqrt(d_k)
+		attn = attn / np.sqrt(d_k)
 
 		#Apply softmax
 		#attn = torch.exp(attn)
@@ -908,17 +908,23 @@ class ScaledDotProductAttention(nn.Module):
 		#Which is the opposite of what we want to do
 		
 		#if mask is not None: 
-		#    attn = attn.masked_fill(mask, 0)
+		#	attn = attn.masked_fill(~mask, 0)
+
+		if mask is not None:
+			attn = attn.masked_fill(~mask, -(10**9))
 
 		#Cast to float tensor from byte tensor to perform multiplication
 		#mask = mask.type(torch.FloatTensor).to(device)
 
+		#print(attn[0])
 		#Apply mask to attention values
 		#attn = attn * mask
+		#print(mask[0])
+		#print(attn[0])
 
 		#For numerical stability issues
-		#attn = attn - (10**9) * (1 - mask) 
-        
+		#attn = (attn * mask) - ((10**9) * (1 - mask)) 
+
         #Apply softmax
 		#attn = torch.exp(attn)
 
@@ -926,13 +932,22 @@ class ScaledDotProductAttention(nn.Module):
 		#attn = attn / attn.sum(-1, keepdim=True)
 
 		#Apply softmax
-		attn = self.softmax(attn)
+		#attn = self.softmax(attn)
 
 		#fill attention weights with 0s where padded
 		#Which is the opposite of what we want to do
 
-		if mask is not None: 
-		    attn = attn.masked_fill(~mask, 0)
+		#if mask is not None: 
+		    #attn = attn.masked_fill(~mask, 0)
+		    #attn = attn.masked_fill(mask, 0)
+
+
+		#When apply softmax
+		attn = self.softmax(attn)
+
+		#attn = torch.exp(attn)
+
+		#attn = attn / attn.sum(-1, keepdim=True)
 
 		#Apply dropout to attention value
 		attn = self.dropout(attn)
@@ -1024,6 +1039,9 @@ class MultiHeadedAttention(nn.Module):
 		#input dim = n_units/size_hidden from previous attention block and outpul dim = n_units
 		self.projection = nn.Linear(self.n_units, self.n_units, bias=True) 
 
+		#DROPOUT HERE?
+		self.dropout = nn.Dropout(dropout)
+
 		##Init the weights and biases for the projection layer
         #k is the square root of 1/n_units
 		k = np.sqrt(1 / self.n_units) 
@@ -1069,6 +1087,8 @@ class MultiHeadedAttention(nn.Module):
 		z = torch.cat(Zs, dim=2) # (Batch, Seq, n_k * n_heads)
 			
 		z = self.projection(z) # (Batch, Seq, self.n_units)
+
+		z = self.dropout(z)
 
 		return z #(batch_size, seq_len, self.n_units)
 
