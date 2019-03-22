@@ -13,7 +13,10 @@ import models as models
 import collections
 
 from gtts import gTTS
+<<<<<<< HEAD
 import os
+=======
+>>>>>>> 86f1c4a0265c20062cda6a333380367d550a7452
 
 #torch.manual_seed(1111)
 np.random.seed(1111)
@@ -47,7 +50,6 @@ if __name__ == '__main__':
 	#Create folder to save audio
 	if not os.path.exists('audio'):
 		os.mkdir('audio')
-	speak = False
 
 	# Device configuration
 	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
