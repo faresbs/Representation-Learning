@@ -11,12 +11,13 @@ import matplotlib.pyplot as plt
 import models as models
 
 def loss_per_tstep(file_path):
-	L = np.load(file_path + 'loss_timestep_minibatch.npy')
+	L = np.load(file_path + '/loss_timestep_minibatch.npy')
+	avg_L = np.mean(L,axis = 0)
 	plt.figure()
-	plt.plot(L)
-	plt.title('loss')
+	plt.plot(avg_L)
+	plt.ylabel('loss')
 	plt.xlabel('time-step (t)')
-	plt.savefig(path+"accuracy.png")
+	plt.savefig(file_path + '/loss_t-step.png')
 
 
 
@@ -52,6 +53,8 @@ if __name__ == '__main__':
 	#file = 'models/gru/learning_curves.npy'
 	#file = np.load(file)
 	filepath = 'models/rnn/log.txt'
+	# file_path = 'RNN_ADAM_model=RNN_optimizer=ADAM_initial_lr=0.0001_batch_size=1_seq_len=35_hidden_size=1500_num_layers=2_dp_keep_prob=0.35_save_best_0'
+	# loss_per_tstep(file_path)
 
 	with open(filepath) as fp:
 	   line = fp.readline()
