@@ -52,14 +52,14 @@ if __name__ == '__main__':
 	#filepath = 'models/rnn/learning_curves.npy'
 	#file = 'models/gru/learning_curves.npy'
 	#file = np.load(file)
-	filepath = 'models/rnn/log.txt'
-	# file_path = 'RNN_ADAM_model=RNN_optimizer=ADAM_initial_lr=0.0001_batch_size=1_seq_len=35_hidden_size=1500_num_layers=2_dp_keep_prob=0.35_save_best_0'
-	# loss_per_tstep(file_path)
+	# filepath = 'models/rnn/log.txt'
+	file_path = 'GRU_SGD_LR_SCHEDULE_model=GRU_optimizer=SGD_LR_SCHEDULE_initial_lr=10_batch_size=50_seq_len=35_hidden_size=1500_num_layers=2_dp_keep_prob=0.35_save_best_0'
+	loss_per_tstep(file_path)
 
-	with open(filepath) as fp:
-	   line = fp.readline()
-	   cnt = 1
-	   while line:
-	       print("Line {}: {}".format(cnt, line.strip()))
-	       line = fp.readline()
-	       cnt += 1
+	# with open(filepath) as fp:
+	#    line = fp.readline()
+	#    cnt = 1
+	#    while line:
+	#        print("Line {}: {}".format(cnt, line.strip()))
+	#        line = fp.readline()
+	#        cnt += 1

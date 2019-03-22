@@ -321,6 +321,13 @@ elif args.model == 'TRANSFORMER':
 else:
   print("Model type not recognized.")
 
+###############################################################################
+# Loading pre-trained model
+###############################################################################
+# dir = './experiments/Exploration_of_optimizers/'
+dir ='./'
+model.load_state_dict(torch.load(dir+'best_params_GRU.pt'))
+
 model = model.to(device)
 
 # LOSS FUNCTION
@@ -390,7 +397,9 @@ def run_epoch(model, data, is_train=False, lr=1.0):
         else:
             inputs = torch.from_numpy(x.astype(np.int64)).transpose(0, 1).contiguous().to(device)#.cuda()
             model.zero_grad()
-            hidden = repackage_hidden(hidden)
+            # hidden = repackage_hidden(hidden)
+            hidden = model.init_hidden()
+            hidden = hidden.to(device)
             outputs, hidden = model(inputs, hidden)
 
         # LOSS COMPUTATION
