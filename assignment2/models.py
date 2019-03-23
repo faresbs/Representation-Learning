@@ -970,12 +970,6 @@ class MultiHeadedAttention(nn.Module):
 			query.weight.copy_(Wq)
 			query.bias.copy_(bq)
 
-			#head[1].weight.copy_(Wk)
-			#head[1].bias.copy_(bk)
-				
-			#head[2].weight.copy_(Wv)
-			#head[2].bias.copy_(bv)
-
 		#Use clones to create the queries, keys and values linear layer 
 		#share the same weights and biases	
 		m = clones(query, 3)
@@ -986,11 +980,6 @@ class MultiHeadedAttention(nn.Module):
 		#Create n_heads of attention head module
 		#self.attn_heads = clones(AttentionHead(self.n_units, self.d_k, dropout), self.n_heads)
 		self.attn_heads = clones(AttentionHead, self.n_heads)
-
-		#Randomly initialize each head with its own weights
-		#for head in self.attn_heads:
-
-			
 
 
 		#input dim = n_units/size_hidden from previous attention block and outpul dim = n_units
