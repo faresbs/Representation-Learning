@@ -10,6 +10,22 @@ import math, copy, time
 import matplotlib.pyplot as plt
 import models as models
 
+def plot_grads(file_path_RNN,file_path_GRU):
+	grads_RNN = np.load(file_path_RNN + '/gradsL_wrt_ht.npy')
+	grads_RNN = (grads_RNN - np.min(grads_RNN))/(np.max(grads_RNN) - np.min(grads_RNN))
+	# grads_GRU = np.load(file_path_GRU + '/gradsL_wrt_ht.npy')
+	# grads_GRU = (grads_GRU - np.min(grads_GRU))/(np.max(grads_GRU) - np.min(grads_GRU))
+
+	plt.figure(figsize=(10, 6))
+	plt.plot(grads_RNN,label='RNN')
+	# plt.plot(grads_GRU,label='GRU')
+	plt.title('Norm of the avg. gradient of the loss at the final time-step ht')
+	plt.ylabel('Norm')
+	plt.xlabel('Time-step')
+	plt.legend()
+	plt.savefig(file_path_RNN + '/gradsL_wrt_ht.png')
+	# plt.savefig(file_path_GRU + '/gradsL_wrt_ht.png')
+
 def loss_per_tstep(file_path_RNN,file_path_GRU):
 	L_RNN = np.load(file_path_RNN + '/loss_timestep_minibatch.npy')
 	avg_L_RNN = np.mean(L_RNN,axis = 0)
@@ -61,8 +77,8 @@ if __name__ == '__main__':
 	# filepath = 'models/rnn/log.txt'
 	file_path_RNN = 'RNN_ADAM_model=RNN_optimizer=ADAM_initial_lr=0.0001_batch_size=50_seq_len=35_hidden_size=1500_num_layers=2_dp_keep_prob=0.35_save_best_0'
 	file_path_GRU = 'GRU_SGD_LR_SCHEDULE_model=GRU_optimizer=SGD_LR_SCHEDULE_initial_lr=10_batch_size=50_seq_len=35_hidden_size=1500_num_layers=2_dp_keep_prob=0.35_save_best_0'
-	loss_per_tstep(file_path_RNN,file_path_GRU)
-
+	# loss_per_tstep(file_path_RNN,file_path_GRU)
+	plot_grads(file_path_RNN,file_path_GRU)
 
 	# with open(filepath) as fp:
 	#    line = fp.readline()
