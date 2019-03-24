@@ -1,0 +1,47 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{geometry}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{array}
+\newcommand{\head}[2]{\multicolumn{1}{>{\centering\arraybackslash}p{#1}}{\textbf{#2}}}
+\usepackage{float}
+\restylefloat{table}
+
+\title{Report Practical assignment 2}
+
+\author{\textbf{Team members:}\\
+Fares Ben Slimane \\
+Parviz Haggi \\
+Mohammed Loukili \\
+Jorge A. Gutierrez Ortega
+}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This report explains our approaches to solving the problems of the practical assignment~2, the experiments we performed, the results and conclusion of our work. The code we developed is uploaded to our Github repository \cite{github}.\\
+In this assignment we implement and train sequential language models on the Penn Treebank dataset. Problem1-3 include the implementation of a simple vanilla RNN, an RNN with a gating mechanism(GRU) and a transformer network, respectively
+\end{abstract}
+
+\input{problem1.tex}
+\input{problem2.tex}
+\input{problem3.tex}
+\input{problem4.tex}
+\input{problem5.tex}
+
+
+ \newpage
+\begin{thebibliography}{9}
+\bibitem{github} 
+The machinists' github repository
+\\\texttt{https://github.com/faresbs/Representation-Learning}
+\end{thebibliography}
+\end{document}
