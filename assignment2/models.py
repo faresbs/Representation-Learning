@@ -290,7 +290,7 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 		return logits.view(self.seq_len, self.batch_size, self.vocab_size), hidden
 
 
-	def generate(self, inp, hidden, generated_seq_len):
+	def generate(self, inp, hidden, generated_seq_len, temperature=1):
 		# TODO ========================
 		# Compute the forward pass, as in the self.forward method (above).
 		# You'll probably want to copy substantial portions of that code here.
@@ -368,16 +368,17 @@ class RNN(nn.Module): # Implement a stacked vanilla RNN with Tanh nonlinearities
 
 			#Apply softmax to logits to get probabilities
 			m = nn.Softmax(dim=1)
+
+			#Apply temperature on the softmax
+			logits = logits / temperature
+
 			prob = m(logits)
 
-			#Sample of size batch_size from the vocab using a non-uniform distribution from softmax
-			#inp = np.random.choice(vocab, size=20, replace=True, p=prob)	  
-			
 			#Shape is nb of rows of prob = batch_size
 			#Sample from the multinomial probability distribution located in the corresponding row of tensor input
 			sampled = torch.multinomial(prob, num_samples=1)
 
-			#shape = (batch_size)
+			#(batch_size)
 			samples[seq] = sampled.squeeze()
 
 
@@ -633,11 +634,6 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 
 		logits = torch.zeros([self.seq_len, self.batch_size, self.vocab_size], device=device)
 
-		#Avoid inplace operations error
-		#h_ = Variable(torch.Tensor(hidden.shape))
-
-		#h_ = hidden
-
 		#Loop over the timesteps
 		for step in range(self.seq_len):
 
@@ -669,10 +665,8 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 			z = self.f_layer[1](combined)
 			#Memory 
 			#Combine embeddings and last hidden state(with the reset gate)
-			#Avoid inplace operations error
-			#hr = Variable(torch.Tensor(self.batch_size, self.hidden_size))
-			#Inplace operation
-			#h = h * r
+			
+			#Use the clone() to avoid inplace operation
 			combined = torch.cat((hidden[0].clone() * r, emb), 1)
 			out_tilda = self.f_layer[2](combined)
 
@@ -688,9 +682,6 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 
 				#Apply dropout to non recurrent connexion
 				out = self.dropout(out)
-				
-				#Take the initial hidden state of the current layer
-				#h = hidden[layer+1]
 
 				#Combine last output and last hidden state
 				##combine = [h, out]
@@ -701,9 +692,9 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 				r = self.rec[layer][0](combined)
 				#Forget gate
 				z = self.rec[layer][1](combined)
+				
 				#Memory 
 				#Combine embeddings and last hidden state(with the reset gate)
-
 				combined = torch.cat((hidden[layer+1].clone()*r, out), 1)
 				out_tilda = self.rec[layer][2](combined)
 
@@ -721,7 +712,7 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 
 		return logits.view(self.seq_len, self.batch_size, self.vocab_size), hidden
 
-	def generate(self, input, hidden, generated_seq_len):
+	def generate(self, input, hidden, generated_seq_len,temperature):
 
 		#Generated samples from the model
 		samples = torch.zeros([generated_seq_len, self.batch_size])
@@ -793,12 +784,12 @@ class GRU(nn.Module): # Implement a stacked GRU RNN
 			#(batch_size, vocab_size)
 			logits = self.logit(out)
 
+			#Apply temperature
+			logits = logits / temperature
+
 			#Apply softmax to logits to get probabilities
 			m = nn.Softmax(dim=1)
-			prob = m(logits)
-
-			#Sample of size batch_size from the vocab using a non-uniform distribution from softmax
-			#inp = np.random.choice(vocab, size=20, replace=True, p=prob)	  
+			prob = m(logits)	  
 			
 			#Shape is nb of rows of prob = batch_size
 			#Sample from the multinomial probability distribution located in the corresponding row of tensor input
@@ -901,53 +892,15 @@ class ScaledDotProductAttention(nn.Module):
 		#scale the dot products by d_k for numerical stability (more stable gradients)
 		attn = attn / np.sqrt(d_k)
 
-		#Apply softmax
-		#attn = torch.exp(attn)
-
 		#fill attention weights with 0s where padded
-		#Which is the opposite of what we want to do
-		
-		#if mask is not None: 
-		#	attn = attn.masked_fill(~mask, 0)
-
 		if mask is not None:
+			#attn = attn.masked_fill(mask==0, -(10**9))
 			attn = attn.masked_fill(~mask, -(10**9))
-
-		#Cast to float tensor from byte tensor to perform multiplication
-		#mask = mask.type(torch.FloatTensor).to(device)
-
-		#print(attn[0])
-		#Apply mask to attention values
-		#attn = attn * mask
-		#print(mask[0])
-		#print(attn[0])
-
-		#For numerical stability issues
-		#attn = (attn * mask) - ((10**9) * (1 - mask)) 
-
-        #Apply softmax
-		#attn = torch.exp(attn)
-
-		#Normalize where row values add up to 1
-		#attn = attn / attn.sum(-1, keepdim=True)
-
-		#Apply softmax
-		#attn = self.softmax(attn)
-
-		#fill attention weights with 0s where padded
-		#Which is the opposite of what we want to do
-
-		#if mask is not None: 
-		    #attn = attn.masked_fill(~mask, 0)
-		    #attn = attn.masked_fill(mask, 0)
 
 
 		#When apply softmax
 		attn = self.softmax(attn)
 
-		#attn = torch.exp(attn)
-
-		#attn = attn / attn.sum(-1, keepdim=True)
 
 		#Apply dropout to attention value
 		attn = self.dropout(attn)
@@ -992,23 +945,23 @@ class MultiHeadedAttention(nn.Module):
 
 		#Affine transformations for queries, keys, and values to get the matrices
 		query = nn.Linear(self.n_units, self.d_k, bias=True)	
-		key = nn.Linear(self.n_units, self.d_k, bias=True)
-		value = nn.Linear(self.n_units, self.d_k, bias=True)
+		#key = nn.Linear(self.n_units, self.d_k, bias=True)
+		#value = nn.Linear(self.n_units, self.d_k, bias=True)
 
 		attn = ScaledDotProductAttention(dropout)
 
-        #k is the square root of 1/n_units or 1/d_k?
+        #k is the square root of 1/n_units
 		k = np.sqrt(1 / self.n_units) 
 
 		#Weights of W, K and V matrices
 		Wq = torch.Tensor(self.d_k, self.n_units).uniform_(-k, k)
-		Wk = torch.Tensor(self.d_k, self.n_units).uniform_(-k, k)
-		Wv = torch.Tensor(self.d_k, self.n_units).uniform_(-k, k)
+		#Wk = torch.Tensor(self.d_k, self.n_units).uniform_(-k, k)
+		#Wv = torch.Tensor(self.d_k, self.n_units).uniform_(-k, k)
 
 		#biases of W, K and V matrices
 		bq = torch.Tensor(self.d_k).uniform_(-k, k)
-		bk = torch.Tensor(self.d_k).uniform_(-k, k)
-		bv = torch.Tensor(self.d_k).uniform_(-k, k)
+		#bk = torch.Tensor(self.d_k).uniform_(-k, k)
+		#bv = torch.Tensor(self.d_k).uniform_(-k, k)
 
 		#Fill the linear layers with init weights and biases
 		#To avoid problems of grads
@@ -1017,29 +970,28 @@ class MultiHeadedAttention(nn.Module):
 			query.weight.copy_(Wq)
 			query.bias.copy_(bq)
 
-			key.weight.copy_(Wk)
-			key.bias.copy_(bk)
-			
-			value.weight.copy_(Wv)
-			value.bias.copy_(bv)
+			#head[1].weight.copy_(Wk)
+			#head[1].bias.copy_(bk)
+				
+			#head[2].weight.copy_(Wv)
+			#head[2].bias.copy_(bv)
 
+		#Use clones to create the queries, keys and values linear layer 
+		#share the same weights and biases	
+		m = clones(query, 3)
 
-		#Create the attention heads
-		#self.attn_heads = nn.ModuleList([
-		#	AttentionHead(self.n_units, self.d_k, dropout) for _ in range(self.n_heads)
-		#])
-		#Using clones method
+		#Create the attention heads using clones method 
+		AttentionHead = nn.ModuleList([m[0],m[1],m[2],attn])
 
-		AttentionHead = nn.ModuleList([query,key,value,attn])
 
 		#Create n_heads of attention head module
 		#self.attn_heads = clones(AttentionHead(self.n_units, self.d_k, dropout), self.n_heads)
 		self.attn_heads = clones(AttentionHead, self.n_heads)
 
+
 		#input dim = n_units/size_hidden from previous attention block and outpul dim = n_units
 		self.projection = nn.Linear(self.n_units, self.n_units, bias=True) 
 
-		#DROPOUT HERE?
 		self.dropout = nn.Dropout(dropout)
 
 		##Init the weights and biases for the projection layer
@@ -1082,6 +1034,7 @@ class MultiHeadedAttention(nn.Module):
 			#Compute attention score for the head
 			z = head[3](Q, K, V, mask) #(Batch, Seq, n_k)
 			Zs.append(z)
+
 
 		# concatenate all attention heads
 		z = torch.cat(Zs, dim=2) # (Batch, Seq, n_k * n_heads)
