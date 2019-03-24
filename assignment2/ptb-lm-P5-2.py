@@ -325,8 +325,8 @@ else:
 # Loading pre-trained model
 ###############################################################################
 # dir = './experiments/Exploration_of_optimizers/'
-trained_dir ='./'
-model.load_state_dict(torch.load(trained_dir+'best_params_vanilla.pt'))
+trained_dir ='./GRU_Fexp17/'
+model.load_state_dict(torch.load(trained_dir+'best_params.pt'))
 
 model = model.to(device)
 
