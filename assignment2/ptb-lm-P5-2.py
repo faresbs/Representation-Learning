@@ -325,8 +325,8 @@ else:
 # Loading pre-trained model
 ###############################################################################
 # dir = './experiments/Exploration_of_optimizers/'
-trained_dir ='./'
-model.load_state_dict(torch.load(trained_dir+'best_params_vanilla.pt'))
+trained_dir ='./GRU_Fexp17/'
+model.load_state_dict(torch.load(trained_dir+'best_params.pt'))
 
 model = model.to(device)
 
@@ -402,7 +402,7 @@ def run_epoch(model, data, is_train=False, lr=1.0):
 
             print('step ' + str(step))
             seq_len = model.seq_len
-            # LOSS COMPUTATION
+            # LOSS COMPUTATION (This is for Q5.2, process each time-step separately and compute the loss only at time T)
             targets = torch.from_numpy(y.astype(np.int64)).transpose(0, 1).contiguous().to(device)#.cuda()
 
             hiddens = []
