@@ -1,0 +1,17 @@
+batch_size    32
+code_file    /usr/local/lib/python3.6/dist-packages/ipykernel_launcher.py
+data    /content/drive/My Drive/Assignment2/data
+debug    False
+dp_keep_prob    0.4
+emb_size    200
+evaluate    True
+hidden_size    896
+initial_lr    11
+model    GRU
+num_epochs    40
+num_layers    2
+optimizer    SGD_LR_SCHEDULE
+save_best    True
+save_dir    /content/drive/My Drive/Assignment2/GRU_exp18
+seed    1111
+seq_len    35
