@@ -402,7 +402,7 @@ def run_epoch(model, data, is_train=False, lr=1.0):
 
             print('step ' + str(step))
             seq_len = model.seq_len
-            # LOSS COMPUTATION
+            # LOSS COMPUTATION (This is for Q5.2, process each time-step separately and compute the loss only at time T)
             targets = torch.from_numpy(y.astype(np.int64)).transpose(0, 1).contiguous().to(device)#.cuda()
 
             hiddens = []
