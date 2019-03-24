@@ -13,10 +13,7 @@ import models as models
 import collections
 
 from gtts import gTTS
-<<<<<<< HEAD
 import os
-=======
->>>>>>> 86f1c4a0265c20062cda6a333380367d550a7452
 
 #torch.manual_seed(1111)
 np.random.seed(1111)
@@ -55,7 +52,7 @@ if __name__ == '__main__':
 	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 	print ("Running on " + str(device))
 
-	model_type = 'RNN'
+	model_type = 'GRU'
 
 	if(model_type=='RNN'):
 
@@ -104,11 +101,14 @@ if __name__ == '__main__':
 	hidden = torch.zeros(2, 20, 1500)
 
 	#Stop sampling util we reach the seq length or generate an <eos> token
-	generated_seq_len = 40
+	generated_seq_len = 35
+
+	#in softmax e^(x/temp) for more coherent results
+	temp = 0.5
 
 	#Generate samples with model
 	# samples = (generated_seq_len, batch_size)
-	samples = model.generate(inp, hidden, generated_seq_len)
+	samples = model.generate(inp, hidden, generated_seq_len, temp)
 
 	print("Creating samples..")
 
@@ -143,7 +143,6 @@ if __name__ == '__main__':
 			print (text1)
 			tts = gTTS(text=text1, lang='en')	
 			tts.save('audio/sentence'+str(s+1)+'.mp3')
-			tts.save('sentence'+str(s)+'.mp3')
 
 		a.append(array)
 		array = []

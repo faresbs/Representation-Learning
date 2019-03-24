@@ -31,7 +31,7 @@ class AttentionHead(nn.Module):
 
         #Init the weights and biases
 
-        #k is the square root of 1/n_units or 1/d_k?
+        #k is the square root of 1/n_units
 		k = np.sqrt(1 / inp) 
 
 		#Weights of W, K and V matrices
@@ -101,15 +101,6 @@ class ScaledDotProductAttention(nn.Module):
  
 		#scale the dot products by d_k for numerical stability (more stable gradients)
 		attn = attn / np.sqrt(d_k)
-
-		#Apply softmax
-		#attn = torch.exp(attn)
-
-		#fill attention weights with 0s where padded
-		#Which is the opposite of what we want to do
-		
-		#if mask is not None: 
-		#    attn = attn.masked_fill(mask, 0)
 
 		#Cast to float tensor from byte tensor to perform multiplication
 		#mask = mask.type(torch.FloatTensor).to(device)
