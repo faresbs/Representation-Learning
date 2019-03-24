@@ -325,8 +325,8 @@ else:
 # Loading pre-trained model
 ###############################################################################
 # dir = './experiments/Exploration_of_optimizers/'
-trained_dir ='./'
-model.load_state_dict(torch.load(trained_dir+'best_params_vanilla.pt'))
+trained_dir ='./TRANSFORMER_ADAM_model=TRANSFORMER_optimizer=ADAM_initial_lr=0.0001_batch_size=128_seq_len=35_hidden_size=1024_num_layers=6_dp_keep_prob=0.9_save_best_0/'
+model.load_state_dict(torch.load(trained_dir+'best_params.pt'))
 
 model = model.to(device)
 
