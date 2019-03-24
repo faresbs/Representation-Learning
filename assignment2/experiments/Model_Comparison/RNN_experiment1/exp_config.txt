@@ -1,0 +1,18 @@
+batch_size    20
+code_file    /usr/local/lib/python3.6/dist-packages/ipykernel_launcher.py
+data    /content/drive/My Drive/Assignment2/data
+debug    False
+dp_keep_prob    0.35
+emb_size    200
+evaluate    True
+hidden_size    1500
+initial_lr    0.0001
+model    RNN
+num_epochs    40
+num_layers    2
+optimizer    ADAM
+save_best    True
+save_dir    /content/drive/My Drive/Assignment2/experiment
+seed    1111
+seq_len    35
+train_steps    1000
