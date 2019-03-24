@@ -92,8 +92,8 @@ np = numpy
 
 # NOTE ==============================================
 # This is where your models are imported
-from models import RNN, GRU
-from models import make_model as TRANSFORMER
+from models5 import RNN, GRU
+from models5 import make_model as TRANSFORMER
 
 
 ##############################################################################

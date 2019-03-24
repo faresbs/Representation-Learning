@@ -446,7 +446,6 @@ def run_epoch(model, data, is_train=False, lr=1.0):
                     + 'speed (wps):' + str(iters * model.batch_size / (time.time() - start_time)))
 
     if is_train == False:
-        print('here')
         print(loss_t_hist.size())
         np.save(args.save_dir + '/loss_timestep_minibatch',loss_t_hist.numpy())
 
