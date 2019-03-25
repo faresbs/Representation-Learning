@@ -28,9 +28,9 @@ In this section we will present the result of the first experiment of the 3 mode
 			\hline
 			\textbf{Result} & \textbf{Vanilla RNN} & \textbf{RNN with GRU }& \textbf{Transformer} \\[0.5ex] 
 			\hline
-			Training PPL & 120.97 & 65.85 & ???\\
-			Validation PPL & 157.82 & 102.63 & ??? \\
-			Time processing per epoch (s) & 411.05 & 668.06 & 174.59\\[1ex]
+			Training PPL & 120.97 & 65.85 & 63.01\\
+			Validation PPL & 157.82 & 102.63 & 147.11 \\
+			Time processing per epoch (s) & 411 & 668 & 163\\[1ex]
 			\hline
 		\end{tabular}
 		\caption{First experiment results}
@@ -41,7 +41,6 @@ The perplexity results are the same for RNN and GRU. For the for Transformer we 
 \begin{itemize}
 	\item[-] RNN: train:  120  val: 157
 	\item[-] GRU: train:   65  val: 104
-	\item[-] TRANSFORMER:  train(our):  ??  val: ??
 	\item[-] TRANSFORMER:  train(expected):  67  val: 146
 \end{itemize}
 
@@ -51,39 +50,49 @@ Lastly, the Figures below show the learning curves for (train and validation) PP
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.8]{VRNN_LC_EPOCH.png}
+	\includegraphics[scale=0.8]{Q4-1_RNN_epoch.png}
 	\caption{Vanilla RNN's PPL per epoch}
 	\label{fig:fig1}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.8]{VRNN_LC_TIME.png}
+	\includegraphics[scale=0.8]{Q4-1_RNN_clock.png}
 	\caption{Vanilla RNN's PPL per wall-clock-time}
 	\label{fig:fig2}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.8]{GRU_LC_EPOCH.png}
-	\caption{RNN with GRU PPL per epoch}
+	\includegraphics[scale=0.8]{Q4-1_GRU_SGDLR_epoch.png}
+	\caption{GRU PPL per epoch}
 	\label{fig:fig3}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.8]{GRU_LC_TIME.png}
-	\caption{RNN with GRU PPL per wall-clock-time}
+	\includegraphics[scale=0.8]{Q4-1_RNN_ADAM_clock.png}
+	\caption{GRU PPL per wall-clock-time}
 	\label{fig:fig4}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-1_TR_SGDLR_epoch.png}
+	\caption{Transformer PPL per epoch}
+	\label{fig:fig5}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-1_TR_SGDLR_clock.png}
+	\caption{Transformer PPL per wall-clock-time}
+	\label{fig:fig6}
 \end{figure}
 
 
 \subsection{Exploration of optimizers}
 In this section we will explore different optimizers for each of the previous models. Each model is run with two different optimizers with the hyperparameters as given in the assignment. 
-
-I\textcolor{red}{nclude the following tables:
-	1. For each experiment in 1-3, plot learning curves (train and validation) of PPL over both
-	epochs and wall-clock-time.}
 
 \begin{itemize}
 	\item[1)] \textbf{Results for Vanilla RNN:}
@@ -123,6 +132,34 @@ I\textcolor{red}{nclude the following tables:
 		\caption{Vanilla RNN results experiments}
 		\label{table:3.1}
 	\end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_RNN_SGD_epoch.png}
+	\caption{Experiment 2 of RNN with SGD optimizer, learning curve by epoch}
+	\label{fig:fig7}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_RNN_SGD_clock.png}
+	\caption{Experiment 2 of RNN with SGD optimizer, learning curve by time-clock}
+	\label{fig:fig8}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_RNN_SGD_LR_epoch.png}
+	\caption{Experiment 3 of RNN with SGD decay optimizer, learning curve by epoch}
+	\label{fig:fig9}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_RNN_SGD_LR_clock.png}
+	\caption{Experiment 3 of RNN with SGD decay optimizer, learning curve by time-clock}
+	\label{fig:fig10}
+\end{figure}
 	%
 	\item[2)] \textbf{Results for GRU:}
 	In the experiments 2 and 3, for GRU, we used the parameters given in Table~\ref{table:4}.\\
@@ -161,6 +198,34 @@ I\textcolor{red}{nclude the following tables:
 		\caption{First experiment results}
 		\label{table:4.1}
 	\end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_GRU_ADAM_epoch.png}
+	\caption{Experiment 2 of GRU with ADAM optimizer, learning curve by epoch}
+	\label{fig:fig11}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_GRU_ADAM_clock.png}
+	\caption{Experiment 2 of GRU with ADAM optimizer, learning curve by time-clock}
+	\label{fig:fig12}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_GRU_SGD_epoch.png}
+	\caption{Experiment 3 of GRU with SGD optimizer, learning curve by epoch}
+	\label{fig:fig13}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_GRU_SGD_clock.png}
+	\caption{Experiment 3 of GRU with SGD optimizer, learning curve by time-clock}
+	\label{fig:fig14}
+\end{figure}
 	%
 		\item[3)] \textbf{Results for Transformer:}
 		The following parameters were used:
@@ -190,14 +255,43 @@ The following are the results for the transformer:
 		\hline
 		\textbf{Result} & \textbf{Experiment 1} & \textbf{Experiment 2}& \textbf{Experiment 3} \\[0.5ex] 
 		\hline
-		Training PPL & ??? & ??? & ???  \\
-		Validation PPL & ???  & ???  & ???  \\
-		Average time processing per epoch (s) & ???  & ???  & ???  \\[1ex]
+		Training PPL & 63.01 & 50.21 & 33.88  \\
+		Validation PPL & 147.11 & 126.07  & 163.91  \\
+		Average time processing per epoch (s) & 163  & 176  & 164 \\[1ex]
 		\hline
 	\end{tabular}
 	\caption{First experiment results}
 	\label{table:5.1}
 \end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_TR_ADAM_epoch.png}
+	\caption{Experiment 2 of Transformer with ADAM optimizer, learning curve by epoch}
+	\label{fig:fig15}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_TR_ADAM_clock.png}
+	\caption{Experiment 2 of Transformer with ADAM optimizer, learning curve by time-clock}
+	\label{fig:fig16}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_TR_SGD_epoch.png}
+	\caption{Experiment 3 of Transformer with ADAM optimizer, learning curve by epoch}
+	\label{fig:fig17}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_TR_SGD_clock.png}
+	\caption{Experiment 3 of Transformer with ADAM optimizer, learning curve by time-clock}
+	\label{fig:fig18}
+\end{figure}
+
 \end{itemize}
 %
 In conclusion, assuming that the comparison here was made with a set of hyperparameters that give a fair baseline for all the models, we can say that there is no universal best optimizer regardeless of the model architecture. In fact, each model architecture works better with a suited optimizer. Howerver, we notice that ADAM is a very powerfull optimizer that can make the model converge very quickly. However, if not well-tuned it could make the model overfit the training data. \\
