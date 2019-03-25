@@ -1,4 +1,5 @@
 \section{Problem 5: Detailed evaluation of trained models}
+For points 1 and 2 we made a slight modification to the models, the update is in file models5.py.
 \begin{enumerate}
 	\item
 We compute the average loss for all the validation sequences at each time step. The main script has been modified to load a pre-trained model and process the validation model while computing the loss at each time step individually(This is indicated in the script ptb-lm-P5-1.py under "Loss computation", Line 405). The resulting curves for the three models are shown in Figure \ref{fig:5_1}. \\
@@ -6,7 +7,7 @@ The loss is clearly larger when the training starts as the model does not have m
 \begin{figure}
 	\centering
 	\includegraphics[width=15cm]{loss_t-step}
-	\caption{Average loss at each time step within validation sequences using the pre-trained models that performed best in problem 4}
+	\caption{text}
 	\label{fig:5_1}
 \end{figure}
 \item
@@ -15,11 +16,261 @@ We compute the norm of the concatenated gradient vectors for the different layer
 \begin{figure}
 	\centering
 	\includegraphics[width=15cm]{gradsL_wrt_ht}
-	\caption{Norm of the concatenated average gradients of the loss at the final time step with resepct to the hidden state at each time step(for the best performing models)}
+	\caption{text}
 	\label{fig:5_2}
 \end{figure}
 \item
-We generate samples from both the simple RNN and GRU. We use the models from section 4.1. The sampling code can be found in the script generate.py. We produce 20 samples from RNN and GRU, 10 samples of the same length as the training sequnences (35) and 10 samples that are twice the length of the training sequeneces (70). The samples can be found in the Appendix of the report. As requested, we choose the three best, worst and interesting samples. The results are declared in the Appendix and can also be found in the provided github repository under folder samples. The subfolders are rnn-35, rnn-70, gru-35, gru-70. 
+We generate samples from both the simple RNN and GRU. We use the models from section 4.1. The sampling code can be find in the script generate.py. We produce 20 samples from RNN and GRU, 10 samples of the same length as the training sequnences (35) and 10 samples that are twice the length of the training sequeneces (70). The samples can be found in the Appendix of the report. 
 
- 
+\paragraph{Extras}
+Given the interesting results with text generation, we decided to experiment with more things like trying different temperature values and transforming text to audio (you find the audio samples under audio folder in github).
+
+We experience with temperature values in order to control the randomness of the sample generation by scaling the logits before applying softmax. 
+
+\begin{enumerate}
+	\item
+	High temperature: 
+	
+	\textbf{around poison book hitting german stimulators cooperative response barred remodeling contractor clearance vermont institutional overseas taught opening shape europeans collecting harold cananea clean strikes bulls peripheral direct sydney birds pitney peoples balls surrendered amount}
+	
+	\item 
+	Low temperature:
+	
+	\textbf{and and and and and and and and and and and and and and and and and and <eos> and and and and <eos> and <eos> and and and and and and and and <eos>}	
+	
 \end{enumerate}
+
+High temperature values gives more complex diverse samples however low values gives more confident but very repetitive samples. 
+
+\begin{enumerate}
+	\item three best samples:
+	\begin{enumerate}
+		\item 
+		\textit{glass of factories scrap bonds laws counterpart properties yen south crude the <unk> investments N mortgages u.k. bonds bonds N debentures bonds N deposits bonds interests french debentures bonds bonds swiss bonds bonds bonds bond bonds debentures securities bank bonds bonds bonds bonds one-year bonds bonds bonds bonds eurobonds eurobonds freddie <unk> freddie bonds bonds bonds <eos> bonds backed bonds notes bonds bonds bonds west certificates bonds bonds notes bonds
+		}
+	
+	
+		\item 
+		\textit{limited <eos> china additional and greater institute shares chemical international and companies securities securities 's members market investment banks 's shares <unk> securities securities credit-card securities securities commodities credit thrifts bonds \& stocks securities securities international securities municipal issues position securities securities securities bonds investors securities co. notes securities shares bank securities and securities sutton securities f international securities general securities investors exchange the yields debentures and N unique bonds}
+		
+		\item 
+		\textit{
+		businesses drugs building investors units the \$ bonds and daily assets <eos> australian N bonds s.a. <unk> bonds posted de <eos> certificates notes debentures priced bonds debentures debentures mortgage <unk> debentures bonds to debentures market}
+		
+		
+	\end{enumerate}	
+
+	\item three interesting samples:
+	\begin{enumerate}
+		\item
+		\textit{
+		is of <unk> care gained proposal product more acquisition <eos> produced warner up family items personal former rogers new plans near co. <eos> <eos> will and analyst <eos> subsidiary convertible organic president <unk> and succeeds \& director \& group chief expert to managing and board projects he and committee directors contract system giant independent board statement wpp he <unk> <unk> meanwhile subsidiary <unk> inc. subsidiary of and firm venture and	}
+		
+		\item 
+		\textit{
+		justice to the <unk> impact games ian goods private loans thatcher the imports checks workers the watches families those <eos> rights anything about goods discipline procedures funds the items conduct minorities whites americans use value}
+		
+		\item 
+		\textit{
+		has <eos> securities largest agency banks dollars securities securities management mr. N and resources <unk> securities securities shares switzerland stock securities issues securities securities funds and and who N securities financial securities the securities international}
+			
+	\end{enumerate}
+
+	\item three bad samples:
+	\begin{enumerate}
+		\item 
+		\textit{
+		the in <eos> N <eos> off via N N via <eos> and via communications N via notes <eos> up via through via via via via N <eos> via via via via via to via via}
+		
+		\item 
+		\textit{
+		in\$ costs under for in in as creates in in with in in due from in in in in in in remic crown in in at in in was <unk> on rate in in}
+		
+		\item
+		\textit{ 
+		and <eos> <eos> inc. later said most in first said <eos> backs at <eos> and imports <eos> in increased to said but and would mortgage <eos> continued squibb <eos> <unk> <eos> <eos> apparel said and}
+		
+	\end{enumerate}
+
+\end{enumerate}
+
+From the samples we can see that in the case of GRU, we have very distant related words than in the case RNN. 
+
+
+
+\paragraph{RNN with sequence length of 35}
+
+<unk> also later from which <unk> net N as in orders with from rate N the N higher closing N N to <eos> imports mortgage with N sharply rate from <eos> mortgage from lower loss
+
+----------------------------------------------------------------------------------------------------------
+
+as stock-index recovery first speculation to 's measure 's company any mesa costa u.s. will <unk> the the regulators the the late <unk> first before in despite N ample early philadelphia china <unk> the last
+
+----------------------------------------------------------------------------------------------------------
+
+justice to the <unk> impact games ian goods private loans thatcher the imports checks workers the watches families those <eos> rights anything about goods discipline procedures funds the items conduct minorities whites americans use value
+
+----------------------------------------------------------------------------------------------------------
+
+for will to to only will to does came the to was to to of tomorrow this for to on between between was only to to has daniel to or of by over was to
+
+----------------------------------------------------------------------------------------------------------
+
+the in <eos> N <eos> off via N N via <eos> and via communications N via notes <eos> up via through via via via via N <eos> via via via via via to via via
+
+----------------------------------------------------------------------------------------------------------
+
+and of to and in over fuel <eos> and <eos> <eos> <eos> were damage and <unk> about and than before from normally costs could said <eos> wage personnel in is by a for diseases used
+
+----------------------------------------------------------------------------------------------------------
+
+and as chairman treatment <unk> and inc. in ralph office financial have and <unk> head acquisition board engineering as concern <unk> make unit ingersoll list \& executive inc. <eos> he which trying 's and <unk>
+
+----------------------------------------------------------------------------------------------------------
+
+has <eos> securities largest agency banks dollars securities securities management mr. N and resources <unk> securities securities shares switzerland stock securities issues securities securities funds and and who N securities financial securities the securities international
+
+----------------------------------------------------------------------------------------------------------
+
+in \$ costs under for in in as creates in in with in in due from in in in in in in remic crown in in at in in was <unk> on rate in in
+
+----------------------------------------------------------------------------------------------------------
+
+and <eos> <eos> inc. later said most in first said <eos> backs at <eos> and imports <eos> in increased to said but and would mortgage <eos> continued squibb <eos> <unk> <eos> <eos> apparel said and
+
+----------------------------------------------------------------------------------------------------------
+
+
+\paragraph{RNN with sequence length of 70}
+to to shows compared N average \$ august rate <eos> in 's for <eos> N N N <eos> in its N \$ reported <unk> <eos> improved from rate seven <eos> in from <eos> N billion from gap federal in daily rate to \$ to sales N during a statistics N texas offered rate due N which high because <eos> to higher <eos> japan <eos> more macy from N <eos> already
+
+----------------------------------------------------------------------------------------------------------
+
+u.s. a the was by <eos> to this will reports <unk> the bank 's both as which last an thursday in vietnam raised general mortgage on an two last measure the consumer ford the suit october a sept. state the ual the federal a the australian fiscal \$ because was june dow meeting an speculation move N interest stock committee by the by last early yesterday results shares the N
+
+----------------------------------------------------------------------------------------------------------
+
+<unk> the foreign the provide apples illegal families currencies and conditions distance turn south cases china foreign the compensation loans employees <eos> economic blood material a october goods japan relations small-business <unk> programs illegal that material goods workers spending personnel be inflation loans and such paper goods accounts loans mr. fetal-tissue <eos> market taxes economic the country \$ governments aid vessels shippers loans surgery other business the americans shamir the
+
+----------------------------------------------------------------------------------------------------------
+
+mr. to will to july to to to to to to i to to to to carried the by to with up to to to saying two to will to the for to to to does to of to or is to to if although for to of of the to to first could had to that between on could to would by the that to to in to of
+
+----------------------------------------------------------------------------------------------------------
+
+<eos> <eos> the and which N for N via N via via via from \$ via via via <eos> N N via via <eos> via via via via N said <eos> via via via via via via via via via and via N N their via via via via via via via <eos> via via via via via N via via from via N <eos> to and via via via
+
+----------------------------------------------------------------------------------------------------------
+
+to for from to if during at of <eos> those have <eos> <eos> under of <eos> <eos> which said higher from could <eos> of <eos> represented on in <eos> of allow increased overseas of from hurt because of tend <eos> some trucks about higher transport net either reported only of below ' needed the <unk> still resistance <eos> into from <eos> that subsidy and and paid are normally and higher
+
+----------------------------------------------------------------------------------------------------------
+
+is of <unk> care gained proposal product more acquisition <eos> produced warner up family items personal former rogers new plans near co. <eos> <eos> will and analyst <eos> subsidiary convertible organic president <unk> and succeeds \& director \& group chief expert to managing and board projects he and committee directors contract system giant independent board statement wpp he <unk> <unk> meanwhile subsidiary <unk> inc. subsidiary of and firm venture and
+
+----------------------------------------------------------------------------------------------------------
+
+limited <eos> china additional and greater institute shares chemical international and companies securities securities 's members market investment banks 's shares <unk> securities securities credit-card securities securities commodities credit thrifts bonds \& stocks securities securities international securities municipal issues position securities securities securities bonds investors securities co. notes securities shares bank securities and securities sutton securities f international securities general securities investors exchange the yields debentures and N unique bonds
+
+----------------------------------------------------------------------------------------------------------
+
+in in in in in in for in from between for in \$ amid in in among at in by in N to based was in rates rate for in in in in N for before deposit closing in at on said based from rate loans fees rates through in from at in on rate mortgage in in debentures N in rate rate in treasury in in mortgage from in
+
+----------------------------------------------------------------------------------------------------------
+
+with of that said conspiracy and reported <eos> said and and in u.s. said inc. were in in than international and august denied by to <eos> <eos> and and the had due including \& <unk> N <eos> the and <eos> than according N of and <unk> also after told and rose said <eos> and and set imports from <eos> by and of and reported <eos> in and levels and imports
+
+
+\paragraph{GRU with sequence length of 35}
+N the <eos> N <eos> N <eos> N down N N <eos> <eos> <eos> N <eos> N N N <eos> N <eos> N <eos> <eos> <eos> N <eos> <eos> <eos> N <eos> <eos> <eos> N
+
+---------------------------------------------------------------------------------------------------------
+
+the for the for twice <unk> <unk> improvement lineup expansion in to shares and nov. <eos> <eos> rate nov. abortion to <eos> <eos> and nov. note <eos> <eos> even <eos> at tomorrow <eos> bid <unk>
+
+---------------------------------------------------------------------------------------------------------
+
+the he streets the the covered big <unk> and value filters winter water redeem in of familiar them <eos> <unk> <unk> more ground the communities cholesterol satisfaction <eos> <unk> <unk> <eos> permits delta and <unk>
+
+---------------------------------------------------------------------------------------------------------
+
+to by to <eos> for to of to <unk> and as surgery <eos> to to around to to to and <eos> to <eos> that for to <eos> no to <eos> <eos> permits <eos> <eos> at
+
+---------------------------------------------------------------------------------------------------------
+
+through for from from at and to N on up to and N at off at maturity near guilty to at at at N at to at at lower at <eos> <eos> <unk> N at
+
+---------------------------------------------------------------------------------------------------------
+
+of in from under with for for and drivers but annually of and and or expenses mortgages <eos> will import and <eos> rubbermaid to <eos> rate if of <eos> <eos> <eos> and <eos> and <eos>
+
+---------------------------------------------------------------------------------------------------------
+
+<eos> and inc. and 's and and and and and in and and <unk> inc. agency <eos> and <unk> and <unk> <eos> <eos> inc and finance <eos> <unk> academy products <eos> consultant and <eos> and
+
+---------------------------------------------------------------------------------------------------------
+
+businesses drugs building investors units the \$ bonds and daily assets <eos> australian N bonds s.a. <unk> bonds posted de <eos> certificates notes debentures priced bonds debentures debentures mortgage <unk> debentures bonds to debentures market
+
+---------------------------------------------------------------------------------------------------------
+
+<eos> in <unk> and <unk> kohl and carla in and <unk> md and N and and and and <eos> <eos> <eos> and and certificates coors and <eos> and and <unk> <eos> and <unk> <unk> del.
+
+---------------------------------------------------------------------------------------------------------
+
+co. amoco threatened <eos> n.v. and and <eos> and <unk> and and and <eos> and and <eos> and and <eos> and and and and and facility <eos> n.j and <eos> and <eos> and <eos> <eos>
+
+\paragraph{GRU with sequence length of 70}
+N the N of N <eos> N N N N due N <eos> <eos> N N <eos> <eos> <eos> <eos> N <eos> N <eos> N <eos> <eos> <eos> <eos> up <eos> <eos> N <eos> <eos> <eos> <eos> <eos> <eos> <eos> whites <eos> <eos> <eos> <eos> <eos> sharply <eos> <eos> <eos> <eos> <eos> <eos> <eos> <eos> <eos> <eos> <eos> N <eos> <eos> <eos> <eos> <eos> <eos> <eos> <eos> <eos> <eos> <eos>
+
+---------------------------------------------------------------------------------------------------------
+
+a oct. catalog aga the feb. <eos> cut <unk> fate cuts de malaysia and <eos> before <unk> <eos> bid funding killing jointly nov. <eos> nov. to dec. <eos> scheduled nov. nov. nov. commute power march thereafter <eos> <eos> <eos> <eos> rate francs fixed <eos> <eos> <eos> scheduled nov. <eos> <eos> <eos> nov. <eos> <unk> <eos> nov. <eos> N issuance <eos> nov. will tentatively nov. nov. N nov. nov. <eos> <eos>
+<unk> investor vehicles their most 's a getting alberta a a collected democracy workers this <unk> <unk>
+
+---------------------------------------------------------------------------------------------------------
+
+people evil <unk> air any diseases skiing <unk> water an by sex architecture status <unk> columns worries <eos> <unk> waves all apples <unk> economic de to <unk> <eos> <unk> themselves might <eos> approval 's twice <unk> russia <unk> endless <unk> virtually modern water sand was <eos> whose galileo ocean <unk> walls the <unk>
+
+---------------------------------------------------------------------------------------------------------
+
+to by N by through by to with to to by <eos> <unk> <eos> and to to into to to from away to has for to to in and <eos> <eos> into <eos> <eos> to to <eos> to to <eos> <eos> to <eos> at <eos> tomorrow to and <eos> for is and <eos> <eos> in for to of <eos> for overhead to to <eos> <eos> <eos> to to <eos> up
+
+---------------------------------------------------------------------------------------------------------
+
+to <eos> <eos> and as N on N <eos> through against at to near N and at with quickly fixed near at and at via <eos> rate at at and N and via <eos> again at via <eos> at at annually as at <eos> at at into <eos> rate <eos> via at rate via via at <eos> <eos> <eos> <eos> eurobonds <eos> <eos> <eos> <eos> <eos> at near <unk> <eos>
+
+---------------------------------------------------------------------------------------------------------
+
+at even not for such rising fuel and <eos> and <eos> and and and and falling <unk> in <eos> flat and <unk> and <eos> costs at <eos> declines and and <eos> and rate a labor and for and <eos> <eos> <eos> <eos> <eos> and <eos> <unk> and up <eos> rising plus <eos> <eos> and and <eos> <eos> until <eos> rate for orders are <eos> tax <eos> if <eos> <eos> <eos>
+
+---------------------------------------------------------------------------------------------------------
+
+of and with <eos> who <unk> and <eos> and and saying <unk> and constraints <eos> and and and and <eos> former and <eos> avenue and debentures inc university and <unk> and mary <eos> division and va <eos> <eos> calif. colorado title and <unk> and probe and inc and stage <unk> <unk> de <unk> <unk> <unk> \& \& campaigns director \& <unk> inc who de and <eos> <unk> and inc <unk>
+
+---------------------------------------------------------------------------------------------------------
+
+glass of factories scrap bonds laws counterpart properties yen south crude the <unk> investments N mortgages u.k. bonds bonds N debentures bonds N deposits bonds interests french debentures bonds bonds swiss bonds bonds bonds bond bonds debentures securities bank bonds bonds bonds bonds one-year bonds bonds bonds bonds eurobonds eurobonds freddie <unk> freddie bonds bonds bonds <eos> bonds backed bonds notes bonds bonds bonds west certificates bonds bonds notes bonds
+
+---------------------------------------------------------------------------------------------------------
+
+on whose in b. moreover at and and and assistant and sons <unk> and <unk> <unk> <eos> <eos> and <unk> items rate <unk> <eos> walker of <unk> adjustable n.j d rate notes and <eos> rate by notes rate notes tax N succeeds <eos> <eos> <eos> rate rate manager rate <eos> eurobonds and <eos> rate N adjustable <eos> rate rate team on <unk> rate <eos> notes rate rate rate tentatively adjustable
+
+---------------------------------------------------------------------------------------------------------
+
+<eos> a by and and and joint and and and and and and and and north and and annual and and and N and and and <eos> and <eos> <eos> and and and and and and transmission <eos> and <eos> calif and <eos> and N and <eos> co <eos> annual <eos> and and N <eos> N mark and <unk> <eos> <eos> <eos> and <eos> <eos> <eos> <eos> <eos> <eos> <eos>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
