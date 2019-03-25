@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  24 MAR 2019 17:26
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (TeX Live 2016) (preloaded format=pdflatex 2016.5.22)  24 MAR 2019 19:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -987,28 +987,51 @@ Underfull \hbox (badness 10000) in paragraph at lines 203--204
 
  []
 
-[6]) (./problem5.tex) [7] [8] (./Assignment2_practical_report.aux) ) 
+[6]) (./problem5.tex <loss_t-step.png, id=40, 722.7pt x 433.62pt>
+File: loss_t-step.png Graphic file (type png)
+
+<use loss_t-step.png>
+Package pdftex.def Info: loss_t-step.png used on input line 8.
+(pdftex.def)             Requested size: 426.79134pt x 256.07838pt.
+
+Overfull \hbox (8.53766pt too wide) in paragraph at lines 8--9
+ [][] 
+ []
+
+<gradsL_wrt_ht.png, id=41, 722.7pt x 433.62pt>
+File: gradsL_wrt_ht.png Graphic file (type png)
+ <use gradsL_wrt_ht.png>
+Package pdftex.def Info: gradsL_wrt_ht.png used on input line 17.
+(pdftex.def)             Requested size: 426.79134pt x 256.07838pt.
+
+Overfull \hbox (8.53766pt too wide) in paragraph at lines 17--18
+ [][] 
+ []
+
+[7] [8 <./loss_t-step.png> <./gradsL_wrt_ht.png>]) [9] [10]
+(./Assignment2_practical_report.aux) ) 
 Here is how much of TeX's memory you used:
- 13857 strings out of 493014
- 267606 string characters out of 6133351
- 324965 words of memory out of 5000000
- 17088 multiletter control sequences out of 15000+600000
+ 13869 strings out of 493014
+ 267822 string characters out of 6133351
+ 324981 words of memory out of 5000000
+ 17098 multiletter control sequences out of 15000+600000
  9798 words of font info for 36 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,10n,56p,555b,278s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/local
-/texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/
-texlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/t
-exlive/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/local/tex
-live/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texli
-ve/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive
-/2016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2
-016/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2016
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on Assignment2_practical_report.pdf (8 pages, 187295 bytes).
+ 62i,10n,56p,787b,372s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/local/texlive/2016/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2016/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2016/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmbx9.pfb></usr/local/texlive/2016/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type
+1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/pu
+blic/amsfonts/cm/cmr17.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmr9.pfb></usr/local/texlive/2016/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmtt10.pfb>
+Output written on Assignment2_practical_report.pdf (10 pages, 282552 bytes).
 PDF statistics:
- 75 PDF objects out of 1000 (max. 8388607)
- 48 compressed objects within 1 object stream
+ 89 PDF objects out of 1000 (max. 8388607)
+ 55 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 33 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 43 words of extra memory for PDF output out of 10000 (max. 10000000)
 
