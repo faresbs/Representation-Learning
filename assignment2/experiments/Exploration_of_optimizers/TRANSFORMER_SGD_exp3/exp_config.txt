@@ -1,0 +1,17 @@
+batch_size    128
+code_file    /usr/local/lib/python3.6/dist-packages/ipykernel_launcher.py
+data    /content/drive/My Drive/Assignment2/data
+debug    False
+dp_keep_prob    0.9
+emb_size    200
+evaluate    True
+hidden_size    512
+initial_lr    20
+model    TRANSFORMER
+num_epochs    40
+num_layers    6
+optimizer    SGD
+save_best    True
+save_dir    /content/drive/My Drive/Assignment2/TR_expSGD7
+seed    1111
+seq_len    35
