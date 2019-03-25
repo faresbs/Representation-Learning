@@ -299,18 +299,147 @@ In conclusion, assuming that the comparison here was made with a set of hyperpar
 %For the next experiment we will use the best optimizer so far. In order to improve its performance we will do a hyperparameter tuning.
 
 
-
 \subsection{Exploration of hyperparmeters}
 
-Figures and Tables:\\
-Each table and gure should have an explanatory caption. 
-For tables, this goes above, for figures it goes below. 
-Tables should have appropriate column and/or row headers.
-Figures should have labelled axes and a legend. 
+In this section we will present the result of the validation processus which consist on finding the best hyperparameters per architecture and per optimizer. This operation has required more than 30 experiments, from chich we will take the best 3 per architecture, which is 6 in total. The Figure~\ref{label} present the result of these experiments:
 
-\textcolor{red}{Include the following tables:
-1. For each experiment in 1-3, plot learning curves (train and validation) of PPL over both
-epochs and wall-clock-time.}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.6]{Q4-3_Summury.png}
+	\caption{Summury of the best experimentation of the 3 models}
+	\label{fig:fig19}
+\end{figure}
+
+We will show next the learning curves of each experiment:
+\begin{itemize}
+	\item Vanilla RNN:
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=0.8]{Q4-3_RNN_1epoch.png}
+		\caption{Experiment 4: Best result for RNN which gets better result than the baseline (learning curve by epoch)}
+		\label{fig:fig20}
+	\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_RNN_1time.png}
+	\caption{Experiment 4: Best result for RNN which gets better result than the baseline (learning curve by time-clock)}
+	\label{fig:fig20b}
+\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=0.8]{Q4-3_RNN_2epoch.png}
+		\caption{Experiment 5: 2nd best result for RNN (learning curve by epoch)}
+		\label{fig:fig21}
+	\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_RNN_2time.png}
+	\caption{Experiment 5: 2nd best result for RNN (learning curve by time-clock)}
+	\label{fig:fig21b}
+\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=0.8]{Q4-3_RNN_3epoch.png}
+		\caption{Experiment 6: 3rd best result for RNN (learning curves per epoch)}
+		\label{fig:fig22}
+	\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_RNN_3time.png}
+	\caption{Experiment 6: 3rd best result for RNN (learning curves per clock)}
+	\label{fig:fig22b}
+\end{figure}
+
+
+\item GRU:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_1epoch.png}
+	\caption{Experiment 4: Best result for GRU which gets better result than the baseline (learning curve by epoch)}
+	\label{fig:fig20GRU}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_1time.png}
+	\caption{Experiment 4: Best result for GRU which gets better result than the baseline (learning curve by time-clock)}
+	\label{fig:fig20bGRU}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_2epoch.png}
+	\caption{Experiment 5: 2nd best result for GRU (learning curve by epoch)}
+	\label{fig:fig21GRU}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_2time.png}
+	\caption{Experiment 5: 2nd best result for GRU (learning curve by time-clock)}
+	\label{fig:fig21bGRU}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_3epoch.png}
+	\caption{Experiment 6: 3rd best result for GRU (learning curves per epoch)}
+	\label{fig:fig22GRU}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_3time.png}
+	\caption{Experiment 6: 3rd best result for GRU (learning curves per clock)}
+	\label{fig:fig22bGRU}
+\end{figure}
+
+
+\item Transformer:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_1epoch.png}
+	\caption{Experiment 4: Best result for Transformer which gets better result than the baseline (learning curve by epoch)}
+	\label{fig:fig20TR}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_1time.png}
+	\caption{Experiment 4: Best result for Transformer which gets better result than the baseline (learning curve by time-clock)}
+	\label{fig:fig20bTR}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_2epoch.png}
+	\caption{Experiment 5: 2nd best result for Transformer (learning curve by epoch)}
+	\label{fig:fig21TR}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_2time.png}
+	\caption{Experiment 5: 2nd best result for Transformer (learning curve by time-clock)}
+	\label{fig:fig21bTR}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_3epoch.png}
+	\caption{Experiment 6: 3rd best result for Transformer (learning curves per epoch)}
+	\label{fig:fig22TR}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_3time.png}
+	\caption{Experiment 6: 3rd best result for Transformer (learning curves per clock)}
+	\label{fig:fig22bTR}
+\end{figure}
+
+\end{itemize}
+
+
+
 
 \textcolor{red}{2. Make a table of results summarizing the train and validation performace for each experiment,
 	indicating the architecture and optimizer. Sort by architecture, then optimizer, and number
