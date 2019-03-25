@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  24 MAR 2019 22:16
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  24 MAR 2019 22:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -512,26 +512,7 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 )
 \@float@every@table=\toks40
 
-(./Assignment2_practical_report.aux
-
-LaTeX Warning: Label `fig:fig20GRU' multiply defined.
-
-
-LaTeX Warning: Label `fig:fig20bGRU' multiply defined.
-
-
-LaTeX Warning: Label `fig:fig21GRU' multiply defined.
-
-
-LaTeX Warning: Label `fig:fig21bGRU' multiply defined.
-
-
-LaTeX Warning: Label `fig:fig22GRU' multiply defined.
-
-
-LaTeX Warning: Label `fig:fig22bGRU' multiply defined.
-
-)
+(./Assignment2_practical_report.aux)
 \openout1 = `Assignment2_practical_report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
@@ -546,7 +527,8 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 26.
 LaTeX Font Info:    ... okay on input line 26.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 26.
 LaTeX Font Info:    ... okay on input line 26.
- (/usr/local/texlive/2018/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+
+(/usr/local/texlive/2018/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count130
 \scratchdimen=\dimen173
@@ -773,127 +755,134 @@ File: Q4-2_TR_SGD_clock.png Graphic file (type png)
 Package pdftex.def Info: Q4-2_TR_SGD_clock.png  used on input line 290.
 (pdftex.def)             Requested size: 325.21542pt x 223.2343pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 297--298
 
- []
+LaTeX Warning: Reference `label' on page 13 undefined on input line 304.
 
-[13 <./Q4-2_TR_SGD_epoch.png> <./Q4-2_TR_SGD_clock.png>]
-
-LaTeX Warning: Reference `label' on page 14 undefined on input line 304.
-
-<Q4-3_Summury.png, id=91, 459.7175pt x 194.7275pt>
+<Q4-3_Summury.png, id=85, 459.7175pt x 194.7275pt>
 File: Q4-3_Summury.png Graphic file (type png)
 <use Q4-3_Summury.png>
 Package pdftex.def Info: Q4-3_Summury.png  used on input line 308.
 (pdftex.def)             Requested size: 275.83263pt x 116.83739pt.
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 315.
+[13 <./Q4-2_TR_SGD_epoch.png> <./Q4-2_TR_SGD_clock.png>]
+<Q4-3_Hyperparameters.png, id=92, 469.755pt x 193.72375pt>
+File: Q4-3_Hyperparameters.png Graphic file (type png)
+<use Q4-3_Hyperparameters.png>
+Package pdftex.def Info: Q4-3_Hyperparameters.png  used on input line 317.
+(pdftex.def)             Requested size: 281.85518pt x 116.23514pt.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 325.
+
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 315.
-<Q4-3_RNN_1epoch.png, id=92, 393.47pt x 279.0425pt>
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 325.
+<Q4-3_RNN_1epoch.png, id=93, 393.47pt x 279.0425pt>
 File: Q4-3_RNN_1epoch.png Graphic file (type png)
 <use Q4-3_RNN_1epoch.png>
-Package pdftex.def Info: Q4-3_RNN_1epoch.png  used on input line 318.
+Package pdftex.def Info: Q4-3_RNN_1epoch.png  used on input line 328.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
-<Q4-3_RNN_1time.png, id=93, 393.47pt x 279.0425pt>
+<Q4-3_RNN_1time.png, id=94, 393.47pt x 279.0425pt>
 File: Q4-3_RNN_1time.png Graphic file (type png)
 <use Q4-3_RNN_1time.png>
-Package pdftex.def Info: Q4-3_RNN_1time.png  used on input line 324.
+Package pdftex.def Info: Q4-3_RNN_1time.png  used on input line 334.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
- [14 <./Q4-3_Summury.png> <./Q4-3_RNN_1epoch.png>]
-<Q4-3_RNN_2epoch.png, id=100, 393.47pt x 279.0425pt>
+ [14 <./Q4-3_Summury.png> <./Q4-3_Hyperparameters.png>]
+<Q4-3_RNN_2epoch.png, id=101, 393.47pt x 279.0425pt>
 File: Q4-3_RNN_2epoch.png Graphic file (type png)
 <use Q4-3_RNN_2epoch.png>
-Package pdftex.def Info: Q4-3_RNN_2epoch.png  used on input line 331.
+Package pdftex.def Info: Q4-3_RNN_2epoch.png  used on input line 341.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
-<Q4-3_RNN_2time.png, id=101, 393.47pt x 279.0425pt>
+<Q4-3_RNN_2time.png, id=102, 393.47pt x 279.0425pt>
 File: Q4-3_RNN_2time.png Graphic file (type png)
 <use Q4-3_RNN_2time.png>
-Package pdftex.def Info: Q4-3_RNN_2time.png  used on input line 337.
+Package pdftex.def Info: Q4-3_RNN_2time.png  used on input line 347.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
- [15 <./Q4-3_RNN_1time.png> <./Q4-3_RNN_2epoch.png>]
-<Q4-3_RNN_3epoch.png, id=107, 393.47pt x 279.0425pt>
+ [15 <./Q4-3_RNN_1epoch.png> <./Q4-3_RNN_1time.png>]
+<Q4-3_RNN_3epoch.png, id=108, 393.47pt x 279.0425pt>
 File: Q4-3_RNN_3epoch.png Graphic file (type png)
 <use Q4-3_RNN_3epoch.png>
-Package pdftex.def Info: Q4-3_RNN_3epoch.png  used on input line 344.
+Package pdftex.def Info: Q4-3_RNN_3epoch.png  used on input line 354.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
-<Q4-3_RNN_3time.png, id=108, 393.47pt x 279.0425pt>
+<Q4-3_RNN_3time.png, id=109, 393.47pt x 279.0425pt>
 File: Q4-3_RNN_3time.png Graphic file (type png)
 <use Q4-3_RNN_3time.png>
-Package pdftex.def Info: Q4-3_RNN_3time.png  used on input line 350.
+Package pdftex.def Info: Q4-3_RNN_3time.png  used on input line 360.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
- [16 <./Q4-3_RNN_2time.png> <./Q4-3_RNN_3epoch.png>]
-<Q4-3_GRU_1epoch.png, id=114, 393.47pt x 279.0425pt>
+ [16 <./Q4-3_RNN_2epoch.png> <./Q4-3_RNN_2time.png>]
+<Q4-3_GRU_1epoch.png, id=115, 393.47pt x 279.0425pt>
 File: Q4-3_GRU_1epoch.png Graphic file (type png)
 <use Q4-3_GRU_1epoch.png>
-Package pdftex.def Info: Q4-3_GRU_1epoch.png  used on input line 360.
+Package pdftex.def Info: Q4-3_GRU_1epoch.png  used on input line 370.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
-<Q4-3_GRU_1time.png, id=115, 399.4925pt x 279.0425pt>
+<Q4-3_GRU_1time.png, id=116, 399.4925pt x 279.0425pt>
 File: Q4-3_GRU_1time.png Graphic file (type png)
 <use Q4-3_GRU_1time.png>
-Package pdftex.def Info: Q4-3_GRU_1time.png  used on input line 366.
+Package pdftex.def Info: Q4-3_GRU_1time.png  used on input line 376.
 (pdftex.def)             Requested size: 319.59442pt x 223.2343pt.
- [17 <./Q4-3_RNN_3time.png> <./Q4-3_GRU_1epoch.png>]
-<Q4-3_GRU_2epoch.png, id=121, 393.47pt x 279.0425pt>
+ [17 <./Q4-3_RNN_3epoch.png> <./Q4-3_RNN_3time.png>]
+<Q4-3_GRU_2epoch.png, id=122, 393.47pt x 279.0425pt>
 File: Q4-3_GRU_2epoch.png Graphic file (type png)
 <use Q4-3_GRU_2epoch.png>
-Package pdftex.def Info: Q4-3_GRU_2epoch.png  used on input line 373.
+Package pdftex.def Info: Q4-3_GRU_2epoch.png  used on input line 383.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
-<Q4-3_GRU_2time.png, id=122, 393.47pt x 279.0425pt>
+<Q4-3_GRU_2time.png, id=123, 393.47pt x 279.0425pt>
 File: Q4-3_GRU_2time.png Graphic file (type png)
 <use Q4-3_GRU_2time.png>
-Package pdftex.def Info: Q4-3_GRU_2time.png  used on input line 379.
+Package pdftex.def Info: Q4-3_GRU_2time.png  used on input line 389.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
- [18 <./Q4-3_GRU_1time.png> <./Q4-3_GRU_2epoch.png>]
-<Q4-3_GRU_3epoch.png, id=128, 393.47pt x 279.0425pt>
+ [18 <./Q4-3_GRU_1epoch.png> <./Q4-3_GRU_1time.png>]
+<Q4-3_GRU_3epoch.png, id=129, 393.47pt x 279.0425pt>
 File: Q4-3_GRU_3epoch.png Graphic file (type png)
 <use Q4-3_GRU_3epoch.png>
-Package pdftex.def Info: Q4-3_GRU_3epoch.png  used on input line 386.
+Package pdftex.def Info: Q4-3_GRU_3epoch.png  used on input line 396.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
-<Q4-3_GRU_3time.png, id=129, 393.47pt x 279.0425pt>
+<Q4-3_GRU_3time.png, id=130, 393.47pt x 279.0425pt>
 File: Q4-3_GRU_3time.png Graphic file (type png)
 <use Q4-3_GRU_3time.png>
-Package pdftex.def Info: Q4-3_GRU_3time.png  used on input line 392.
+Package pdftex.def Info: Q4-3_GRU_3time.png  used on input line 402.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
- [19 <./Q4-3_GRU_2time.png> <./Q4-3_GRU_3epoch.png>]
-<Q4-3_TR_1epoch.png, id=136, 393.47pt x 279.0425pt>
+ [19 <./Q4-3_GRU_2epoch.png> <./Q4-3_GRU_2time.png>]
+<Q4-3_TR_1epoch.png, id=137, 393.47pt x 279.0425pt>
 File: Q4-3_TR_1epoch.png Graphic file (type png)
 <use Q4-3_TR_1epoch.png>
-Package pdftex.def Info: Q4-3_TR_1epoch.png  used on input line 402.
+Package pdftex.def Info: Q4-3_TR_1epoch.png  used on input line 412.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
-<Q4-3_TR_1time.png, id=137, 399.4925pt x 279.0425pt>
+<Q4-3_TR_1time.png, id=138, 399.4925pt x 279.0425pt>
 File: Q4-3_TR_1time.png Graphic file (type png)
 <use Q4-3_TR_1time.png>
-Package pdftex.def Info: Q4-3_TR_1time.png  used on input line 408.
+Package pdftex.def Info: Q4-3_TR_1time.png  used on input line 418.
 (pdftex.def)             Requested size: 319.59442pt x 223.2343pt.
- [20 <./Q4-3_GRU_3time.png> <./Q4-3_TR_1epoch.png>]
-<Q4-3_TR_2epoch.png, id=143, 393.47pt x 279.0425pt>
+ [20 <./Q4-3_GRU_3epoch.png> <./Q4-3_GRU_3time.png>]
+<Q4-3_TR_2epoch.png, id=144, 393.47pt x 279.0425pt>
 File: Q4-3_TR_2epoch.png Graphic file (type png)
 <use Q4-3_TR_2epoch.png>
-Package pdftex.def Info: Q4-3_TR_2epoch.png  used on input line 415.
+Package pdftex.def Info: Q4-3_TR_2epoch.png  used on input line 425.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
-<Q4-3_TR_2time.png, id=144, 393.47pt x 279.0425pt>
+<Q4-3_TR_2time.png, id=145, 393.47pt x 279.0425pt>
 File: Q4-3_TR_2time.png Graphic file (type png)
 <use Q4-3_TR_2time.png>
-Package pdftex.def Info: Q4-3_TR_2time.png  used on input line 421.
+Package pdftex.def Info: Q4-3_TR_2time.png  used on input line 431.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
- [21 <./Q4-3_TR_1time.png> <./Q4-3_TR_2epoch.png>]
-<Q4-3_TR_3epoch.png, id=150, 393.47pt x 279.0425pt>
+ [21 <./Q4-3_TR_1epoch.png> <./Q4-3_TR_1time.png>]
+<Q4-3_TR_3epoch.png, id=151, 393.47pt x 279.0425pt>
 File: Q4-3_TR_3epoch.png Graphic file (type png)
 <use Q4-3_TR_3epoch.png>
-Package pdftex.def Info: Q4-3_TR_3epoch.png  used on input line 428.
+Package pdftex.def Info: Q4-3_TR_3epoch.png  used on input line 438.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
-<Q4-3_TR_3time.png, id=151, 393.47pt x 279.0425pt>
+<Q4-3_TR_3time.png, id=152, 393.47pt x 279.0425pt>
 File: Q4-3_TR_3time.png Graphic file (type png)
 <use Q4-3_TR_3time.png>
-Package pdftex.def Info: Q4-3_TR_3time.png  used on input line 434.
+Package pdftex.def Info: Q4-3_TR_3time.png  used on input line 444.
 (pdftex.def)             Requested size: 314.77641pt x 223.2343pt.
+ [22 <./Q4-3_TR_2epoch.png> <./Q4-3_TR_2time.png>] [23 <./Q4-3_TR_3epoch.png> <
+./Q4-3_TR_3time.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 472--473
 
-[22 <./Q4-3_TR_2time.png> <./Q4-3_TR_3epoch.png>]) (./problem5.tex
-<loss_t-step.png, id=157, 722.7pt x 433.62pt>
+ []
+
+) (./problem5.tex
+<loss_t-step.png, id=163, 722.7pt x 433.62pt>
 File: loss_t-step.png Graphic file (type png)
 <use loss_t-step.png>
 Package pdftex.def Info: loss_t-step.png  used on input line 8.
@@ -903,7 +892,8 @@ Overfull \hbox (8.53766pt too wide) in paragraph at lines 8--9
  [][] 
  []
 
-<gradsL_wrt_ht.png, id=158, 722.7pt x 433.62pt>
+[24]
+<gradsL_wrt_ht.png, id=167, 722.7pt x 433.62pt>
 File: gradsL_wrt_ht.png Graphic file (type png)
 <use gradsL_wrt_ht.png>
 Package pdftex.def Info: gradsL_wrt_ht.png  used on input line 17.
@@ -913,23 +903,20 @@ Overfull \hbox (8.53766pt too wide) in paragraph at lines 17--18
  [][] 
  []
 
-[23 <./Q4-3_TR_3time.png>]) [24 <./loss_t-step.png>] [25 <./gradsL_wrt_ht.png>]
+[25 <./loss_t-step.png>]) [26 <./gradsL_wrt_ht.png>] [27]
 (./Assignment2_practical_report.aux)
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: There were multiply-defined labels.
-
  ) 
 Here is how much of TeX's memory you used:
- 13861 strings out of 492649
- 271545 string characters out of 6129622
- 325733 words of memory out of 5000000
- 17401 multiletter control sequences out of 15000+600000
+ 13873 strings out of 492649
+ 271777 string characters out of 6129622
+ 326764 words of memory out of 5000000
+ 17412 multiletter control sequences out of 15000+600000
  9798 words of font info for 36 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,10n,56p,787b,368s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 62i,10n,56p,787b,370s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 ></usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb>
 </usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></
@@ -940,10 +927,10 @@ ocal/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/loc
 al/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/
 texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/t
 exlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on Assignment2_practical_report.pdf (25 pages, 698968 bytes).
+Output written on Assignment2_practical_report.pdf (27 pages, 711739 bytes).
 PDF statistics:
- 207 PDF objects out of 1000 (max. 8388607)
- 91 compressed objects within 1 object stream
+ 215 PDF objects out of 1000 (max. 8388607)
+ 95 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 208 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 213 words of extra memory for PDF output out of 10000 (max. 10000000)
 
