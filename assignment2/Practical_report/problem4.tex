@@ -1,6 +1,7 @@
 \section{Training language models}
+In this section we will discuss and compare the various models seen in the previous sections. More specifically, we will compare RNN, GRU and Transformer networks.  
 \subsection{Model Comparison}
-In this section we will present the result of the first experiment of the 3 models the vanilla RNN, GRU, and Transformer, with their correspondant hyperparameters shown in Table~\ref{table:1}. All the models are run for 40 epochs.
+Here we present the results of the first experiment with the 3 models, the vanilla RNN, GRU, and Transformer, with their correspondant hyperparameters shown in Table~\ref{table:1}. All the models are run for 40 epochs.
 	\begin{table}[H]
 		\centering
 		\begin{tabular}{||c c c c||} 
@@ -28,9 +29,9 @@ In this section we will present the result of the first experiment of the 3 mode
 			\hline
 			\textbf{Result} & \textbf{Vanilla RNN} & \textbf{RNN with GRU }& \textbf{Transformer} \\[0.5ex] 
 			\hline
-			Training PPL & 120.97 & 65.85 & ???\\
-			Validation PPL & 157.82 & 102.63 & ??? \\
-			Time processing per epoch (s) & 411.05 & 668.06 & 174.59\\[1ex]
+			Training PPL & 120.97 & 65.85 & 63.01\\
+			Validation PPL & 157.82 & 102.63 & 147.11 \\
+			Time processing per epoch (s) & 411 & 668 & 163\\[1ex]
 			\hline
 		\end{tabular}
 		\caption{First experiment results}
@@ -41,8 +42,8 @@ The perplexity results are the same for RNN and GRU. For the for Transformer we 
 \begin{itemize}
 	\item[-] RNN: train:  120  val: 157
 	\item[-] GRU: train:   65  val: 104
-	\item[-] TRANSFORMER:  train(our):  ??  val: ??
 	\item[-] TRANSFORMER:  train(expected):  67  val: 146
+	\item[-] TRANSFORMER:  train(our):  63.01  val: 147.11
 \end{itemize}
 
 This proves that our models are well implemented. The different values in the case of Transformer can be explained by the fact that the transformer is sensitive to initialization and implementation of the code. 
@@ -51,39 +52,49 @@ Lastly, the Figures below show the learning curves for (train and validation) PP
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.8]{VRNN_LC_EPOCH.png}
+	\includegraphics[scale=0.8]{Q4-1_RNN_epoch.png}
 	\caption{Vanilla RNN's PPL per epoch}
 	\label{fig:fig1}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.8]{VRNN_LC_TIME.png}
+	\includegraphics[scale=0.8]{Q4-1_RNN_clock.png}
 	\caption{Vanilla RNN's PPL per wall-clock-time}
 	\label{fig:fig2}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.8]{GRU_LC_EPOCH.png}
-	\caption{RNN with GRU PPL per epoch}
+	\includegraphics[scale=0.8]{Q4-1_GRU_SGDLR_epoch.png}
+	\caption{GRU PPL per epoch}
 	\label{fig:fig3}
 \end{figure}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=0.8]{GRU_LC_TIME.png}
-	\caption{RNN with GRU PPL per wall-clock-time}
+	\includegraphics[scale=0.8]{Q4-1_RNN_ADAM_clock.png}
+	\caption{GRU PPL per wall-clock-time}
 	\label{fig:fig4}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-1_TR_SGDLR_epoch.png}
+	\caption{Transformer PPL per epoch}
+	\label{fig:fig5}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-1_TR_SGDLR_clock.png}
+	\caption{Transformer PPL per wall-clock-time}
+	\label{fig:fig6}
 \end{figure}
 
 
 \subsection{Exploration of optimizers}
 In this section we will explore different optimizers for each of the previous models. Each model is run with two different optimizers with the hyperparameters as given in the assignment. 
-
-I\textcolor{red}{nclude the following tables:
-	1. For each experiment in 1-3, plot learning curves (train and validation) of PPL over both
-	epochs and wall-clock-time.}
 
 \begin{itemize}
 	\item[1)] \textbf{Results for Vanilla RNN:}
@@ -123,6 +134,34 @@ I\textcolor{red}{nclude the following tables:
 		\caption{Vanilla RNN results experiments}
 		\label{table:3.1}
 	\end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_RNN_SGD_epoch.png}
+	\caption{Experiment 2 of RNN with SGD optimizer, learning curve by epoch}
+	\label{fig:fig7}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_RNN_SGD_clock.png}
+	\caption{Experiment 2 of RNN with SGD optimizer, learning curve by time-clock}
+	\label{fig:fig8}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_RNN_SGD_LR_epoch.png}
+	\caption{Experiment 3 of RNN with SGD decay optimizer, learning curve by epoch}
+	\label{fig:fig9}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_RNN_SGD_LR_clock.png}
+	\caption{Experiment 3 of RNN with SGD decay optimizer, learning curve by time-clock}
+	\label{fig:fig10}
+\end{figure}
 	%
 	\item[2)] \textbf{Results for GRU:}
 	In the experiments 2 and 3, for GRU, we used the parameters given in Table~\ref{table:4}.\\
@@ -161,6 +200,34 @@ I\textcolor{red}{nclude the following tables:
 		\caption{First experiment results}
 		\label{table:4.1}
 	\end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_GRU_ADAM_epoch.png}
+	\caption{Experiment 2 of GRU with ADAM optimizer, learning curve by epoch}
+	\label{fig:fig11}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_GRU_ADAM_clock.png}
+	\caption{Experiment 2 of GRU with ADAM optimizer, learning curve by time-clock}
+	\label{fig:fig12}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_GRU_SGD_epoch.png}
+	\caption{Experiment 3 of GRU with SGD optimizer, learning curve by epoch}
+	\label{fig:fig13}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_GRU_SGD_clock.png}
+	\caption{Experiment 3 of GRU with SGD optimizer, learning curve by time-clock}
+	\label{fig:fig14}
+\end{figure}
 	%
 		\item[3)] \textbf{Results for Transformer:}
 		The following parameters were used:
@@ -190,43 +257,237 @@ The following are the results for the transformer:
 		\hline
 		\textbf{Result} & \textbf{Experiment 1} & \textbf{Experiment 2}& \textbf{Experiment 3} \\[0.5ex] 
 		\hline
-		Training PPL & ??? & ??? & ???  \\
-		Validation PPL & ???  & ???  & ???  \\
-		Average time processing per epoch (s) & ???  & ???  & ???  \\[1ex]
+		Training PPL & 63.01 & 33.88 & 50.21 \\
+		Validation PPL & 147.11 & 163.91 & 126.07 \\
+		Average time processing per epoch (s) & 163  & 164 & 176  \\[1ex]
 		\hline
 	\end{tabular}
 	\caption{First experiment results}
 	\label{table:5.1}
 \end{table}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_TR_ADAM_epoch.png}
+	\caption{Experiment 3 of Transformer with ADAM optimizer, learning curve by epoch}
+	\label{fig:fig15}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_TR_ADAM_clock.png}
+	\caption{Experiment 3 of Transformer with ADAM optimizer, learning curve by time-clock}
+	\label{fig:fig16}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_TR_SGD_epoch.png}
+	\caption{Experiment 2 of Transformer with SGD optimizer, learning curve by epoch}
+	\label{fig:fig17}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-2_TR_SGD_clock.png}
+	\caption{Experiment 2 of Transformer with SGD optimizer, learning curve by time-clock}
+	\label{fig:fig18}
+\end{figure}
+
 \end{itemize}
 %
-In conclusion, assuming that the comparison here was made with a set of hyperparameters that give a fair baseline for all the models, we can say that there is no universal best optimizer regardeless of the model architecture. In fact, each model architecture works better with a suited optimizer. Howerver, we notice that ADAM is a very powerfull optimizer that can make the model converge very quickly. However, if not well-tuned it could make the model overfit the training data. \\
+
 
 %For the next experiment we will use the best optimizer so far. In order to improve its performance we will do a hyperparameter tuning.
 
 
-
 \subsection{Exploration of hyperparmeters}
 
-Figures and Tables:\\
-Each table and gure should have an explanatory caption. 
-For tables, this goes above, for figures it goes below. 
-Tables should have appropriate column and/or row headers.
-Figures should have labelled axes and a legend. 
+In this section we will present the results of the validation process which consists of finding the best hyperparameters per architecture and per optimizer. This operation has required more than 30 experiments, from which we will take the best 3 per architecture i.e. 9 in total. The results of these experiments are presented in  Figure~\ref{fig:fig19}. 
 
-\textcolor{red}{Include the following tables:
-1. For each experiment in 1-3, plot learning curves (train and validation) of PPL over both
-epochs and wall-clock-time.}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.6]{Q4-3_Summury.png}
+	\caption{Summury of the best experimentation of the 3 models}
+	\label{fig:fig19}
+\end{figure}
 
-\textcolor{red}{2. Make a table of results summarizing the train and validation performace for each experiment,
-	indicating the architecture and optimizer. Sort by architecture, then optimizer, and number
-	the experiments to refer to them easily later. Bold the best result for each architecture.}
+In the following table we will show all the hyperparameters values that we used for those experiments:
 
-\textcolor{red}{3. List all of the hyperparameters for each experiment in your report (e.g. specify the command
-you run in the terminal to launch the job, including the command line arguments).}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.6]{Q4-3_Hyperparameters.png}
+	\caption{Summury of the hyperparameters used in the experimentation above}
+	\label{fig:fig19b}
+\end{figure}
 
+
+We will show next the learning curves of each experiment:
+\begin{itemize}
+	\item Vanilla RNN:
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=0.8]{Q4-3_RNN_1epoch.png}
+		\caption{Experiment 4: Best result for RNN which gets better result than the baseline (learning curve by epoch)}
+		\label{fig:fig20}
+	\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_RNN_1time.png}
+	\caption{Experiment 4: Best result for RNN which gets better result than the baseline (learning curve by time-clock)}
+	\label{fig:fig20b}
+\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=0.8]{Q4-3_RNN_2epoch.png}
+		\caption{Experiment 5: 2nd best result for RNN (learning curve by epoch)}
+		\label{fig:fig21}
+	\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_RNN_2time.png}
+	\caption{Experiment 5: 2nd best result for RNN (learning curve by time-clock)}
+	\label{fig:fig21b}
+\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=0.8]{Q4-3_RNN_3epoch.png}
+		\caption{Experiment 6: 3rd best result for RNN (learning curves per epoch)}
+		\label{fig:fig22}
+	\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_RNN_3time.png}
+	\caption{Experiment 6: 3rd best result for RNN (learning curves per clock)}
+	\label{fig:fig22b}
+\end{figure}
+
+
+\item GRU:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_1epoch.png}
+	\caption{Experiment 4: Best result for GRU which gets better result than the baseline (learning curve by epoch)}
+	\label{fig:fig20GRU}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_1time.png}
+	\caption{Experiment 4: Best result for GRU which gets better result than the baseline (learning curve by time-clock)}
+	\label{fig:fig20bGRU}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_2epoch.png}
+	\caption{Experiment 5: 2nd best result for GRU (learning curve by epoch)}
+	\label{fig:fig21GRU}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_2time.png}
+	\caption{Experiment 5: 2nd best result for GRU (learning curve by time-clock)}
+	\label{fig:fig21bGRU}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_3epoch.png}
+	\caption{Experiment 6: 3rd best result for GRU (learning curves per epoch)}
+	\label{fig:fig22GRU}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_GRU_3time.png}
+	\caption{Experiment 6: 3rd best result for GRU (learning curves per clock)}
+	\label{fig:fig22bGRU}
+\end{figure}
+
+
+\item Transformer:
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_1epoch.png}
+	\caption{Experiment 4: Best result for Transformer which gets better result than the baseline (learning curve by epoch)}
+	\label{fig:fig20TR}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_1time.png}
+	\caption{Experiment 4: Best result for Transformer which gets better result than the baseline (learning curve by time-clock)}
+	\label{fig:fig20bTR}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_2epoch.png}
+	\caption{Experiment 5: 2nd best result for Transformer (learning curve by epoch)}
+	\label{fig:fig21TR}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_2time.png}
+	\caption{Experiment 5: 2nd best result for Transformer (learning curve by time-clock)}
+	\label{fig:fig21bTR}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_3epoch.png}
+	\caption{Experiment 6: 3rd best result for Transformer (learning curves per epoch)}
+	\label{fig:fig22TR}
+\end{figure}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.8]{Q4-3_TR_3time.png}
+	\caption{Experiment 6: 3rd best result for Transformer (learning curves per clock)}
+	\label{fig:fig22bTR}
+\end{figure}
+
+\end{itemize}
 4. Make 2 plots for each optimizer; one which has all of the validation curves for that optimizer
-over epochs and one over wall-clock-time.
+over epochs and one over wall-clock-time.\\
 5. Make 2 plots for each arcitecture; one which has all of the validation curves for that architecture
 over epochs and one over wall-clock-time.
+
 \subsection{Discussion}
+\begin{enumerate}
+	\item \textbf{What did you expect to see in these experiments, and what actually happens? Why do you
+think that happens?}
+
+We expected that the GRU will get better performance than the vanilla RNN, which was the case. In terms of time processing we expected  GRU to be slower than the other architecture,  which was the case given the number of calculations.
+
+On the other hand, we expected the Transformer to outperfom the other architectures in terms of perplexity on the validation set and in terms of time processing. It was the case for the time processing. It was, however, not the best model in all cases. We think that this is due to the fact that RNN models require much more computation than the transformer network. 
+
+
+\item \textbf{Referring to the learning curves, qualitatively discuss the differences between the three optimizers
+in terms of training time, generalization performance, which architecture they're best
+for, relationship to other hyperparameters, etc.}
+
+Assuming that the comparison here was made with a set of hyperparameters that give a fair baseline for all the models, we can say that there is no universal best optimizer regardeless of the model architecture. In fact, each model architecture works better with a suited optimizer. Howerver, we notice that ADAM is a stable optimizer that can make the model converge quickly to a fairly good solution. Furthermore, it does not require complex hyperparameter search, as in the case of SGD, particularly for the learning rate. This satisfies the theory as ADAM automatically adapts the learning rate. However, SGD is capable of generalizing better than ADAM when using the right set of hyperparameters. 
+
+\item \textbf{Which hyperparameters+optimizer would you use if you were most concerned with wallclock time? With generalization performance? In each case, what is the "cost" of the good performance (e.g. does better wall-clock time to a decent loss mean worse final loss? Does better generalization performance mean longer training time?)}
+
+Concerning wall-clock time we obtained faster results using the optimizer ADAM. In terms of generalization we would use SGD as we find that it performs better once we have found good hyperparameters for the model. We view this as a trade-off between faster results and final accurate predictions. In conclusion we would use ADAM for prototyping and SGD for further improvement and better generalization.  
+
+%If we were more concerned with the time processing we would use Transformer which is clearly much faster than the other architectures.  The cost of good performance for this kind of architecture is to have a lot of data and a very good tuning using regularization.
+%If we are more concerned about generalization, we would use GRU as it seems to be less sensitive to overfitting and at the same time better than Transformer as shown in Figure~\ref{fig:fig20TR}. In this case, the cost of a good performance is the time processing as GRU takes more time to train and it is hard to get good hyperparamers.
+%Training a model for a long time does not mean better performance, because the model will be either in a stationary regime or strat overfitting
+
+\item \textbf{Which architecture is most "reliable" (decent generalization performance for most hyperparameter+
+optimizer settings), and which is more unstable across settings?
+}
+We would use GRU because it is a more robust architecture and performs better. Transformer is a fancy architecture but it was the only architecture that was unstable during the experiments
+
+\item \textbf{Describe a question you are curious about and what experiment(s) (i.e. what architecture/
+optimizer/hyperparameters) you would run to investigate that question.}
+
+We are curious whether SGD with Polyak's momentum term would achieve better results than SGD with the faster convergence of ADAM. We would run the experiments where we got the best results with this new optimizer and comapre its performance. 
+
+
+
+\end{enumerate}
