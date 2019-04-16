@@ -16,7 +16,7 @@ class VAE(nn.Module):
 	def __init__(self):
 		super(VAE, self).__init__()
 		##Encoder
-		self.encoder = nn.Sequential(
+		conv_e = nn.Sequential(
 				nn.Conv2d(1, 32, kernel_size=3, bias=True, stride=1),
 				nn.ReLU(True),
 				nn.AvgPool2d(kernel_size=2, stride=2),
@@ -28,10 +28,12 @@ class VAE(nn.Module):
 				
 			)
 
-		self.linear_e = nn.Linear(256, 100*2)
+		linear_e = nn.Linear(256, 100*2)
+
+		self.encoder = nn.ModuleList([conv_e, linear_e])
 
 		##Decoder
-		self.decoder = nn.Sequential(
+		conv_d = nn.Sequential(
 		#Takes z latent variable of size 100
 				
 				nn.Conv2d(256, 64, kernel_size=5, bias=True, stride=1, padding=4),
@@ -46,30 +48,32 @@ class VAE(nn.Module):
 
 			)
 
-		self.linear_d = nn.Linear(100, 256)
-		self.relu = nn.ReLU(True)
+		linear_d = nn.Linear(100, 256)
+		relu = nn.ReLU(True)
 
+		self.decoder = nn.ModuleList([linear_d, relu, conv_d])
 
 	#Outputs mean/log-variance
 	def encode(self, x):
-		#print(x.shape)
-		z = self.encoder(x)
+		z = self.encoder[0](x)
+		#Reshape for FC
 		z = z.view(z.size(0), -1)
 
 		#Outputs 2 vectors of size 100, mean vector and std vector
-		z = self.linear_e(z)
-		#print(z.shape)
+		z = self.encoder[1](z)
 
 		#first 100 for mean vector, the other 100 for logvar
 		return z[:, :100], z[:, 100:]
 
 	#Outputs reconstructed x
 	def decode(self, z):
-		z = self.linear_d(z)
-		z = self.relu(z)
+		#z = self.linear_d(z)
+		z = self.decoder[0](z)
+		#z = self.relu(z)
+		z = self.decoder[1](z)
 		#Reshape z from 2 dim to 4 dim
 		z = z.view(z.shape[0], z.shape[1], 1, 1)
-		recon_x = self.decoder(z)
+		recon_x = self.decoder[2](z)
 		return recon_x
 
 	#Sampling by re-perameterization trick
@@ -100,11 +104,17 @@ def loss_elbo(recon_x, x, mu, logvar):
 	#Note: you can compute this using logvar or std
 	# 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
 
-	KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+	#KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 	#KLD = 0.5 * torch.sum(mu.pow(2) - logvar + logvar.exp() - 1)
+	KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
-	ELBO = marginal_likelihood + KLD
-	loss = ELBO
+	loss = marginal_likelihood + KLD
+
+	#Normalize
+	#D_train = logvar.shape[0]
+	#ELBO /= D_train
+
+	#loss = -ELBO
 
 	return loss
 
@@ -160,38 +170,97 @@ def eval(epoch, valid_loader):
 
 
 ##Evaluate VAE using importance sampling 
-def loss_IS(model, data, latent):
+def loss_IS(model, x, z):
+
+	marginal_likelihood = 0
+
+	M = x.shape[0]
+
+	#x_i = model.decode(samples)
+	#x_i = x_i.view(-1, 784)
+
+	##p(x_i¦z_ik) follows a bernoulli dist 
+	#(64, 784)
+	m =  torch.distributions.Bernoulli(x)
+	p_x = m.sample()
+
+	for k in range(z.shape[1]):
+		#z_ik
+		samples = z[:,k,:]
+
+		##p(z_ik) follows a normal dist with mean 0/variance 1
+		#(64, 100)	
+		p_z = torch.randn(64, 100)	
+		
+		##q(z_ik¦x_i) follows a normal dist
+		
+		#Get mean and std from encoder
+		mu, logvar = model.encode(x.view(64,1,28,28))
+		std = torch.exp(0.5*logvar)
+
+		m = torch.distributions.Normal(mu, std)
+		#Or we can do this instead : p_z = mu + samples*std
+		q_z = m.sample()
+		
+		#Multiply the probablities
+		#print(p_z.shape) #(64, 100)
+		#print(q_z.shape) #(64, 100)
+		#print(p_x.shape) #(64, 784)
+
+		marginal_likelihood += (p_x * p_z)/q_z
+
+	#Divide sum over K and apply log
+	marginal_likelihood = marginal_likelihood * (1/z.shape[1])
+	marginal_likelihood = torch.log(marginal_likelihood)
+
+	print(marginal_likelihhod.shape)
+	sd
+		
+
+if __name__ == "__main__":
+
+
+	###Training
+
+	#n_epochs = 20
+
+	#Load data loaders
+	#train_loader, valid_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
+
+	#Train + val
+	#for epoch in range(n_epochs):
+	#	train(epoch, train_loader)
+	#	eval(epoch, valid_loader)
+
+	#	with torch.no_grad():
+			#Generate a batch of images using current parameters 
+	#		sample = torch.randn(64, 100).to(device)
+	#		sample = model.decode(sample).cpu()
+	#		save_image(sample.view(64, 1, 28, 28),
+	#				   'results/sample_' + str(epoch) + '.png')
+
+
+	#Saving the model weights
+	#torch.save(model.state_dict(), 'weights/weights.h5')
+
+	###Evaluating
+
+	path_weights = 'weights/weights.h5'
+
 	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-	model = network(num_classes)
+	model = VAE()
 	model.load_state_dict(torch.load(path_weights))
 	print("Model successfully loaded")
 
-	#put the model in eval
+	#put the model in eval mode
 	model = model.eval()
 
 	model = model.to(device)
 
+	samples = torch.randn(64, 200, 100).to(device)
+	data = torch.randn(64, 784).to(device)
 
-if __name__ == "__main__":
+	data = torch.sigmoid(data)
 
-	n_epochs = 20
-
-	#Load data loaders
-	train_loader, valid_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
-
-	#Train + val
-	for epoch in range(n_epochs):
-		train(epoch, train_loader)
-		eval(epoch, valid_loader)
-
-		with torch.no_grad():
-			#Generate a batch of images using current parameters 
-			sample = torch.randn(64, 100).to(device)
-			sample = model.decode(sample).cpu()
-			save_image(sample.view(64, 1, 28, 28),
-					   'results/sample_' + str(epoch) + '.png')
-
-
-	#Saving the model weights
-	torch.save(model.state_dict(), 'weights/weights.h5')
+	loss_IS(model, data, samples)
