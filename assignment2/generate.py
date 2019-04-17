@@ -52,6 +52,7 @@ if __name__ == '__main__':
 	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 	print ("Running on " + str(device))
 
+	#Switch between RNN and GRU
 	model_type = 'GRU'
 
 	if(model_type=='RNN'):
@@ -62,7 +63,7 @@ if __name__ == '__main__':
 		print("RNN model loaded.")
 
 		model = models.RNN(emb_size=200, hidden_size=1500, 
-	                seq_len=35, batch_size=20,
+	                seq_len=35, batch_size=10,
 	                vocab_size=10000, num_layers=2, 
 	                dp_keep_prob=0.35) 
 
@@ -74,7 +75,7 @@ if __name__ == '__main__':
 		print("GRU model loaded.")
 
 		model = models.GRU(emb_size=200, hidden_size=1500, 
-	                seq_len=35, batch_size=20,
+	                seq_len=35, batch_size=10,
 	                vocab_size=10000, num_layers=2, 
 	                dp_keep_prob=0.35) 
 
@@ -89,8 +90,8 @@ if __name__ == '__main__':
 	vocab = 10000
 
 	#Sample of size batch_size from the vocab using a uniform distribution
-	#Take a random word
-	inp = np.random.choice(vocab, size=20, replace=True, p=None)
+	#Take a random word as input to create the samples
+	inp = np.random.choice(vocab, size=10, replace=True, p=None)
 	#inp = np.zeros(20, dtype=int)
 	#print(inp)
 	#Transform to tensor
@@ -98,7 +99,7 @@ if __name__ == '__main__':
 
 	#Initial hidden state is 0 
 	#(num_layers, batch_size, hidden_size)
-	hidden = torch.zeros(2, 20, 1500)
+	hidden = torch.zeros(2, 10, 1500)
 
 	#Stop sampling util we reach the seq length or generate an <eos> token
 	generated_seq_len = 35
@@ -128,28 +129,31 @@ if __name__ == '__main__':
 		for w in range(samples.shape[0]):
 			array.append(id_to_word[samples[w, s]])
 
+		text1 = array
+		array = ' '.join(array)
+		a.append(array)
 
 		if(speak):
 
 			#Remove unwanted tokens
-			while (array.count('<unk>')): 
-				array.remove('<unk>')
+			while (text1.count('<unk>')): 
+				text1.remove('<unk>')
 
-			while (array.count('<eos>')): 
-				array.remove('<eos>')
+			while (text1.count('<eos>')): 
+				text1.remove('<eos>')
 
 			#Transform the last sentence to voice
-			text1 = ' '.join(array)
-			print (text1)
+			text1 = ' '.join(text1)
+			print(text1)
+			
 			tts = gTTS(text=text1, lang='en')	
 			tts.save('audio/sentence'+str(s+1)+'.mp3')
-
-		a.append(array)
+		
 		array = []
 	
 		
 	if(model_type=='RNN'):
-		np.savetxt('samples_rnn.txt', a,  newline='\n', fmt="%s")
+		np.savetxt('samples_rnn.txt', a,  delimiter='*' , newline='\n', fmt="%s")
 
 	elif(model_type=='GRU'):
 		np.savetxt('samples_gru.txt', a,  newline='\n', fmt="%s")
