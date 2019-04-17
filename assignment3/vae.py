@@ -18,13 +18,13 @@ class VAE(nn.Module):
 		##Encoder
 		conv_e = nn.Sequential(
 				nn.Conv2d(1, 32, kernel_size=3, bias=True, stride=1),
-				nn.ReLU(True),
+				nn.ELU(),
 				nn.AvgPool2d(kernel_size=2, stride=2),
 				nn.Conv2d(32, 64, kernel_size=3, bias=True, stride=1),
-				nn.ReLU(True),
+				nn.ELU(),
 				nn.AvgPool2d(kernel_size=2, stride=2),
 				nn.Conv2d(64, 256, kernel_size=5, bias=True, stride=1),
-				nn.ReLU(True),
+				nn.ELU(),
 				
 			)
 
@@ -37,19 +37,19 @@ class VAE(nn.Module):
 		#Takes z latent variable of size 100
 				
 				nn.Conv2d(256, 64, kernel_size=5, bias=True, stride=1, padding=4),
-				nn.ReLU(True),
+				nn.ELU(),
 				nn.UpsamplingBilinear2d(size=None, scale_factor=2),
 				nn.Conv2d(64, 32, kernel_size=3, bias=True, stride=1, padding=2),
-				nn.ReLU(True),
+				nn.ELU(),
 				nn.UpsamplingBilinear2d(size=None, scale_factor=2),
 				nn.Conv2d(32, 16, kernel_size=3, bias=True, stride=1, padding=2),
-				nn.ReLU(True),
+				nn.ELU(),
 				nn.Conv2d(16, 1, kernel_size=3, bias=True, stride=1, padding=2)
 
 			)
 
 		linear_d = nn.Linear(100, 256)
-		relu = nn.ReLU(True)
+		relu = nn.ELU()
 
 		self.decoder = nn.ModuleList([linear_d, relu, conv_d])
 
@@ -90,6 +90,7 @@ class VAE(nn.Module):
 		z = self.reparameterize(mu, logvar)
 		#z = (batch,latent_space)
 		recon_x = self.decode(z)
+		recon_x = torch.sigmoid(recon_x)
 		return recon_x, mu, logvar
 
 
@@ -97,7 +98,7 @@ class VAE(nn.Module):
 # Reconstruction + KL divergence losses summed over all elements of batch
 def loss_elbo(recon_x, x, mu, logvar):
 	
-	marginal_likelihood = F.binary_cross_entropy(torch.sigmoid(recon_x.view(-1, 784)), x.view(-1, 784), reduction='sum')
+	marginal_likelihood = F.binary_cross_entropy(recon_x.view(-1, 784), x.view(-1, 784), reduction='sum')
 
 	#print(marginal_likelihood)
 
@@ -112,17 +113,12 @@ def loss_elbo(recon_x, x, mu, logvar):
 
 	#Normalize
 	#D_train = logvar.shape[0]
-	#ELBO /= D_train
+	#loss /= D_train
 
 	#loss = -ELBO
 
 	return loss
 
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-model = VAE().to(device)
-optimizer = optim.Adam(model.parameters(), lr=3e-4)
 
 
 def train(epoch, train_loader):
@@ -179,29 +175,38 @@ def loss_IS(model, x, z):
 	#x_i = model.decode(samples)
 	#x_i = x_i.view(-1, 784)
 
-	##p(x_i¦z_ik) follows a bernoulli dist 
-	#(64, 784)
-	m =  torch.distributions.Bernoulli(x)
-	p_x = m.sample()
+	b =  torch.distributions.Bernoulli(x)
+	#p_x = torch.distributions.distribution.Distribution(x)
+	#Get probability
+	p_x = b.probs 
+
+	#print(p_x.shape)
 
 	for k in range(z.shape[1]):
 		#z_ik
 		samples = z[:,k,:]
+		
+		##q(z_ik¦x_i) follows a normal dist
+
+		#Get mean and std from encoder
+		mu, logvar = model.encode(x.view(64,1,28,28).cuda())
+		std = torch.exp(0.5*logvar)
+		n = torch.distributions.Normal(mu.cpu(), std.cpu())
+		#Get probability
+		q_z = n.cdf(samples)
+		print(q_z.shape)
+		sd
 
 		##p(z_ik) follows a normal dist with mean 0/variance 1
 		#(64, 100)	
-		p_z = torch.randn(64, 100)	
-		
-		##q(z_ik¦x_i) follows a normal dist
-		
-		#Get mean and std from encoder
-		mu, logvar = model.encode(x.view(64,1,28,28))
-		std = torch.exp(0.5*logvar)
+		#Normally distributed with loc=0 and scale=1
+		n = torch.distributions.Normal(torch.tensor([0.0]), torch.tensor([1.0]))
 
-		m = torch.distributions.Normal(mu, std)
-		#Or we can do this instead : p_z = mu + samples*std
-		q_z = m.sample()
-		
+		#Get probability
+		p_z = n.cdf(samples)
+		print(p_z.shape)
+		sd
+
 		#Multiply the probablities
 		#print(p_z.shape) #(64, 100)
 		#print(q_z.shape) #(64, 100)
@@ -218,6 +223,11 @@ def loss_IS(model, x, z):
 		
 
 if __name__ == "__main__":
+
+	#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+	#model = VAE().to(device)
+	#optimizer = optim.Adam(model.parameters(), lr=3e-4)
 
 
 	###Training
@@ -258,8 +268,8 @@ if __name__ == "__main__":
 
 	model = model.to(device)
 
-	samples = torch.randn(64, 200, 100).to(device)
-	data = torch.randn(64, 784).to(device)
+	samples = torch.randn(64, 200, 100)
+	data = torch.randn(64, 784)
 
 	data = torch.sigmoid(data)
 
