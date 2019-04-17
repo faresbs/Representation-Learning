@@ -100,10 +100,10 @@ def loss_elbo(recon_x, x, mu, logvar):
 	#Note: you can compute this using logvar or std
 	# 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
 
-	KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+	KLD = 0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 	#KLD = 0.5 * torch.sum(mu.pow(2) - logvar + logvar.exp() - 1)
 
-	ELBO = marginal_likelihood + KLD
+	ELBO = marginal_likelihood - KLD
 	loss = ELBO
 
 	return loss
@@ -160,13 +160,11 @@ def eval(epoch, valid_loader):
 
 
 ##Evaluate VAE using importance sampling 
-def loss_IS(model, data, latent):
+def loss_IS(model, x_i, z_ik):
 	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-	model = network(num_classes)
-	model.load_state_dict(torch.load(path_weights))
-	print("Model successfully loaded")
-
+	print(model)
+	sd
 	#put the model in eval
 	model = model.eval()
 
@@ -174,24 +172,35 @@ def loss_IS(model, data, latent):
 
 
 if __name__ == "__main__":
-
-	n_epochs = 20
+	
+	#n_epochs = 20
 
 	#Load data loaders
-	train_loader, valid_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
+	#train_loader, valid_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
 
 	#Train + val
-	for epoch in range(n_epochs):
-		train(epoch, train_loader)
-		eval(epoch, valid_loader)
+	#for epoch in range(n_epochs):
+	#	train(epoch, train_loader)
+	#	eval(epoch, valid_loader)
 
-		with torch.no_grad():
+	#	with torch.no_grad():
 			#Generate a batch of images using current parameters 
-			sample = torch.randn(64, 100).to(device)
-			sample = model.decode(sample).cpu()
-			save_image(sample.view(64, 1, 28, 28),
-					   'results/sample_' + str(epoch) + '.png')
+	#		sample = torch.randn(64, 100).to(device)
+	#		sample = model.decode(sample).cpu()
+	#		save_image(sample.view(64, 1, 28, 28),
+	#				   'results/sample_' + str(epoch) + '.png')
 
 
 	#Saving the model weights
-	torch.save(model.state_dict(), 'weights/weights.h5')
+	#torch.save(model.state_dict(), 'weights/weights.h5')
+
+	
+
+	path_weights = 'weights/weights.h5'
+
+	model = network(num_classes)
+	model.load_state_dict(torch.load(path_weights))
+	
+	print("Model successfully loaded")
+
+	loss_IS(model, data, latent)
