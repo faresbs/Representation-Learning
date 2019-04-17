@@ -6,6 +6,9 @@ from torch.nn import functional as F
 from torchvision import datasets, transforms
 from torchvision.utils import save_image
 
+import numpy as np
+from scipy.stats import norm
+
 import mnist_loader
 
 ##This code was inspired from:
@@ -71,9 +74,20 @@ class VAE(nn.Module):
 		z = self.decoder[0](z)
 		#z = self.relu(z)
 		z = self.decoder[1](z)
-		#Reshape z from 2 dim to 4 dim
-		z = z.view(z.shape[0], z.shape[1], 1, 1)
+
+		#Get dim of z to know if we are processing batches or 1 example
+		dim_z = len(z.shape)
+
+		if(dim_z == 1):
+			#Reshape z from 1 dim to 4 dim	
+			z = z.view(1, z.shape[0], 1, 1)
+		else:
+			#Reshape z from 2 dim to 4 dim
+			z = z.view(z.shape[0], z.shape[1], 1, 1)
+		
 		recon_x = self.decoder[2](z)
+		#Squish the output values between 0 and 1 for BCE
+		recon_x = torch.sigmoid(recon_x)
 		return recon_x
 
 	#Sampling by re-perameterization trick
@@ -90,7 +104,7 @@ class VAE(nn.Module):
 		z = self.reparameterize(mu, logvar)
 		#z = (batch,latent_space)
 		recon_x = self.decode(z)
-		recon_x = torch.sigmoid(recon_x)
+		
 		return recon_x, z, mu, logvar
 
 
@@ -165,75 +179,104 @@ def eval(epoch, valid_loader):
 	print('====> Test Average loss: {:.4f}'.format(epoch_loss))
 
 
-#Helper function to compute the mgd
+#Helper function to compute the pdf of mgd
 #Multivariate gaussian distribution
-def mgd(mean, covariance):
-	pass
+#TO CHECK ???
+def mgd(x, mean, std):
+	#Compute covariance from observations z_ik
+	print(x.shape)
+	p = norm.pdf(x.detach().cpu().numpy(), mean.detach().cpu().numpy(), std.detach().cpu().numpy())
+	print(p.shape)
+	sd
+	cov = np.cov(x.detach().cpu().numpy())
+	print(cov)
+	print(mean.shape)
+	p = np.random.multivariate_normal(mean.squeeze().detach().cpu().numpy(), cov)
+	print(p)
 
+	return p
 
 
 ##Evaluate VAE using importance sampling 
 
-def loss_IS(model, x, true_x, z):
+def loss_IS(model, true_x, z):
+
+	#Compute the reconstructed xs, mu, logvar and z from model
+	#recon_x, z, mu, logvar = model(inputs)
 
 	marginal_likelihood = 0
 
-	M = x.shape[0]
-	print(x.shape)
-	print(true_x)
-	print(z.shape)
-	sd
-	p_x2 = F.binary_cross_entropy(x.view(-1, 784), true_x.view(-1, 784), reduction='sum')
-
-	#x_i = model.decode(samples)
-	#x_i = x_i.view(-1, 784)
-
-	b =  torch.distributions.Bernoulli(x)
+	#M = x.shape[0]
+	#print(x)
+	#print(true_x.shape)
+	#print(z.shape)
+	
+	
+	#b =  torch.distributions.Bernoulli(x)
 	#Get probability
-	p_x = b.probs 
+	#p_x = b.probs 
 
-	sd
+	#Loop over the elements i of batch
+	m = true_x.shape[0]
 
-	#print(p_x.shape)
+	for i in range(m):
+		for k in range(z.shape[1]):
+			#z_ik
+			samples = z[i,k,:]
 
-	for k in range(z.shape[1]):
-		#z_ik
-		samples = z[:,k,:]
-		
-		##q(z_ik¦x_i) follows a normal dist
+			#x_i of current element i of batch
+			true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
 
-		#Get mean and std from encoder
-		mu, logvar = model.encode(x.view(64,1,28,28).cuda())
-		std = torch.exp(0.5*logvar)
-		n = torch.distributions.Normal(mu.cpu(), std.cpu())
-		#Get probability
-		q_z = n.cdf(samples)
-		print(q_z.shape)
+			#Compute the reconstructed x's from sampled z's
+			x = model.decode(samples)
+
+			#Compute the p(x_i|z_ik) of x sampled from z_ik
+			#Bernoulli dist = Apply BCE
+			#Outputs a scalar
+			p_x = F.binary_cross_entropy(x.view(-1, 784), true_xi.view(-1, 784), reduction='sum')
+			
+			#print(p_x)		
+
+			##q(z_ik¦x_i) follows a normal dist
+
+			#Get mean and std from encoder
+			#2 Vectors of 100
+			mu, logvar = model.encode(true_xi.cuda())
+			std = torch.exp(0.5*logvar)
+			#print(mu.shape)
+			#print(std.shape)
+			q_z = mgd(samples, mu, std)
+			ds
+
+			n = torch.distributions.Normal(mu.cpu(), std.cpu())
+			#Get probability
+			q_z = n.cdf(samples)
+			print(q_z.shape)
+			sd
+
+			##p(z_ik) follows a normal dist with mean 0/variance 1
+			#(64, 100)	
+			#Normally distributed with loc=0 and scale=1
+			n = torch.distributions.Normal(torch.tensor([0.0]), torch.tensor([1.0]))
+
+			#Get probability
+			p_z = n.cdf(samples)
+			print(p_z.shape)
+			sd
+
+			#Multiply the probablities
+			#print(p_z.shape) #(64, 100)
+			#print(q_z.shape) #(64, 100)
+			#print(p_x.shape) #(64, 784)
+
+			marginal_likelihood += (p_x * p_z)/q_z
+
+		#Divide sum over K and apply log
+		marginal_likelihood = marginal_likelihood * (1/z.shape[1])
+		marginal_likelihood = torch.log(marginal_likelihood)
+
+		print(marginal_likelihhod.shape)
 		sd
-
-		##p(z_ik) follows a normal dist with mean 0/variance 1
-		#(64, 100)	
-		#Normally distributed with loc=0 and scale=1
-		n = torch.distributions.Normal(torch.tensor([0.0]), torch.tensor([1.0]))
-
-		#Get probability
-		p_z = n.cdf(samples)
-		print(p_z.shape)
-		sd
-
-		#Multiply the probablities
-		#print(p_z.shape) #(64, 100)
-		#print(q_z.shape) #(64, 100)
-		#print(p_x.shape) #(64, 784)
-
-		marginal_likelihood += (p_x * p_z)/q_z
-
-	#Divide sum over K and apply log
-	marginal_likelihood = marginal_likelihood * (1/z.shape[1])
-	marginal_likelihood = torch.log(marginal_likelihood)
-
-	print(marginal_likelihhod.shape)
-	sd
 		
 
 if __name__ == "__main__":
@@ -249,7 +292,7 @@ if __name__ == "__main__":
 	#n_epochs = 20
 
 	#Load data loaders
-	#train_loader, valid_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
+	train_loader, valid_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
 
 	#Train + val
 	#for epoch in range(n_epochs):
@@ -273,21 +316,28 @@ if __name__ == "__main__":
 
 	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-	model = VAE()
+	model = VAE().to(device)
 	model.load_state_dict(torch.load(path_weights))
 	print("Model successfully loaded")
 
 	#put the model in eval mode
 	model = model.eval()
 
-	model = model.to(device)
 	
 	for i, inputs in enumerate(train_loader):
 
+		#Get your x_i's
 		inputs = inputs.to(device)
-		recon_batch, z, mu, logvar = model(inputs)
 
-		loss_IS(model, recon_batch, inputs, samples)
+		mu, logvar = model.encode(inputs)
+
+		#Sample k z samples
+		K = 200
+		z = torch.zeros([64, 200, 100]).to(device)
+		for i in range(K):
+			z[:,i,:] = model.reparameterize(mu, logvar)
+
+		loss_IS(model, inputs, z)
 
 		sd
 
