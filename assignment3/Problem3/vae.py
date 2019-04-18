@@ -193,9 +193,9 @@ if __name__ == "__main__":
 
 		with torch.no_grad():
 			#Generate a batch of images using current parameters 
+			#Sample z from prior p(z) = N(0,1)
 			sample = torch.randn(32, 100).to(device)
 			sample = model.decode(sample)
-			#print(sample.shape)
 			save_image(sample.view(32, 3, 32, 32),
 					   'results/sample_' + str(epoch) + '.png', normalize=True)
 
@@ -203,24 +203,3 @@ if __name__ == "__main__":
 	#Saving the model weights
 	torch.save(model.state_dict(), 'weights/weights.h5')
 
-	###Evaluating
-
-	#path_weights = 'weights/weights.h5'
-
-	#device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-	#model = VAE()
-	#model.load_state_dict(torch.load(path_weights))
-	#print("Model successfully loaded")
-
-	#put the model in eval mode
-	#model = model.eval()
-
-	#model = model.to(device)
-
-	#samples = torch.randn(64, 200, 100).to(device)
-	#data = torch.randn(64, 784).to(device)
-
-	#data = torch.sigmoid(data)
-
-	#loss_IS(model, data, samples)
