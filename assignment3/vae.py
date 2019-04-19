@@ -179,7 +179,7 @@ def eval(epoch, dataset, loader, eval_method='elbo'):
 				epoch_loss += loss_elbo(recon_batch, inputs, mu, logvar).item()
 			
 			else:
-				
+				#0.08
 				#Draw K samples from the encoder
 				K = 200
 				z = torch.zeros([64, K, 100]).to(device)
@@ -187,8 +187,8 @@ def eval(epoch, dataset, loader, eval_method='elbo'):
 					z[:,i,:] = model.reparameterize(mu, logvar)
 
 				#Average log-likelihoods within the batch
-				print(np.average(loss_IS2(model, inputs, z).numpy()))
-				epoch_loss += np.average(loss_IS(model, inputs, z).item())
+				#print(np.average(loss_IS3(model, inputs, z)))
+				epoch_loss += np.average(loss_IS3(model, inputs, z))
 
 	
 	if(dataset=='val'):
@@ -244,6 +244,114 @@ def mgd(z, mean, std):
 ##Evaluate VAE using importance sampling 
 #Q2.1
 
+def loss_IS3(model, true_x, z):
+
+	#Loop over the elements i of batch
+	M = true_x.shape[0]
+
+	#Save logp(x)
+	logp_x = np.zeros([M])
+
+	#Mean and std for N(0,1)
+	s = torch.ones(z.shape[2])
+	m = torch.zeros(z.shape[2])
+
+	p_x = torch.zeros([M])
+	q_z = torch.zeros([M])
+	p_z = torch.zeros([M])
+
+	#Get mean and std from encoder
+	#2 Vectors of 100
+	mu, logvar = model.encode(true_x.to(device))
+	std = torch.exp(0.5*logvar)
+
+	K = 200
+
+	#LOOP OVER THE I NOT THE SAMPLES
+
+	for i in range(M):
+		#print(i)
+		tic = time.clock()
+		#z_ik
+		samples = z[i,:,:]
+
+		#Compute the reconstructed x's from sampled z's
+		x = model.decode(samples.to(device))	
+
+		#Compute the p(x_i|z_ik) of x sampled from z_ik
+		#Bernoulli dist = Apply BCE
+		#Output an array of losses
+		loss = nn.BCELoss(reduction='mean')
+		
+		#Loop over batch to compute the BCE for each
+		#IMPLEMENT BCE!!!
+		#0.009
+
+		#true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
+		true_xi = true_x[i,:,:].view(-1, 784)
+		x = x.view(-1, 784)
+		#xi = x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
+		#p_x[i] = loss(xi.view(-1, 784), true_xi.view(-1, 784))
+
+		#BCE
+		p_x = true_xi * torch.log(x) + (1.0-true_xi) * torch.log(1-x)
+		#IT MUST BE POSITIVE ?
+		p_x = torch.sum(-p_x, dim=1)
+
+		#print(p_x)
+		#print(torch.log(p_x))
+
+
+		
+		##q(z_ik¦x_i) follows a normal dist
+		#q_z = mgd(samples, mu, std)
+		#Implement it 
+		tic = time.clock()
+		
+		s = std[i, :].view([std.shape[1]])
+		m = mu[i, :].view([std.shape[1]])
+		#print(s.shape)
+		#z_i = samples[i, :].view([std.shape[1]])
+		
+		q_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
+		
+		#print(q_z.shape)
+
+		##p(z_ik) follows a normal dist with mean 0/variance 1
+		#(64, 100)	
+		#Normally distributed with loc=0 and scale=1
+		std_1 = torch.ones(samples.shape[1])
+		mu_0 = torch.zeros(samples.shape[1])		
+		
+		#s = std_1[i, :].view([std_1.shape[1]])
+		#m = mu_0[i, :].view([std_1.shape[1]])
+		#z_i = samples[i, :].view([std_1.shape[1]])
+
+		p_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=mu_0.cpu().numpy(), cov=np.diag(std_1.cpu().numpy()**2))
+		
+		#print(np.log(p_x.cpu().numpy()))
+
+		#print(np.log(q_z))
+		#print(np.log(p_z))
+		#sd
+		#print(np.log(np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))))
+		
+
+		#Multiply the probablities
+		#marginal_likelihood += (p_x * p_z)/q_z
+		#Use logsumexp trick to avoid very small prob
+		#clip between epsilon and -epsilon
+		#float64 instead float32
+		logp_x[i] = -np.log(K) + np.log(np.sum(np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))))
+
+	#print(logp_x)
+	print(np.mean(logp_x))
+
+	toc = time.clock()
+	print(toc-tic)
+
+	return logp_x
+
 def loss_IS2(model, true_x, z):
 
 	#Loop over the elements i of batch
@@ -265,6 +373,8 @@ def loss_IS2(model, true_x, z):
 	mu, logvar = model.encode(true_x.to(device))
 	std = torch.exp(0.5*logvar)
 
+	#LOOP OVER THE I NOT THE SAMPLES
+
 	for k in range(z.shape[1]):
 		print(k)
 		tic = time.clock()
@@ -280,6 +390,9 @@ def loss_IS2(model, true_x, z):
 		loss = nn.BCELoss(reduction='mean')
 		
 		#Loop over batch to compute the BCE for each
+		#IMPLEMENT BCE!!!
+		#0.009
+		
 		for i in range(M) :
 			true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
 			xi = x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
@@ -288,12 +401,22 @@ def loss_IS2(model, true_x, z):
 		
 		##q(z_ik¦x_i) follows a normal dist
 		#q_z = mgd(samples, mu, std)
+		#Implement it 
+		tic = time.clock()
+
 		for i in range(M):
 			s = std[i, :].view([std.shape[1]])
 			m = mu[i, :].view([std.shape[1]])
-			z_i = samples[i, :].view([std.shape[1]])
-			q_z[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
+			#z_i = samples[i, :].view([std.shape[1]])
+			print(samples.shape)
+			sd
+			#q_z[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
 
+
+
+		toc = time.clock()
+		print(toc-tic)
+		sd
 
 		##p(z_ik) follows a normal dist with mean 0/variance 1
 		#(64, 100)	
