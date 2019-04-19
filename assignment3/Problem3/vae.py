@@ -58,7 +58,7 @@ class VAE(nn.Module):
 			)
 
 		linear_d = nn.Linear(100, 256)
-		relu = nn.ELU()
+		relu = nn.ReLU()
 
 		self.decoder = nn.ModuleList([linear_d, relu, conv_d])
 
@@ -82,10 +82,19 @@ class VAE(nn.Module):
 		#z = self.linear_d(z)
 		z = self.decoder[0](z)
 		z = self.decoder[1](z)
-		#Reshape z from 2 dim to 4 dim
-		z = z.view(z.shape[0], z.shape[1], 1, 1)
+		
+		#Get dim of z to know if we are processing batches or 1 example
+		dim_z = len(z.shape)
+
+		if(dim_z == 1):
+			#Reshape z from 1 dim to 4 dim	
+			z = z.view(1, z.shape[0], 1, 1)
+		else:
+			#Reshape z from 2 dim to 4 dim
+			z = z.view(z.shape[0], z.shape[1], 1, 1)
+
 		recon_x = self.decoder[2](z)
-		#Different with sigmoid whyy ??
+		#Different results with sigmoid
 		recon_x = torch.tanh(recon_x)
 		return recon_x
 
@@ -161,12 +170,55 @@ def eval(epoch, valid_loader):
 	with torch.no_grad():
 
 		for i, inputs in enumerate(test_loader):
-			inputs = inputs.to(device)
-			recon_batch, mu, logvar = model(inputs)
-			epoch_loss += loss_elbo(recon_batch, inputs, mu, logvar).item()
+
+			x = inputs[0]
+			y = inputs[1]
+
+			x = x.to(device)
+			recon_batch, mu, logvar = model(x)
+			epoch_loss += loss_elbo(recon_batch, x, mu, logvar).item()
 				
 	epoch_loss /= len(test_loader.dataset)
 	print('====> Test Average loss: {:.4f}'.format(epoch_loss))
+
+
+#Disentangled representation Q3.2
+#epsilon is the small perturbation
+#Accepts one sample z (latent_space)
+#Saves 100 (latent_space dimension) images
+def disentangled(z, epsilon=5):
+
+	latent_space = z.shape[0]
+	#Loop over the dimensions of latent space
+	new_z = z.clone()
+
+	for i in range(latent_space):
+		
+		new_z[i] = z[i] + epsilon 
+		sample = model.decode(new_z)
+
+		save_image(sample.view(1, 3, 32, 32),
+					   'Disentangled representation/sample_' + str(i) + '.png', normalize=True)
+
+		new_z = z.clone()
+
+#Interpolating in the data space Q3.3
+#Accepts one sample z (latent_space)
+#Saves 2+n images (from the two z samples and their (number of alpha) interpolations)
+def interpolating(z1, z2, method):
+	alpha = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,3,4,5]
+
+	#(a)Interpolate latent space
+	if(method=='latent'):
+		for i in range(len(alpha)):
+			#new_z = 
+
+			save_image(sample.view(1, 3, 32, 32),
+					   'Interpolation/sample_' + str(alpha[i]) + '.png', normalize=True)
+
+	#(b)Interpolate image space 
+
+
 
 
 
@@ -178,28 +230,49 @@ if __name__ == "__main__":
 	model = VAE().to(device)
 	optimizer = optim.Adam(model.parameters(), lr=3e-4)
 
-
 	###Training
 
-	n_epochs = 100
+	#n_epochs = 1000
 
 	#Load data
 	train_loader, valid_loader, test_loader = svhn.get_data_loader("svhn", 32)
 
 	#Train + val
-	for epoch in range(n_epochs):
-		train(epoch, train_loader)
-		#eval(epoch, valid_loader)
+	#for epoch in range(n_epochs):
+	#	train(epoch, train_loader)
+	#	eval(epoch, valid_loader)
 
-		with torch.no_grad():
+	#	with torch.no_grad():
 			#Generate a batch of images using current parameters 
 			#Sample z from prior p(z) = N(0,1)
-			sample = torch.randn(32, 100).to(device)
-			sample = model.decode(sample)
-			save_image(sample.view(32, 3, 32, 32),
-					   'results/sample_' + str(epoch) + '.png', normalize=True)
+	#		sample = torch.randn(16, 100).to(device)
+	#		sample = model.decode(sample)
+	#		save_image(sample.view(16, 3, 32, 32),
+	#				   'results/sample_' + str(epoch) + '.png', normalize=True)
 
 
 	#Saving the model weights
-	torch.save(model.state_dict(), 'weights/weights.h5')
+	#torch.save(model.state_dict(), 'weights/weights.h5')
 
+
+	###Qualitative Evaluation
+	path_weights = 'weights/weights.h5'
+
+	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+	model.load_state_dict(torch.load(path_weights))
+	print("Model successfully loaded")
+
+	#put the model in eval mode
+	model = model.eval()
+
+	#Q3.2
+	#Sample z from prior p(z)=N(0,1)
+	z = torch.randn(100).to(device)
+	disentangled(z)
+
+	#Q3.3
+	#Sample two z from prior p(z)=N(0,1)
+	#z1 = torch.randn(100).to(device)
+	#z2 = torch.randn(100).to(device)
+	#interpolating(z1, z2, 'latent')

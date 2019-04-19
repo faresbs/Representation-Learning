@@ -11,9 +11,13 @@ from scipy.stats import multivariate_normal
 from scipy.special import logsumexp
 
 import mnist_loader
+import time
+
 
 ##This code was inspired from:
 #https://github.com/pytorch/examples/blob/master/vae/main.py
+
+
 
 
 class VAE(nn.Module):
@@ -208,30 +212,35 @@ def mgd(z, mean, std):
 	std = std.squeeze()
 	mean = mean.squeeze()
 
+	#tic = time.clock()
+
 	#In case of 1 sample
-	if(len(mean.shape)==1):
-		#Covariance is the diag()
-		cov = np.diag(std.cpu().numpy()**2)
-		#Compute pdf
-		p = multivariate_normal.pdf(z.cpu().numpy(),mean=mean.cpu().numpy(), cov=cov)
+	#if(len(mean.shape)==1):
 
-		#p = (1/np.sqrt((2*np.pi).pow(mean.shape[0])*np.linalg.det(cov)))np.exp()
+	#Covariance is the diag()
 
-		return p 
+	#Compute pdf
+	p = multivariate_normal.pdf(z.cpu().numpy(),mean=mean.cpu().numpy(), cov=np.diag(std.cpu().numpy()**2))
+
+	
+
+	#p = (1/np.sqrt((2*np.pi).pow(mean.shape[0])*np.linalg.det(cov)))np.exp()
+
+	return p 
 
 	#In case of batch of samples
-	else:
-		m = mean.shape[0]
-		p = np.zeros((m))
+	#else:
+	#	m = mean.shape[0]
+	#	p = np.zeros((m))
 
-		for i in range(m):
-			s = std[i, :].view([std.shape[1]])
-			m = mean[i, :].view([std.shape[1]])
-			z_i = z[i, :].view([std.shape[1]])
+	#	for i in range(m):
+	#		s = std[i, :].view([std.shape[1]])
+	#		m = mean[i, :].view([std.shape[1]])
+	#		z_i = z[i, :].view([std.shape[1]])
 
-			p[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
+	#		p[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
 
-		return p
+	#	return p
 
 
 ##Evaluate VAE using importance sampling 
@@ -304,63 +313,86 @@ def loss_IS2(model, true_x, z):
 
 
 def loss_IS(model, true_x, z):
+	tic = time.clock()
 
 	marginal_likelihood = 0
 
 	#Loop over the elements i of batch
-	m = true_x.shape[0]
+	M = true_x.shape[0]
 
 	#Save logp(x)
-	logp_x = torch.zeros([m])
+	logp_x = torch.zeros([M])
 
-	for i in range(m):
+	#Mean and std for N(0,1)
+	s = torch.ones(z.shape[2])
+	m = torch.zeros(z.shape[2])
+
+	for i in range(M):
+
+		print(i)
+		
+		#x_i of current element i of batch
+		true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
+		
 		for k in range(z.shape[1]):
-			print(k)
+
+			tic = time.clock()
+			#print(k)
+			
 			#z_ik
 			samples = z[i,k,:]
 
-			#x_i of current element i of batch
-			true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
-
-			#Compute the reconstructed x's from sampled z's
-			x = model.decode(samples.to(device))
+			#Compute the reconstructed x's from sampled z's	
+			x = model.decode(samples.to(device))		
 
 			#Compute the p(x_i|z_ik) of x sampled from z_ik
 			#Bernoulli dist = Apply BCE
 			#Outputs a scalar
+			
 			p_x = F.binary_cross_entropy(x.view(-1, 784), true_xi.view(-1, 784), reduction='sum')
 			p_x = p_x.item()
+			
 			#print(p_x)		
 
 			##q(z_ik¦x_i) follows a normal dist
 
 			#Get mean and std from encoder
 			#2 Vectors of 100
+			
 			mu, logvar = model.encode(true_xi.to(device))
 			std = torch.exp(0.5*logvar)
-			q_z = mgd(samples, mu, std)
-
+			
+			#q_z = mgd(samples, mu, std)
+			#0.07
+			q_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=mu.squeeze().cpu().numpy(), cov=np.diag(std.cpu().squeeze().numpy()**2))
+			
 			#print(q_z)
 
 			##p(z_ik) follows a normal dist with mean 0/variance 1
 			#Normally distributed with loc=0 and scale=1
-			std = torch.ones(samples.shape)
-			mu = torch.zeros(samples.shape)
-			p_z = mgd(samples, mu, std)
-
+			
+			#p_z = mgd(samples, mu, std)
+			#0.07
+			p_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
+			
 			#print(q_z)
 			
 			#Multiply the probablities
 			#marginal_likelihood += (p_x * p_z)/q_z
 			#Use logsumexp trick to avoid ver small prob
-			marginal_likelihood += np.exp(np.log(p_x) + np.log(p_z) - np.log(q_z))
 
+			marginal_likelihood += np.exp(np.log(p_x) + np.log(p_z) - np.log(q_z))
+			
+			
 		#Divide sum over K and apply log
 		marginal_likelihood = marginal_likelihood * (1/z.shape[1])
 		logp_x[i] = np.log(marginal_likelihood)
 
-		#print(logp_x)
+		print(logp_x)
 
+	toc = time.clock()
+	print(toc-tic)
+	sd
 	return logp_x
 		
 
@@ -428,6 +460,8 @@ if __name__ == "__main__":
 
 		#Generate a batch of images using trained model
 		print('Generating samples...') 
+		#Latent space of 100
+		#Produce 64 samples
 		sample = torch.randn(64, 100).to(device)
 		sample = model.decode(sample).cpu()
 		save_image(sample.view(64, 1, 28, 28),
