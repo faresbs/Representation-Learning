@@ -187,7 +187,7 @@ def eval(epoch, dataset, loader, eval_method='elbo'):
 					z[:,i,:] = model.reparameterize(mu, logvar)
 
 				#Average log-likelihoods within the batch
-				print(np.average(loss_IS(model, inputs, z).numpy()))
+				print(np.average(loss_IS2(model, inputs, z).numpy()))
 				epoch_loss += np.average(loss_IS(model, inputs, z).item())
 
 	
@@ -222,8 +222,6 @@ def mgd(z, mean, std):
 	#Compute pdf
 	p = multivariate_normal.pdf(z.cpu().numpy(),mean=mean.cpu().numpy(), cov=np.diag(std.cpu().numpy()**2))
 
-	
-
 	#p = (1/np.sqrt((2*np.pi).pow(mean.shape[0])*np.linalg.det(cov)))np.exp()
 
 	return p 
@@ -249,13 +247,27 @@ def mgd(z, mean, std):
 def loss_IS2(model, true_x, z):
 
 	#Loop over the elements i of batch
-	m = true_x.shape[0]
+	M = true_x.shape[0]
 
 	#Save logp(x)
-	logp_x = np.zeros([m])
+	logp_x = np.zeros([M])
+
+	#Mean and std for N(0,1)
+	s = torch.ones(z.shape[2])
+	m = torch.zeros(z.shape[2])
+
+	p_x = torch.zeros([M])
+	q_z = torch.zeros([M])
+	p_z = torch.zeros([M])
+
+	#Get mean and std from encoder
+	#2 Vectors of 100
+	mu, logvar = model.encode(true_x.to(device))
+	std = torch.exp(0.5*logvar)
 
 	for k in range(z.shape[1]):
 		print(k)
+		tic = time.clock()
 		#z_ik
 		samples = z[:,k,:]
 
@@ -266,40 +278,47 @@ def loss_IS2(model, true_x, z):
 		#Bernoulli dist = Apply BCE
 		#Output an array of losses
 		loss = nn.BCELoss(reduction='mean')
-		p_x = torch.zeros([m])
 		
 		#Loop over batch to compute the BCE for each
-		for i in range(m) :
+		for i in range(M) :
 			true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
 			xi = x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
 			p_x[i] = loss(xi.view(-1, 784), true_xi.view(-1, 784))
-		
-		#print(p_x.cpu().numpy().shape)	
+
 		
 		##q(z_ik¦x_i) follows a normal dist
+		#q_z = mgd(samples, mu, std)
+		for i in range(M):
+			s = std[i, :].view([std.shape[1]])
+			m = mu[i, :].view([std.shape[1]])
+			z_i = samples[i, :].view([std.shape[1]])
+			q_z[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
 
-		#Get mean and std from encoder
-		#2 Vectors of 100
-		mu, logvar = model.encode(true_x.to(device))
-		std = torch.exp(0.5*logvar)
-		q_z = mgd(samples, mu, std)
-		#print(q_z.shape)
 
 		##p(z_ik) follows a normal dist with mean 0/variance 1
 		#(64, 100)	
 		#Normally distributed with loc=0 and scale=1
-		std = torch.ones(samples.shape)
-		mu = torch.zeros(samples.shape)
-		p_z = mgd(samples, mu, std)
+		std_1 = torch.ones(samples.shape)
+		mu_0 = torch.zeros(samples.shape)
+		for i in range(M):
+			s = std_1[i, :].view([std_1.shape[1]])
+			m = mu_0[i, :].view([std_1.shape[1]])
+			z_i = samples[i, :].view([std_1.shape[1]])
 
-		#print(p_z.shape)
+			p_z[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
 			
 		#Multiply the probablities
 		#marginal_likelihood += (p_x * p_z)/q_z
 		#Use logsumexp trick to avoid ver small prob
-		logp_x += np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))
+		logp_x += np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z.cpu().numpy()) - np.log(q_z.cpu().numpy()))
 
 		print(logp_x)
+
+		toc = time.clock()
+		print(toc-tic)
+		sd
+
+		sd
 
 	#Divide sum over K and apply log
 	logp_x = logp_x * (1/z.shape[1])
@@ -313,7 +332,7 @@ def loss_IS2(model, true_x, z):
 
 
 def loss_IS(model, true_x, z):
-	tic = time.clock()
+	#tic = time.clock()
 
 	marginal_likelihood = 0
 
@@ -333,11 +352,15 @@ def loss_IS(model, true_x, z):
 		
 		#x_i of current element i of batch
 		true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
+
+		#Get mean and std from encoder
+		#2 Vectors of 100		
+		mu, logvar = model.encode(true_xi.to(device))
+		std = torch.exp(0.5*logvar)
 		
 		for k in range(z.shape[1]):
 
-			tic = time.clock()
-			#print(k)
+			print(k)
 			
 			#z_ik
 			samples = z[i,k,:]
@@ -354,13 +377,7 @@ def loss_IS(model, true_x, z):
 			
 			#print(p_x)		
 
-			##q(z_ik¦x_i) follows a normal dist
-
-			#Get mean and std from encoder
-			#2 Vectors of 100
-			
-			mu, logvar = model.encode(true_xi.to(device))
-			std = torch.exp(0.5*logvar)
+			##q(z_ik¦x_i) follows a normal dist N(mu,std)
 			
 			#q_z = mgd(samples, mu, std)
 			#0.07
@@ -383,16 +400,16 @@ def loss_IS(model, true_x, z):
 
 			marginal_likelihood += np.exp(np.log(p_x) + np.log(p_z) - np.log(q_z))
 			
-			
 		#Divide sum over K and apply log
 		marginal_likelihood = marginal_likelihood * (1/z.shape[1])
 		logp_x[i] = np.log(marginal_likelihood)
 
 		print(logp_x)
 
-	toc = time.clock()
-	print(toc-tic)
-	sd
+		toc = time.clock()
+		print(toc-tic)
+		sd
+
 	return logp_x
 		
 
