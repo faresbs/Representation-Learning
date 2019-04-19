@@ -215,8 +215,6 @@ def mgd(z, mean, std):
 		#Compute pdf
 		p = multivariate_normal.pdf(z.cpu().numpy(),mean=mean.cpu().numpy(), cov=cov)
 
-		#p = (1/np.sqrt((2*np.pi).pow(mean.shape[0])*np.linalg.det(cov)))np.exp()
-
 		return p 
 
 	#In case of batch of samples
