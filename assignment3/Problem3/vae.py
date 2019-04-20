@@ -23,37 +23,42 @@ class VAE(nn.Module):
 				nn.Conv2d(3, 32, kernel_size=3, bias=True, stride=1),
 				nn.ReLU(),
 
-				nn.AvgPool2d(kernel_size=3, stride=1),
+				nn.AvgPool2d(kernel_size=2, stride=2),
 				nn.Conv2d(32, 64, kernel_size=3, bias=True, stride=1),
 				nn.ReLU(),
 
-				nn.AvgPool2d(kernel_size=3, stride=1),
-				nn.Conv2d(64, 124, kernel_size=3, bias=True, stride=2),
+				nn.AvgPool2d(kernel_size=2, stride=2),
+				nn.Conv2d(64, 256, kernel_size=5, bias=True, stride=1),
 				nn.ReLU(),
 
-				nn.AvgPool2d(kernel_size=3, stride=1),
-				nn.Conv2d(124, 256, kernel_size=3, bias=True, stride=2),
+				nn.Conv2d(256, 256, kernel_size=1, bias=True, stride=1),
 				nn.ReLU(),
+
+				nn.Conv2d(256, 256, kernel_size=1, bias=True, stride=1),
+				nn.ReLU()
 				
 			)
 
-		linear_e = nn.Linear(4*4*256, 100*2)
+		linear_e = nn.Linear(1024, 100*2)
 
 		self.encoder = nn.ModuleList([conv_e, linear_e])
 
 		##Decoder
 		conv_d = nn.Sequential(
 		#Takes z latent variable of size 100
-				
-				nn.Conv2d(256, 64, kernel_size=3, bias=True, stride=1, padding=4),
+				nn.Conv2d(256, 64, kernel_size=3, bias=True, stride=1, padding=2),
 				nn.ReLU(),
 				nn.UpsamplingBilinear2d(size=None, scale_factor=2),
 				nn.Conv2d(64, 32, kernel_size=3, bias=True, stride=1, padding=2),
 				nn.ReLU(),
 				nn.UpsamplingBilinear2d(size=None, scale_factor=2),
-				nn.Conv2d(32, 16, kernel_size=3, bias=True, stride=1, padding=1),
+				nn.Conv2d(32, 16, kernel_size=3, bias=True, stride=1, padding=2),
 				nn.ReLU(),
-				nn.Conv2d(16, 3, kernel_size=3, bias=True, stride=1, padding=1)
+				nn.UpsamplingBilinear2d(size=None, scale_factor=2),
+				nn.Conv2d(16, 8, kernel_size=3, bias=True, stride=1, padding=0),
+				nn.ReLU(),
+				nn.Conv2d(8, 3, kernel_size=3, bias=True, stride=1, padding=0),
+
 
 			)
 
@@ -72,6 +77,7 @@ class VAE(nn.Module):
 		#print(z.shape)
 
 		#Outputs 2 vectors of size 100, mean vector and std vector
+		#print(z.shape)
 		z = self.encoder[1](z)
 
 		#first 100 for mean vector, the other 100 for logvar
@@ -92,9 +98,12 @@ class VAE(nn.Module):
 		else:
 			#Reshape z from 2 dim to 4 dim
 			z = z.view(z.shape[0], z.shape[1], 1, 1)
+		#print(z.shape)
 
 		recon_x = self.decoder[2](z)
 		#Different results with sigmoid
+		#print(recon_x.shape)
+		
 		recon_x = torch.tanh(recon_x)
 		return recon_x
 
@@ -122,6 +131,9 @@ def loss_elbo(recon_x, x, mu, logvar):
 
 	#Use MSE loss because we are dealing with RGB images
 	loss = nn.MSELoss(reduction='sum')
+	#print(recon_x.view(recon_x.shape[0], recon_x.shape[1], recon_x.shape[2]**2).shape)
+	#print(x.shape)
+	
 	marginal_likelihood = loss(recon_x.view(recon_x.shape[0], recon_x.shape[1], recon_x.shape[2]**2), x.view(recon_x.shape[0], recon_x.shape[1], x.shape[2]**2))
 	KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 
@@ -251,7 +263,7 @@ if __name__ == "__main__":
 
 	###Training
 
-	n_epochs = 20
+	n_epochs = 200
 
 	#Load data
 	train_loader, valid_loader, test_loader = svhn.get_data_loader("svhn", 32)
@@ -264,9 +276,9 @@ if __name__ == "__main__":
 		with torch.no_grad():
 			#Generate a batch of images using current parameters 
 			#Sample z from prior p(z) = N(0,1)
-			sample = torch.randn(16, 100).to(device)
+			sample = torch.randn(32, 100).to(device)
 			sample = model.decode(sample)
-			save_image(sample.view(16, 3, 32, 32),
+			save_image(sample.view(32, 3, 32, 32),
 					   'results/sample_' + str(epoch) + '.png', normalize=True)
 
 
