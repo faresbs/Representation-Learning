@@ -18,8 +18,6 @@ import time
 #https://github.com/pytorch/examples/blob/master/vae/main.py
 
 
-
-
 class VAE(nn.Module):
 	def __init__(self):
 		super(VAE, self).__init__()
@@ -167,79 +165,47 @@ def eval(epoch, dataset, loader, eval_method='elbo'):
 	model.eval()
 
 	epoch_loss = 0
-
 	with torch.no_grad():
 
-		for i, inputs in enumerate(test_loader):
+		for i, inputs in enumerate(loader):
 			print(i)
 			inputs = inputs.to(device)
 			recon_batch, z, mu, logvar = model(inputs)
 			
 			if(eval_method=='elbo'):
 				epoch_loss += loss_elbo(recon_batch, inputs, mu, logvar).item()
-			
+
 			else:
-				
-				#Draw K samples from the encoder
+				#Draw K samples from the encoder q(z|x)
 				K = 200
 				z = torch.zeros([64, K, 100]).to(device)
-				#DO THIS ONE TIME : before getting in batch
+				z = torch.zeros([inputs.shape[0], K, 100]).to(device)
 				for i in range(K):
 					z[:,i,:] = model.reparameterize(mu, logvar)
 
 				#Average log-likelihoods within the batch
 				print(np.average(loss_IS(model, inputs, z).numpy()))
 				epoch_loss += np.average(loss_IS(model, inputs, z).item())
+				#print(np.average(loss_IS3(model, inputs, z)))
+				
+				#Average / or average later ?? or it doesnt matter
+				#SUM all elements?
+				
+				#epoch_loss += np.average(loss_IS3(model, inputs, z))
+				epoch_loss += np.sum(loss_IS3(model, inputs, z))
+
+				print(epoch_loss)
+				sd
+				
 
 	
 	if(dataset=='val'):
-		epoch_loss /= len(test_loader.dataset)
+		epoch_loss /= len(loader.dataset)
 		print('====> Validation: {:.4f}'.format(epoch_loss))
 
 	elif(dataset=='test'):
-		epoch_loss /= len(test_loader.dataset)
+		epoch_loss /= len(loader.dataset)
 		print('====> Test: {:.4f}'.format(epoch_loss))
-
-	
-
-
-#Helper function to compute the pdf of mgd
-#Multivariate gaussian distribution
-#q(z¦x) = N(z;mu,std) where mu,std are given by the encoder network
-#P(z) = N(Z;0,1)
-def mgd(z, mean, std):
-	#Compute covariance from observations z_ik
-
-	std = std.squeeze()
-	mean = mean.squeeze()
-
-	#tic = time.clock()
-
-	#In case of 1 sample
-	#if(len(mean.shape)==1):
-
-	#Covariance is the diag()
-
-	#Compute pdf
-	p = multivariate_normal.pdf(z.cpu().numpy(),mean=mean.cpu().numpy(), cov=np.diag(std.cpu().numpy()**2))
-
-	#p = (1/np.sqrt((2*np.pi).pow(mean.shape[0])*np.linalg.det(cov)))np.exp()
-
-	return p 
-
-	#In case of batch of samples
-	#else:
-	#	m = mean.shape[0]
-	#	p = np.zeros((m))
-
-	#	for i in range(m):
-	#		s = std[i, :].view([std.shape[1]])
-	#		m = mean[i, :].view([std.shape[1]])
-	#		z_i = z[i, :].view([std.shape[1]])
-
-	#		p[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
-
-	#	return p
 
 
 ##Evaluate VAE using importance sampling 
@@ -269,11 +235,17 @@ def loss_IS3(model, true_x, z):
 	for i in range(M):
 		print(i)
 		tic = time.clock()
+	K = 200
+
+	#LOOP OVER THE I NOT THE SAMPLES
+
+	for i in range(M):
 		#z_ik
 		samples = z[i,:,:]
 
 		#Compute the reconstructed x's from sampled z's
 		x = model.decode(samples.to(device))
+		x = model.decode(samples.to(device))	
 
 		#Compute the p(x_i|z_ik) of x sampled from z_ik
 		#Bernoulli dist = Apply BCE
@@ -295,6 +267,24 @@ def loss_IS3(model, true_x, z):
 			z_i = samples[i, :].view([std.shape[1]])
 			q_z[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
 
+		true_xi = true_x[i,:,:].view(-1, 784)
+		x = x.view(-1, 784)
+		
+		#BCE
+		p_x = true_xi * torch.log(x) + (1.0-true_xi) * torch.log(1-x)
+		#IT MUST BE POSITIVE ?
+		p_x = torch.sum(-p_x, dim=1)
+		
+		##q(z_ik¦x_i) follows a normal dist
+		#q_z = mgd(samples, mu, std)
+		s = std[i, :].view([std.shape[1]])
+		m = mu[i, :].view([std.shape[1]])
+		#print(s.shape)
+		#z_i = samples[i, :].view([std.shape[1]])
+		
+		q_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
+		
+		#print(q_z.shape)
 
 		##p(z_ik) follows a normal dist with mean 0/variance 1
 		#(64, 100)	
@@ -328,6 +318,22 @@ def loss_IS3(model, true_x, z):
 	print(logp_x)
 
 	sd
+		std_1 = torch.ones(samples.shape[1])
+		mu_0 = torch.zeros(samples.shape[1])		
+
+		p_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=mu_0.cpu().numpy(), cov=np.diag(std_1.cpu().numpy()**2))
+
+		#Multiply the probablities
+		#marginal_likelihood += (p_x * p_z)/q_z
+		#Use logsumexp trick to avoid very small prob
+		#clip between epsilon and -epsilon
+		#float64 instead float32
+		#logp_x[i] = -np.log(K) + np.log(np.sum(np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))))
+
+		logp_x[i] = np.log((1.0/K) * np.sum(np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))))
+
+
+	#print(logp_x)
 
 	return logp_x
 
@@ -352,6 +358,8 @@ def loss_IS2(model, true_x, z):
 	mu, logvar = model.encode(true_x.to(device))
 	std = torch.exp(0.5*logvar)
 
+	#LOOP OVER THE I NOT THE SAMPLES
+
 	for k in range(z.shape[1]):
 		print(k)
 		tic = time.clock()
@@ -367,6 +375,9 @@ def loss_IS2(model, true_x, z):
 		loss = nn.BCELoss(reduction='mean')
 		
 		#Loop over batch to compute the BCE for each
+		#IMPLEMENT BCE!!!
+		#0.009
+		
 		for i in range(M) :
 			true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
 			xi = x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
@@ -375,12 +386,22 @@ def loss_IS2(model, true_x, z):
 		
 		##q(z_ik¦x_i) follows a normal dist
 		#q_z = mgd(samples, mu, std)
+		#Implement it 
+		tic = time.clock()
+
 		for i in range(M):
 			s = std[i, :].view([std.shape[1]])
 			m = mu[i, :].view([std.shape[1]])
-			z_i = samples[i, :].view([std.shape[1]])
-			q_z[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
+			#z_i = samples[i, :].view([std.shape[1]])
+			print(samples.shape)
+			sd
+			#q_z[i] = multivariate_normal.pdf(z_i.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
 
+
+
+		toc = time.clock()
+		print(toc-tic)
+		sd
 
 		##p(z_ik) follows a normal dist with mean 0/variance 1
 		#(64, 100)	
@@ -512,12 +533,12 @@ if __name__ == "__main__":
 	#n_epochs = 20
 
 	#Load data loaders
-	train_loader, valid_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
+	train_loader, val_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
 
 	#Train + val
 	#for epoch in range(n_epochs):
 	#	train(epoch, train_loader)
-	#	eval(epoch, valid_loader)
+	#	eval(epoch, val_loader)
 
 	#	with torch.no_grad():
 			#Generate a batch of images using current parameters 
@@ -544,7 +565,6 @@ if __name__ == "__main__":
 	model = model.eval()
 
 	eval_method = ['elbo', 'IS']
-	#eval_method = ['elbo']
 	dataset = ['val', 'test']
 
 	with torch.no_grad():
@@ -555,20 +575,10 @@ if __name__ == "__main__":
 				print('Evaluating using '+method+'...')
 
 				if(data == 'val'):
-					eval(0, data, valid_loader, eval_method=method)
+					eval(0, data, val_loader, eval_method=method)
 
 				if(data == 'test'):
 					eval(0, data, test_loader, eval_method=method)
-
-
-		#Generate a batch of images using trained model
-		print('Generating samples...') 
-		#Latent space of 100
-		#Produce 64 samples
-		sample = torch.randn(64, 100).to(device)
-		sample = model.decode(sample).cpu()
-		save_image(sample.view(64, 1, 28, 28),
-					   'results/sample_' + str(epoch) + '.png')
 
 
 
