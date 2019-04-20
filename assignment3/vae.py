@@ -166,37 +166,51 @@ def eval(epoch, dataset, loader, eval_method='elbo'):
 	#Mode eval
 	model.eval()
 
-	epoch_loss = 0
+	#if(eval_method=='elbo'):
+	#	epoch_loss = 0
+	#elif(eval_method=='IS'):
+	#	epoch_loss = np.zeros([64])
 
+
+	epoch_loss = 0
 	with torch.no_grad():
 
-		for i, inputs in enumerate(test_loader):
+		for i, inputs in enumerate(loader):
 			print(i)
 			inputs = inputs.to(device)
 			recon_batch, z, mu, logvar = model(inputs)
 			
 			if(eval_method=='elbo'):
 				epoch_loss += loss_elbo(recon_batch, inputs, mu, logvar).item()
-			
+
 			else:
 				#0.08
 				#Draw K samples from the encoder
 				K = 200
-				z = torch.zeros([64, K, 100]).to(device)
+				z = torch.zeros([inputs.shape[0], K, 100]).to(device)
 				for i in range(K):
 					z[:,i,:] = model.reparameterize(mu, logvar)
 
 				#Average log-likelihoods within the batch
 				#print(np.average(loss_IS3(model, inputs, z)))
-				epoch_loss += np.average(loss_IS3(model, inputs, z))
+				
+				#Average / or average later ?? or it doesnt matter
+				#SUM all elements?
+				
+				#epoch_loss += np.average(loss_IS3(model, inputs, z))
+				epoch_loss += np.sum(loss_IS3(model, inputs, z))
+
+				print(epoch_loss)
+				sd
+				
 
 	
 	if(dataset=='val'):
-		epoch_loss /= len(test_loader.dataset)
+		epoch_loss /= len(loader.dataset)
 		print('====> Validation: {:.4f}'.format(epoch_loss))
 
 	elif(dataset=='test'):
-		epoch_loss /= len(test_loader.dataset)
+		epoch_loss /= len(loader.dataset)
 		print('====> Test: {:.4f}'.format(epoch_loss))
 
 	
@@ -256,10 +270,6 @@ def loss_IS3(model, true_x, z):
 	s = torch.ones(z.shape[2])
 	m = torch.zeros(z.shape[2])
 
-	p_x = torch.zeros([M])
-	q_z = torch.zeros([M])
-	p_z = torch.zeros([M])
-
 	#Get mean and std from encoder
 	#2 Vectors of 100
 	mu, logvar = model.encode(true_x.to(device))
@@ -270,8 +280,6 @@ def loss_IS3(model, true_x, z):
 	#LOOP OVER THE I NOT THE SAMPLES
 
 	for i in range(M):
-		#print(i)
-		tic = time.clock()
 		#z_ik
 		samples = z[i,:,:]
 
@@ -281,33 +289,16 @@ def loss_IS3(model, true_x, z):
 		#Compute the p(x_i|z_ik) of x sampled from z_ik
 		#Bernoulli dist = Apply BCE
 		#Output an array of losses
-		loss = nn.BCELoss(reduction='mean')
-		
-		#Loop over batch to compute the BCE for each
-		#IMPLEMENT BCE!!!
-		#0.009
-
-		#true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
 		true_xi = true_x[i,:,:].view(-1, 784)
 		x = x.view(-1, 784)
-		#xi = x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
-		#p_x[i] = loss(xi.view(-1, 784), true_xi.view(-1, 784))
-
+		
 		#BCE
 		p_x = true_xi * torch.log(x) + (1.0-true_xi) * torch.log(1-x)
 		#IT MUST BE POSITIVE ?
 		p_x = torch.sum(-p_x, dim=1)
-
-		#print(p_x)
-		#print(torch.log(p_x))
-
-
 		
 		##q(z_ik¦x_i) follows a normal dist
 		#q_z = mgd(samples, mu, std)
-		#Implement it 
-		tic = time.clock()
-		
 		s = std[i, :].view([std.shape[1]])
 		m = mu[i, :].view([std.shape[1]])
 		#print(s.shape)
@@ -322,33 +313,20 @@ def loss_IS3(model, true_x, z):
 		#Normally distributed with loc=0 and scale=1
 		std_1 = torch.ones(samples.shape[1])
 		mu_0 = torch.zeros(samples.shape[1])		
-		
-		#s = std_1[i, :].view([std_1.shape[1]])
-		#m = mu_0[i, :].view([std_1.shape[1]])
-		#z_i = samples[i, :].view([std_1.shape[1]])
 
 		p_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=mu_0.cpu().numpy(), cov=np.diag(std_1.cpu().numpy()**2))
-		
-		#print(np.log(p_x.cpu().numpy()))
-
-		#print(np.log(q_z))
-		#print(np.log(p_z))
-		#sd
-		#print(np.log(np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))))
-		
 
 		#Multiply the probablities
 		#marginal_likelihood += (p_x * p_z)/q_z
 		#Use logsumexp trick to avoid very small prob
 		#clip between epsilon and -epsilon
 		#float64 instead float32
-		logp_x[i] = -np.log(K) + np.log(np.sum(np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))))
+		#logp_x[i] = -np.log(K) + np.log(np.sum(np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))))
+
+		logp_x[i] = np.log((1.0/K) * np.sum(np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))))
+
 
 	#print(logp_x)
-	print(np.mean(logp_x))
-
-	toc = time.clock()
-	print(toc-tic)
 
 	return logp_x
 
@@ -549,12 +527,12 @@ if __name__ == "__main__":
 	#n_epochs = 20
 
 	#Load data loaders
-	train_loader, valid_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
+	train_loader, val_loader, test_loader = mnist_loader.get_data_loader("binarized_mnist", 64)
 
 	#Train + val
 	#for epoch in range(n_epochs):
 	#	train(epoch, train_loader)
-	#	eval(epoch, valid_loader)
+	#	eval(epoch, val_loader)
 
 	#	with torch.no_grad():
 			#Generate a batch of images using current parameters 
@@ -581,7 +559,6 @@ if __name__ == "__main__":
 	model = model.eval()
 
 	eval_method = ['elbo', 'IS']
-	#eval_method = ['elbo']
 	dataset = ['val', 'test']
 
 	with torch.no_grad():
@@ -592,20 +569,10 @@ if __name__ == "__main__":
 				print('Evaluating using '+method+'...')
 
 				if(data == 'val'):
-					eval(0, data, valid_loader, eval_method=method)
+					eval(0, data, val_loader, eval_method=method)
 
 				if(data == 'test'):
 					eval(0, data, test_loader, eval_method=method)
-
-
-		#Generate a batch of images using trained model
-		print('Generating samples...') 
-		#Latent space of 100
-		#Produce 64 samples
-		sample = torch.randn(64, 100).to(device)
-		sample = model.decode(sample).cpu()
-		save_image(sample.view(64, 1, 28, 28),
-					   'results/sample_' + str(epoch) + '.png')
 
 
 

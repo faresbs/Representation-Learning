@@ -186,7 +186,7 @@ def eval(epoch, valid_loader):
 #epsilon is the small perturbation
 #Accepts one sample z (latent_space)
 #Saves 100 (latent_space dimension) images
-def disentangled(z, epsilon=5):
+def disentangled(z, model, epsilon=5):
 
 	latent_space = z.shape[0]
 	#Loop over the dimensions of latent space
@@ -202,24 +202,43 @@ def disentangled(z, epsilon=5):
 
 		new_z = z.clone()
 
-#Interpolating in the data space Q3.3
+#Q3.3
 #Accepts one sample z (latent_space)
 #Saves 2+n images (from the two z samples and their (number of alpha) interpolations)
-def interpolating(z1, z2, method):
-	alpha = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,2,3,4,5]
+def interpolating(z0, z1, method, model):
+	alpha = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
 
 	#(a)Interpolate latent space
 	if(method=='latent'):
-		for i in range(len(alpha)):
-			#new_z = 
+		for a in alpha:
+			new_z = a * z0 + (1 - a)*z1
+
+			sample = model.decode(new_z)
 
 			save_image(sample.view(1, 3, 32, 32),
-					   'Interpolation/sample_' + str(alpha[i]) + '.png', normalize=True)
+					   'Interpolation/latent space/sample_' + str(a) + '.png', normalize=True)
 
 	#(b)Interpolate image space 
 
+	elif(method=='image'):
+		sample0 = model.decode(z0)
+
+		save_image(sample0.view(1, 3, 32, 32),
+					   'Interpolation/image space/sample0.png', normalize=True)
+
+		sample1 = model.decode(z1)
+
+		save_image(sample1.view(1, 3, 32, 32),
+					   'Interpolation/image space/sample1.png', normalize=True)
 
 
+		for a in alpha:
+
+			
+			new_sample = a * sample0 + (1 - a) * sample1
+
+			save_image(new_sample.view(1, 3, 32, 32),
+					   'Interpolation/image space/sample_' + str(a) + '.png', normalize=True)
 
 
 
@@ -232,47 +251,47 @@ if __name__ == "__main__":
 
 	###Training
 
-	#n_epochs = 1000
+	n_epochs = 20
 
 	#Load data
 	train_loader, valid_loader, test_loader = svhn.get_data_loader("svhn", 32)
 
 	#Train + val
-	#for epoch in range(n_epochs):
-	#	train(epoch, train_loader)
-	#	eval(epoch, valid_loader)
+	for epoch in range(n_epochs):
+		train(epoch, train_loader)
+		eval(epoch, valid_loader)
 
-	#	with torch.no_grad():
+		with torch.no_grad():
 			#Generate a batch of images using current parameters 
 			#Sample z from prior p(z) = N(0,1)
-	#		sample = torch.randn(16, 100).to(device)
-	#		sample = model.decode(sample)
-	#		save_image(sample.view(16, 3, 32, 32),
-	#				   'results/sample_' + str(epoch) + '.png', normalize=True)
+			sample = torch.randn(16, 100).to(device)
+			sample = model.decode(sample)
+			save_image(sample.view(16, 3, 32, 32),
+					   'results/sample_' + str(epoch) + '.png', normalize=True)
 
 
 	#Saving the model weights
-	#torch.save(model.state_dict(), 'weights/weights.h5')
+	torch.save(model.state_dict(), 'weights/weights.h5')
 
 
 	###Qualitative Evaluation
-	path_weights = 'weights/weights.h5'
+	#path_weights = 'weights/weights.h5'
 
-	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+	#device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-	model.load_state_dict(torch.load(path_weights))
-	print("Model successfully loaded")
+	#model.load_state_dict(torch.load(path_weights))
+	#print("Model successfully loaded")
 
 	#put the model in eval mode
-	model = model.eval()
+	#model = model.eval()
 
 	#Q3.2
 	#Sample z from prior p(z)=N(0,1)
-	z = torch.randn(100).to(device)
-	disentangled(z)
+	#z = torch.randn(100).to(device)
+	#disentangled(z, model)
 
 	#Q3.3
 	#Sample two z from prior p(z)=N(0,1)
 	#z1 = torch.randn(100).to(device)
 	#z2 = torch.randn(100).to(device)
-	#interpolating(z1, z2, 'latent')
+	#interpolating(z1, z2, 'image', model)
