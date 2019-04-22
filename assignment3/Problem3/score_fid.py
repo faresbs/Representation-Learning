@@ -130,10 +130,13 @@ def calculate_fid_score(sample_feature_iterator,
     # sqrt(sigma1 sigma2) = sqrt(A sigma2 A), where A = sqrt(sigma1)
     # the covariance matrix are by definition symetric
     
-    root_sigma_gen = linalg.sqrtm(sigma_gen)
+    # to prevent negative values in the cov product
+    eps = np.eye(512) * 1e-5
+    
+    root_sigma_gen = linalg.sqrtm(sigma_gen + eps)
     sigmas_prod = np.matmul(root_sigma_gen,np.matmul(sigma_test, root_sigma_gen))
     # given np.matmul(root_sigma_gen,np.matmul(sigma_test, root_sigma_gen)) is symetric:
-    root_sigmas_prod = linalg.sqrtm(sigmas_prod)
+    root_sigmas_prod = linalg.sqrtm(sigmas_prod + eps)
     
     print("Calculating the FID score ...")
     # Calculating the trace
