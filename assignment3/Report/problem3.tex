@@ -35,19 +35,28 @@ The following figures show how the GAN has learned a disentangled representation
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=1]{gandesent1.png}
-	\caption{Samples by perturbating dimensions 6 and 96}
+	\quad
+	\includegraphics[scale=1]{gandesent2.png}
+	\caption{Samples by perturbating the dimensions, left: 6 and 96, right: 25 and 75}
 	\label{fig:des1}
 \end{figure}
 
+%\begin{figure}[H]
+%	\centering
+%	\includegraphics[scale=1]{gandesent2.png}
+%	\caption{Samples by perturbating dimensions 25 and 75}
+%	\label{fig:des2}
+%\end{figure}
+
+The following figures show how the GAN has learned a disentangled representation:
 \begin{figure}[H]
 	\centering
-	\includegraphics[scale=1]{gandesent2.png}
-	\caption{Samples by perturbating dimensions 25 and 75}
-	\label{fig:des2}
+	\includegraphics[scale=1]{sample_VAE21-65_epsilon_90.png}
+	\quad
+	\includegraphics[scale=1]{sample_VAE21-8_epsilon_60.png}
+	\caption{Samples by perturbating the dimensions, left: 65 and 90, right: 8 and 60}
+	\label{fig:desVAE}
 \end{figure}
-
-\textbf{TO BE CONTINUED BY FARRIS FOR VAE}
-The following figures show how the GAN has learned a disentangled representation:
 
 \item[3.] {Interpolation in the data space and in the latent space:}
 
@@ -70,14 +79,22 @@ The following figures show how the GAN has learned a disentangled representation
 	\end{figure}
 
 	\item GAN:\\ 
-	(SAME FOR GAN JORGE)
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=1]{GAN_latent.png}
+		\caption{Interpolation in the latent space using GAN}
+		\label{fig:gan_latent}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=1]{GAN_image.png}
+		\caption{Interpolation in the data space using GAN}
+		\label{fig:gan_image}
+	\end{figure}
+	
 
 	\end{enumerate}
-
-
-\textbf{TBD BY JORGE FOR GAN AND FARRIS FOR VAE}
-
-(say something brief about the difference betwwen the two schemes)
 
 
 \end{enumerate}
