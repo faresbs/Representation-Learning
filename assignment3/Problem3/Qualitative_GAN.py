@@ -22,8 +22,8 @@ def disentangled(z, model, epsilon=3):
     latent_space = z.shape[1]
     print("latent_space=",latent_space)
     model_name = model.__class__.__name__
-    dim1=17
-    dim2=47
+    dim1=21
+    dim2=65
     size=5
 	#Loop over the dimensions of latent space
     new_z = z.clone()
@@ -66,7 +66,7 @@ def disentangled(z, model, epsilon=3):
 
 
     print(sample.shape)
-    save_image(sample.data[0:25],data_path+'Tests/Allsample_' + str(dim1)+'-'+str(dim2) + '.png', nrow=5, normalize=True)
+    save_image(sample.data[0:25],data_path+'Tests/sample_' + model_name + str(dim1)+'-'+str(dim2) +'_epsilon_' +str(epsilon) +'.png', nrow=5, normalize=True)
     #new_z = z.clone()
 
 
@@ -99,4 +99,4 @@ if __name__ == "__main__":
     #Q3.2
     #Sample z from prior p(z)=N(0,1)
     z = torch.FloatTensor(np.random.normal(0, 1, (1, latent_dim))).to(device)
-    disentangled(z, model)
+    disentangled(z, model, epsilon=90)
