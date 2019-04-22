@@ -44,28 +44,41 @@ class VAE(nn.Module):
 		self.encoder = nn.ModuleList([conv_e, linear_e])
 
 		##Decoder
-		conv_d = nn.Sequential(
+		#conv_d = nn.Sequential(
 		#Takes z latent variable of size 100
-				nn.Conv2d(256, 64, kernel_size=3, bias=True, stride=1, padding=2),
-				nn.ReLU(),
-				nn.UpsamplingBilinear2d(size=None, scale_factor=2),
-				nn.Conv2d(64, 32, kernel_size=3, bias=True, stride=1, padding=2),
-				nn.ReLU(),
-				nn.UpsamplingBilinear2d(size=None, scale_factor=2),
-				nn.Conv2d(32, 16, kernel_size=3, bias=True, stride=1, padding=2),
-				nn.ReLU(),
-				nn.UpsamplingBilinear2d(size=None, scale_factor=2),
-				nn.Conv2d(16, 8, kernel_size=3, bias=True, stride=1, padding=0),
-				nn.ReLU(),
-				nn.Conv2d(8, 3, kernel_size=3, bias=True, stride=1, padding=0),
+				#nn.Conv2d(256, 64, kernel_size=3, bias=True, stride=1, padding=2),
+				#nn.ReLU(),
+				#nn.UpsamplingBilinear2d(size=None, scale_factor=2),
+				#nn.Conv2d(64, 32, kernel_size=3, bias=True, stride=1, padding=2),
+				#nn.ReLU(),
+				#nn.UpsamplingBilinear2d(size=None, scale_factor=2),
+				#nn.Conv2d(32, 16, kernel_size=3, bias=True, stride=1, padding=2),
+				#nn.ReLU(),
+				#nn.UpsamplingBilinear2d(size=None, scale_factor=2),
+				#nn.Conv2d(16, 8, kernel_size=3, bias=True, stride=1, padding=0),
+				#nn.ReLU(),
+				#nn.Conv2d(8, 3, kernel_size=3, bias=True, stride=1, padding=0),
 
 
-			)
+			#)
 
-		linear_d = nn.Linear(100, 256)
-		relu = nn.ReLU()
+		#linear_d = nn.Linear(100, 256)
+		#relu = nn.ReLU()
 
-		self.decoder = nn.ModuleList([linear_d, relu, conv_d])
+		#self.decoder = nn.ModuleList([linear_d, relu, conv_d])
+
+		self.decoder = nn.Sequential(
+		   nn.Linear(100, 128),
+		   nn.LeakyReLU(0.2, inplace=True),
+		   nn.Linear(128, 256),
+		   nn.LeakyReLU(0.2, inplace=True),
+		   nn.Linear(256, 512),
+		   nn.LeakyReLU(0.2, inplace=True),
+		   nn.Linear(512, 1024),
+		   nn.LeakyReLU(0.2, inplace=True),
+		   nn.Linear(1024, 3072)
+	   )
+
 
 	#Outputs mean/log-variance
 	def encode(self, x):
@@ -86,25 +99,29 @@ class VAE(nn.Module):
 	#Outputs reconstructed x
 	def decode(self, z):
 		#z = self.linear_d(z)
-		z = self.decoder[0](z)
-		z = self.decoder[1](z)
+		#z = self.decoder[0](z)
+		#z = self.decoder[1](z)
 		
 		#Get dim of z to know if we are processing batches or 1 example
-		dim_z = len(z.shape)
+		#dim_z = len(z.shape)
 
-		if(dim_z == 1):
+		#if(dim_z == 1):
 			#Reshape z from 1 dim to 4 dim	
-			z = z.view(1, z.shape[0], 1, 1)
-		else:
+		#	z = z.view(1, z.shape[0], 1, 1)
+		#else:
 			#Reshape z from 2 dim to 4 dim
-			z = z.view(z.shape[0], z.shape[1], 1, 1)
+		#	z = z.view(z.shape[0], z.shape[1], 1, 1)
 		#print(z.shape)
 
-		recon_x = self.decoder[2](z)
-		#Different results with sigmoid
-		#print(recon_x.shape)
-		
+		#recon_x = self.decoder[2](z)
+
+		#print(z.shape)
+
+		recon_x = self.decoder(z)
+
+		#Different results with sigmoid because of normalization scheme
 		recon_x = torch.tanh(recon_x)
+		
 		return recon_x
 
 	#Sampling by re-perameterization trick
@@ -119,7 +136,6 @@ class VAE(nn.Module):
 	def forward(self, x):
 		mu, logvar = self.encode(x)
 		z = self.reparameterize(mu, logvar)
-		#print(z.shape)
 		#z = (batch,latent_space)
 		recon_x = self.decode(z)
 		return recon_x, mu, logvar
@@ -131,11 +147,12 @@ def loss_elbo(recon_x, x, mu, logvar):
 
 	#Use MSE loss because we are dealing with RGB images
 	loss = nn.MSELoss(reduction='sum')
-	#print(recon_x.view(recon_x.shape[0], recon_x.shape[1], recon_x.shape[2]**2).shape)
-	#print(x.shape)
+	marginal_likelihood = loss(recon_x.view(recon_x.shape[0], 3, x.shape[2]**2), x.view(x.shape[0], x.shape[1], x.shape[2]**2))
 	
-	marginal_likelihood = loss(recon_x.view(recon_x.shape[0], recon_x.shape[1], recon_x.shape[2]**2), x.view(recon_x.shape[0], recon_x.shape[1], x.shape[2]**2))
+	#marginal_likelihood = loss(recon_x.view(recon_x.shape[0], recon_x.shape[1], recon_x.shape[2]**2), x.view(x.shape[0], x.shape[1], x.shape[2]**2))
 	KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+
+	#print("KL divergence: "+str(KLD.item()))
 
 	loss = marginal_likelihood + KLD
 
@@ -261,41 +278,49 @@ if __name__ == "__main__":
 	model = VAE().to(device)
 	optimizer = optim.Adam(model.parameters(), lr=3e-4)
 
-	###Training
+	###Training###
 
-	n_epochs = 200
+	#n_epochs = 50
 
 	#Load data
 	train_loader, valid_loader, test_loader = svhn.get_data_loader("svhn", 32)
 
 	#Train + val
-	for epoch in range(n_epochs):
-		train(epoch, train_loader)
-		eval(epoch, valid_loader)
+	#for epoch in range(n_epochs):
+	#	train(epoch, train_loader)
+	#	eval(epoch, valid_loader)
 
-		with torch.no_grad():
+	#	with torch.no_grad():
 			#Generate a batch of images using current parameters 
 			#Sample z from prior p(z) = N(0,1)
-			sample = torch.randn(32, 100).to(device)
-			sample = model.decode(sample)
-			save_image(sample.view(32, 3, 32, 32),
-					   'results/sample_' + str(epoch) + '.png', normalize=True)
+	#		sample = torch.randn(16, 100).to(device)
+	#		sample = model.decode(sample)
+	#		save_image(sample.view(16, 3, 32, 32),
+	#				   'results/sample_' + str(epoch) + '.png', normalize=True)
 
 
 	#Saving the model weights
-	torch.save(model.state_dict(), 'weights/weights.h5')
+	#torch.save(model.state_dict(), 'weights/weights.h5')
 
 
-	###Qualitative Evaluation
-	#path_weights = 'weights/weights.h5'
+	###Qualitative Evaluation###
 
-	#device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+	path_weights = 'weights/weights.h5'
 
-	#model.load_state_dict(torch.load(path_weights))
-	#print("Model successfully loaded")
+	device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+	model.load_state_dict(torch.load(path_weights))
+	print("Model successfully loaded")
 
 	#put the model in eval mode
-	#model = model.eval()
+	model = model.eval()
+
+	#Sample z from prior p(z) = N(0,1)
+	#for i in range(1000):
+	#	sample = torch.randn(1, 100).to(device)
+	#	sample = model.decode(sample)
+	#	save_image(sample.view(1, 3, 32, 32),
+	#					   '1000/sample_' + str(i) + '.png', normalize=True)
 
 	#Q3.2
 	#Sample z from prior p(z)=N(0,1)
@@ -304,6 +329,6 @@ if __name__ == "__main__":
 
 	#Q3.3
 	#Sample two z from prior p(z)=N(0,1)
-	#z1 = torch.randn(100).to(device)
-	#z2 = torch.randn(100).to(device)
-	#interpolating(z1, z2, 'image', model)
+	z1 = torch.randn(100).to(device)
+	z2 = torch.randn(100).to(device)
+	interpolating(z1, z2, 'latent', model)
