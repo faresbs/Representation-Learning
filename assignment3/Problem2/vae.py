@@ -114,7 +114,9 @@ class VAE(nn.Module):
 def loss_elbo(recon_x, x, mu, logvar):
 	
 	marginal_likelihood = F.binary_cross_entropy(recon_x.view(-1, 784), x.view(-1, 784), reduction='sum')
-	
+	#marginal_likelihood = x.view(-1, 784) * torch.log(recon_x.view(-1, 784)) + (1.0-x.view(-1, 784)) * torch.log(1-recon_x.view(-1, 784))
+	#print(marginal_likelihood.shape)
+	#sd
 	#Note: you can compute this using logvar or std
 	# 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
 	#From paper
@@ -164,7 +166,7 @@ def eval(epoch, dataset, loader, eval_method='elbo'):
 	with torch.no_grad():
 
 		for i, inputs in enumerate(loader):
-			print(i)
+			#print(i)
 			inputs = inputs.to(device)
 			recon_batch, z, mu, logvar = model(inputs)
 			
@@ -177,8 +179,8 @@ def eval(epoch, dataset, loader, eval_method='elbo'):
 				z = torch.zeros([inputs.shape[0], K, 100]).to(device)
 				for i in range(K):
 					z[:,i,:] = model.reparameterize(mu, logvar)
-
-				epoch_loss += np.sum(loss_IS3(model, inputs, z))
+				
+				epoch_loss += np.sum(loss_IS(model, inputs, z))
 				
 	
 	if(dataset=='val'):
@@ -219,32 +221,52 @@ def loss_IS(model, true_x, z):
 		#Compute the p(x_i|z_ik) of x sampled from z_ik
 		#Bernoulli dist = Apply BCE
 		#Output an array of losses
+
+		### Problem HERE
+
 		true_xi = true_x[i,:,:].view(-1, 784)
 		x = x.view(-1, 784)
-	
-		p_x = true_xi * torch.log(x) + (1.0-true_xi) * torch.log(1-x)
-		p_x = torch.sum(-p_x, dim=1)
 		
+		#P(x¦z) is shape (200, 784)
+		p_xz = -(true_xi * torch.log(x) + (1.0-true_xi) * torch.log(1.0-x))
+		
+		#Multiply the independent probabilities (784)	
+		#Apply logsumexp to avoid small image prob
+		#P(x¦z) is shape (200, 784)
+		p_xz = logsumexp(p_xz.cpu().numpy(), axis=1)
+
+
+		####
+
+	
 		##q(z_ik¦x_i) follows a normal dist
 		#q_z = mgd(samples, mu, std)
 		s = std[i, :].view([std.shape[1]])
 		m = mu[i, :].view([std.shape[1]])
-		
+
 		q_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
 
+		
 		##p(z_ik) follows a normal dist with mean 0/variance 1
-		#(64, 100)	
 		#Normally distributed with loc=0 and scale=1
 		std_1 = torch.ones(samples.shape[1])
-		mu_0 = torch.zeros(samples.shape[1])		
+		mu_0 = torch.zeros(samples.shape[1])	
 
 		p_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=mu_0.cpu().numpy(), cov=np.diag(std_1.cpu().numpy()**2))
 
 		#Multiply the probablities
 		#Use logsumexp trick to avoid very small prob
 		
-		logp_x[i] = np.log((1.0/K) * np.sum(np.exp(np.log(p_x.cpu().numpy()) + np.log(p_z) - np.log(q_z))))
+		#print(np.average(np.log(p_xz)) #This should be around -75
+		#print(np.average(np.log(q_z)))
+		#print(np.average(np.log(p_z)))
+		
+		logp_x[i] = np.log((1.0/K) * np.sum(np.exp(np.log(p_xz) + np.log(p_z) - np.log(q_z))))
+		#logp_x[i] = np.log((1.0/K) * np.sum(np.exp(p_xz.cpu().numpy() + np.log(p_z) - np.log(q_z))))
+		#logp_x[i] = np.log((1.0/K) * np.sum((p_xz * p_z)/q_z))
 
+	print (logp_x)
+	sd
 	return logp_x
 
 
