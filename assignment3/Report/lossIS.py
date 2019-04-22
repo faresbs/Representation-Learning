@@ -31,16 +31,16 @@ def loss_IS(model, true_x, z):
 		true_xi = true_x[i,:,:].view(-1, 784)
 		x = x.view(-1, 784)
 		
-		#P(x¦z) is shape (200, 784)
+		#P(x/z) is shape (200, 784)
 		p_xz = -(true_xi * torch.log(x) + (1.0-true_xi) * torch.log(1.0-x))
 		
 		#Multiply the independent probabilities (784)	
 		#Apply logsumexp to avoid small image prob
-		#P(x¦z) is shape (200, 784)
+		#P(x/z) is shape (200, 784)
 		p_xz = logsumexp(p_xz.cpu().numpy(), axis=1)
 
 	
-		##q(z_ik¦x_i) follows a normal dist
+		##q(z_ik/x_i) follows a normal dist
 		#q_z = mgd(samples, mu, std)
 		s = std[i, :].view([std.shape[1]])
 		m = mu[i, :].view([std.shape[1]])
@@ -56,6 +56,9 @@ def loss_IS(model, true_x, z):
 		p_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=mu_0.cpu().numpy(), cov=np.diag(std_1.cpu().numpy()**2))
 
 		#Multiply the probablities
+		
+		#logp_x[i] = np.log((1.0/K) * np.sum(np.exp(np.log(p_xz) + np.log(p_z) - np.log(q_z))))
+		#logp_x[i] = np.log((1.0/K) * np.sum(np.exp(p_xz.cpu().numpy() + np.log(p_z) - np.log(q_z))))
 		logp_x[i] = np.log((1.0/K) * np.sum((p_xz * p_z)/q_z))
 
 	return logp_x
