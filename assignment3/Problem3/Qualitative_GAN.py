@@ -144,8 +144,8 @@ if __name__ == "__main__":
 
     #Q3.2
     #Sample z from prior p(z)=N(0,1)
-    # z = torch.FloatTensor(np.random.normal(0, 1, (1, latent_dim))).to(device)
-    # disentangled(z, model, epsilon=90)
+    z = torch.FloatTensor(np.random.normal(0, 1, (1, latent_dim))).to(device)
+    disentangled(z, model, epsilon=90)
 
     #Q3.3
     #Sample two z from prior p(z)=N(0,1)
