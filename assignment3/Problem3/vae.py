@@ -316,11 +316,10 @@ if __name__ == "__main__":
 	model = model.eval()
 
 	#Sample z from prior p(z) = N(0,1)
-	#for i in range(1000):
-	#	sample = torch.randn(1, 100).to(device)
-	#	sample = model.decode(sample)
-	#	save_image(sample.view(1, 3, 32, 32),
-	#					   '1000/sample_' + str(i) + '.png', normalize=True)
+	sample = torch.randn(48, 100).to(device)
+	sample = model.decode(sample)
+	save_image(sample.view(48, 3, 32, 32),
+				   'samples_vae.png', normalize=True)
 
 	#Q3.2
 	#Sample z from prior p(z)=N(0,1)
@@ -329,6 +328,6 @@ if __name__ == "__main__":
 
 	#Q3.3
 	#Sample two z from prior p(z)=N(0,1)
-	z1 = torch.randn(100).to(device)
-	z2 = torch.randn(100).to(device)
-	interpolating(z1, z2, 'latent', model)
+	#z1 = torch.randn(100).to(device)
+	#z2 = torch.randn(100).to(device)
+	#interpolating(z1, z2, 'latent', model)
