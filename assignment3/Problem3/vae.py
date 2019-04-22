@@ -159,7 +159,6 @@ def loss_elbo(recon_x, x, mu, logvar):
 	return loss
 
 
-
 def train(epoch, train_loader):
 	#Mode train
 	model.train()
