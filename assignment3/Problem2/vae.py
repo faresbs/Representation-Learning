@@ -232,12 +232,6 @@ def loss_IS(model, true_x, z):
 		#Apply logsumexp to avoid small image prob
 		#P(x¦z) is shape (200, 784)
 		p_xz = logsumexp(p_xz.cpu().numpy())
-		p_xz = np.sum(np.log(p_xz.cpu().numpy()), axis=1)
-		print (p_xz)
-		sd
-
-
-		####
 
 	
 		##q(z_ik¦x_i) follows a normal dist
@@ -261,7 +255,6 @@ def loss_IS(model, true_x, z):
 		#logp_x[i] = np.log((1.0/K) * np.sum(np.exp(p_xz.cpu().numpy() + np.log(p_z) - np.log(q_z))))
 		logp_x[i] = np.log((1.0/K) * np.sum((p_xz * p_z)/q_z))
 
-	#print (logp_x)
 	return logp_x
 
 
