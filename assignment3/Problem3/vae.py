@@ -241,13 +241,14 @@ def interpolating(z0, z1, method, model):
 
 	#(a)Interpolate latent space
 	if(method=='latent'):
-		i=0
+		i = 0
 		for a in alpha:
 			new_z = a * z0 + (1 - a)*z1
 
-			sample[i, :, :, :] = model.decode(new_z)
+			aux = model.decode(new_z)
+			sample[i, :, :, :] = aux.view(1, 3, 32, 32)
 			i += 1
-			
+
 		save_image(sample.view(len(alpha), 3, 32, 32),
 					   'Interpolation/latent space/sample.png', normalize=True)
 
@@ -269,10 +270,11 @@ def interpolating(z0, z1, method, model):
 		i = 0
 		for a in alpha:
 
-			sample[i, :, :, :] = a * sample0 + (1 - a) * sample1
+			aux = a * sample0 + (1 - a) * sample1
+			sample[i, :, :, :] = aux.view(1, 3, 32, 32)
 			i += 1
 
-	save_image(sample.view(len(alpha), 3, 32, 32),
+		save_image(sample.view(len(alpha), 3, 32, 32),
 					   'Interpolation/image space/sample.png', normalize=True)
 
 
@@ -334,6 +336,6 @@ if __name__ == "__main__":
 
 	#Q3.3
 	#Sample two z from prior p(z)=N(0,1)
-	z1 = torch.randn(100).to(device)
-	z2 = torch.randn(100).to(device)
-	interpolating(z1, z2, 'latent', model)
+	#z1 = torch.randn(100).to(device)
+	#z2 = torch.randn(100).to(device)
+	#interpolating(z1, z2, 'image', model)
