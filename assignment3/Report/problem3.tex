@@ -54,12 +54,19 @@ The following figures show how the GAN has learned a disentangled representation
 \begin{enumerate}
 	\item VAE:\\
 	Moving along $\alpha$, we observe a smooth transition from one sample to the other.
-	(PUT IMAGES HERE FARES)
+	
 	\begin{figure}[H]
 		\centering
-		\includegraphics[scale=1]{gandesent2.png}
-		\caption{Samples by perturbating dimensions 25 and 75}
-		\label{fig:des2}
+		\includegraphics[scale=1]{vae_latent.png}
+		\caption{Interpolation in the latent space using VAE}
+		\label{fig:vae_latent}
+	\end{figure}
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[scale=1]{vae_image.png}
+		\caption{Interpolation in the data space using VAE}
+		\label{fig:vae_image}
 	\end{figure}
 
 	\item GAN:\\ 
@@ -70,6 +77,7 @@ The following figures show how the GAN has learned a disentangled representation
 
 \textbf{TBD BY JORGE FOR GAN AND FARRIS FOR VAE}
 
+(say something brief about the difference betwwen the two schemes)
 
 
 \end{enumerate}

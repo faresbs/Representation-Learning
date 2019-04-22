@@ -231,7 +231,7 @@ def loss_IS(model, true_x, z):
 		#Multiply the independent probabilities (784)	
 		#Apply logsumexp to avoid small image prob
 		#P(x¦z) is shape (200, 784)
-		p_xz = logsumexp(p_xz.cpu().numpy())
+		p_xz = logsumexp(p_xz.cpu().numpy(), axis=1)
 
 	
 		##q(z_ik¦x_i) follows a normal dist
@@ -257,88 +257,6 @@ def loss_IS(model, true_x, z):
 
 	return logp_x
 
-
-
-def loss_IS2(model, true_x, z):
-	#tic = time.clock()
-
-	marginal_likelihood = 0
-
-	#Loop over the elements i of batch
-	M = true_x.shape[0]
-
-	#Save logp(x)
-	logp_x = torch.zeros([M])
-
-	#Mean and std for N(0,1)
-	s = torch.ones(z.shape[2])
-	m = torch.zeros(z.shape[2])
-
-	for i in range(M):
-
-		print(i)
-		
-		#x_i of current element i of batch
-		true_xi = true_x[i,:,:].view(1,1,true_x.shape[2],true_x.shape[3])
-
-		#Get mean and std from encoder
-		#2 Vectors of 100		
-		mu, logvar = model.encode(true_xi.to(device))
-		std = torch.exp(0.5*logvar)
-		
-		for k in range(z.shape[1]):
-
-			print(k)
-			
-			#z_ik
-			samples = z[i,k,:]
-
-			#Compute the reconstructed x's from sampled z's	
-			x = model.decode(samples.to(device))		
-
-			#Compute the p(x_i|z_ik) of x sampled from z_ik
-			#Bernoulli dist = Apply BCE
-			#Outputs a scalar
-			
-			p_x = F.binary_cross_entropy(x.view(-1, 784), true_xi.view(-1, 784), reduction='sum')
-			p_x = p_x.item()
-			
-			#print(p_x)		
-
-			##q(z_ik¦x_i) follows a normal dist N(mu,std)
-			
-			#q_z = mgd(samples, mu, std)
-			#0.07
-			q_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=mu.squeeze().cpu().numpy(), cov=np.diag(std.cpu().squeeze().numpy()**2))
-			
-			#print(q_z)
-
-			##p(z_ik) follows a normal dist with mean 0/variance 1
-			#Normally distributed with loc=0 and scale=1
-			
-			#p_z = mgd(samples, mu, std)
-			#0.07
-			p_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=m.cpu().numpy(), cov=np.diag(s.cpu().numpy()**2))
-			
-			#print(q_z)
-			
-			#Multiply the probablities
-			#marginal_likelihood += (p_x * p_z)/q_z
-			#Use logsumexp trick to avoid ver small prob
-
-			marginal_likelihood += np.exp(np.log(p_x) + np.log(p_z) - np.log(q_z))
-			
-		#Divide sum over K and apply log
-		marginal_likelihood = marginal_likelihood * (1/z.shape[1])
-		logp_x[i] = np.log(marginal_likelihood)
-
-		print(logp_x)
-
-		toc = time.clock()
-		print(toc-tic)
-		sd
-
-	return logp_x
 		
 
 if __name__ == "__main__":
