@@ -237,19 +237,25 @@ def disentangled(z, model, epsilon=5):
 def interpolating(z0, z1, method, model):
 	alpha = [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
 
+	sample = torch.zeros([len(alpha),3, 32, 32])
+
 	#(a)Interpolate latent space
 	if(method=='latent'):
+		i = 0
 		for a in alpha:
 			new_z = a * z0 + (1 - a)*z1
 
-			sample = model.decode(new_z)
+			aux = model.decode(new_z)
+			sample[i, :, :, :] = aux.view(1, 3, 32, 32)
+			i += 1
 
-			save_image(sample.view(1, 3, 32, 32),
-					   'Interpolation/latent space/sample_' + str(a) + '.png', normalize=True)
+		save_image(sample.view(len(alpha), 3, 32, 32),
+					   'Interpolation/latent space/sample.png', normalize=True)
 
 	#(b)Interpolate image space 
-
+	
 	elif(method=='image'):
+
 		sample0 = model.decode(z0)
 
 		save_image(sample0.view(1, 3, 32, 32),
@@ -261,13 +267,15 @@ def interpolating(z0, z1, method, model):
 					   'Interpolation/image space/sample1.png', normalize=True)
 
 
+		i = 0
 		for a in alpha:
 
-			
-			new_sample = a * sample0 + (1 - a) * sample1
+			aux = a * sample0 + (1 - a) * sample1
+			sample[i, :, :, :] = aux.view(1, 3, 32, 32)
+			i += 1
 
-			save_image(new_sample.view(1, 3, 32, 32),
-					   'Interpolation/image space/sample_' + str(a) + '.png', normalize=True)
+		save_image(sample.view(len(alpha), 3, 32, 32),
+					   'Interpolation/image space/sample.png', normalize=True)
 
 
 
@@ -316,10 +324,10 @@ if __name__ == "__main__":
 	model = model.eval()
 
 	#Sample z from prior p(z) = N(0,1)
-	sample = torch.randn(48, 100).to(device)
-	sample = model.decode(sample)
-	save_image(sample.view(48, 3, 32, 32),
-				   'samples_vae.png', normalize=True)
+	#sample = torch.randn(48, 100).to(device)
+	#sample = model.decode(sample)
+	#save_image(sample.view(48, 3, 32, 32),
+	#			   'samples_vae.png', normalize=True)
 
 	#Q3.2
 	#Sample z from prior p(z)=N(0,1)
@@ -330,4 +338,4 @@ if __name__ == "__main__":
 	#Sample two z from prior p(z)=N(0,1)
 	#z1 = torch.randn(100).to(device)
 	#z2 = torch.randn(100).to(device)
-	#interpolating(z1, z2, 'latent', model)
+	#interpolating(z1, z2, 'image', model)

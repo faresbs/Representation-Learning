@@ -222,8 +222,6 @@ def loss_IS(model, true_x, z):
 		#Bernoulli dist = Apply BCE
 		#Output an array of losses
 
-		### Problem HERE
-
 		true_xi = true_x[i,:,:].view(-1, 784)
 		x = x.view(-1, 784)
 		
@@ -233,10 +231,7 @@ def loss_IS(model, true_x, z):
 		#Multiply the independent probabilities (784)	
 		#Apply logsumexp to avoid small image prob
 		#P(x¦z) is shape (200, 784)
-		p_xz = logsumexp(p_xz.cpu().numpy(), axis=1)
-
-
-		####
+		p_xz = logsumexp(p_xz.cpu().numpy())
 
 	
 		##q(z_ik¦x_i) follows a normal dist
@@ -255,18 +250,11 @@ def loss_IS(model, true_x, z):
 		p_z = multivariate_normal.pdf(samples.cpu().numpy(),mean=mu_0.cpu().numpy(), cov=np.diag(std_1.cpu().numpy()**2))
 
 		#Multiply the probablities
-		#Use logsumexp trick to avoid very small prob
 		
-		#print(np.average(np.log(p_xz)) #This should be around -75
-		#print(np.average(np.log(q_z)))
-		#print(np.average(np.log(p_z)))
-		
-		logp_x[i] = np.log((1.0/K) * np.sum(np.exp(np.log(p_xz) + np.log(p_z) - np.log(q_z))))
+		#logp_x[i] = np.log((1.0/K) * np.sum(np.exp(np.log(p_xz) + np.log(p_z) - np.log(q_z))))
 		#logp_x[i] = np.log((1.0/K) * np.sum(np.exp(p_xz.cpu().numpy() + np.log(p_z) - np.log(q_z))))
-		#logp_x[i] = np.log((1.0/K) * np.sum((p_xz * p_z)/q_z))
+		logp_x[i] = np.log((1.0/K) * np.sum((p_xz * p_z)/q_z))
 
-	print (logp_x)
-	sd
 	return logp_x
 
 
