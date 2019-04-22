@@ -201,16 +201,16 @@ if __name__ == "__main__":
                 iteration += critic
 
 ################## Save weights
-torch.save(generator.state_dict(), data_path+"weights/GAN_weights.h5")
+#    torch.save(generator.state_dict(), data_path+"weights/GAN_weights.h5")
 
 ################# Sampling 1000 images
-sample_size=1000
-z = Variable(Tensor(np.random.normal(0, 1, (sample_size, latent_dim))))
-final_sample = generator(z)
-for i in range(z.shape[0]):
-    if (i)%100==0:
-        print("%d th image saved"%i)
-    save_image(final_sample.data[i], data_path+"final_sample/%s.png" % str(i+1), nrow=1, normalize=True)
+    sample_size=1000
+    z = Variable(Tensor(np.random.normal(0, 1, (sample_size, latent_dim))))
+    final_sample = generator(z)
+    for i in range(z.shape[0]):
+        if (i)%100==0:
+            print("%d th image saved"%i)
+        save_image(final_sample.data[i], data_path+"final_sample/%s.png" % str(i+1), nrow=1, normalize=True)
 
 
 

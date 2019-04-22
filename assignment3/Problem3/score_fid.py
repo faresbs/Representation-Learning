@@ -131,7 +131,7 @@ def calculate_fid_score(sample_feature_iterator,
     # the covariance matrix are by definition symetric
     
     # to prevent negative values in the cov product
-    eps = np.eye(512) * 1e-5
+    eps = np.eye(512) * 1e-3
     
     root_sigma_gen = linalg.sqrtm(sigma_gen + eps)
     sigmas_prod = np.matmul(root_sigma_gen,np.matmul(sigma_test, root_sigma_gen))
