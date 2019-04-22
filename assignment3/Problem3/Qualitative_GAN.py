@@ -125,3 +125,9 @@ if __name__ == "__main__":
     #Sample z from prior p(z)=N(0,1)
     z = torch.FloatTensor(np.random.normal(0, 1, (1, latent_dim))).to(device)
     disentangled(z, model, epsilon=90)
+
+    #Q3.3
+    #Sample two z from prior p(z)=N(0,1)
+    z1 = torch.randn(100).to(device)
+    z2 = torch.randn(100).to(device)
+    interpolating(z1, z2, 'image', model)
