@@ -31,25 +31,31 @@ In this problem we are using a GAN discriminator to estimate the Jensen Shannon 
 	
 	\lstinputlisting[language=Python]{Q1.2.py}
 	
-	\item Here, we have trained the above neural network with 21 combinations of $p\sim~U(0,Z)$, and $q\sim~U(\phi,Z)$, where $Z\sim~U(0,1)$ and $\phi$ is a value in the interval $[-1,1]$. The size of the distribution is 512, and the models were trained for 5000 iterations using an SGD optimizer. For every value of $\phi$ we generate a distribution and measure its distance to $p\sim~U(0,Z)$. We implement this for WD and JSD and plot their losses. 
-	
-	The full code is given in the file \textbf{density\_estimation.py} under our github repository~\cite{github}.
-	
-	The following figures show the estimated JSD for the 21 values of $\phi$ :
+	\item In this example we compare the properties of JSD and WD.
+	Given a random variable $Z\sim U[0,1]$, we compute the approximation of both metrics between the 2-dimensional distributions, $p$ given by (0, $Z$), and $q_\phi$ given by ($\phi, Z$), where $\phi$ is a parameter.
+	%
+	In Figures \ref{fig:jsd} and \ref{fig:wd} we plot the estimated JSD and WD respectively for $\phi \in [-1,1]$ with interval of 0.1.
+	%
+	We perform the estimation by optimizing the MLP as in points 1 and 2.
+	We use batches of samples from the distributions of 512, and the models were trained for 5000 iterations using an SGD optimizer. For every value of $\phi$ we generate the distribution $q_\phi$ and measure its distance to $p$. 
 	\begin{figure}[H]
 		\centering
 		\includegraphics[scale=0.8]{jsd.png}
 		\caption{JSD estimation}
 		\label{fig:jsd}
 	\end{figure}
-	
-	The estimated WD for the 21 value of $\phi$ is shown below:
+	%
 	\begin{figure}[H]
 		\centering
 		\includegraphics[scale=0.8]{wd.png}
 		\caption{WD estimation}
 		\label{fig:wd}
 	\end{figure}
+	%
+	In this experiment the distributions $p$ and $q_\phi$ have disjoint supports for all values of $\phi$ but $\phi=0$. 
+	As expected, the JSD when the distributions are disjoint is the same (around $\log(2)$) no matter how close the distributions may be i.e. for a small value of $\phi$. This results in a difficulty to learn the distribution $p$ using JSD. In contrast, WD is continuous over the values of $\phi$ giving a better information about the \emph{closeness} of the distributions.
+	
+	The full code is given in the file \textbf{density\_estimation.py} in our github repository~\cite{github}.
 
 \item In this section we estimate the unknown density $f_1$ using the approximation ${f_0(x){D(x)}/(1-D(x))}$ (proven in Question 5 from the theoretical part), where $f_0$ is a known distribution (assumed 1-dimensional standard Gaussian in this question). The full code is provided in the file \textbf{density\_estimation.py} under our github repository~\cite{github}.
 
