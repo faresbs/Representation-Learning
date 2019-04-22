@@ -30,8 +30,8 @@ We have decided to go with this architecture, after having tested several archit
 		\label{fig:q3gan}
 	\end{figure}
 
-\item[2.]{Learning the disentangled representation in the latent space}
-The following figures show how the GAN has learned a disentangled representation:
+\item[2.]{Learning the disentangled representation in the latent space.}
+Figures \ref{fig:des1} and \ref{fig:desVAE} show how the models learned a disentangled representation. Starting from one point in the latent space we apply a perturbation to two arbitrary dimensions. We can observe how in both models the resulting images vary smoothly. The value of perturbation ($\epsilon$) is however different for each model, as they require different levels of perturbation to result in visible changes.
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=1]{gandesent1.png}
@@ -48,7 +48,6 @@ The following figures show how the GAN has learned a disentangled representation
 %	\label{fig:des2}
 %\end{figure}
 
-The following figures show how the GAN has learned a disentangled representation:
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=1]{sample_VAE21-65_epsilon_90.png}
@@ -59,10 +58,11 @@ The following figures show how the GAN has learned a disentangled representation
 \end{figure}
 
 \item[3.] {Interpolation in the data space and in the latent space:}
+Figures \ref{fig:vae_latent}, \ref{fig:vae_image}, \ref{fig:gan_latent} and\ref{fig:gan_image} show the interpolations in the latent and image space for VAE and GAN respectively. For both models we can observe how the interpolation in the latent space produce images that have more \emph{meaning} compared to the interpolation in the image space, where the transition images are only superposition of the patterns (numbers) in each of the initial images. This can be explained by the latent space forming a kind of \emph{manifold} along which the interpolation makes more sense than in the pixel space. 
 
 \begin{enumerate}
 	\item VAE:\\
-	Moving along $\alpha$, we observe a smooth transition from one sample to the other.
+%	Moving along $\alpha$, we observe a smooth transition from one sample to the other.
 	
 	\begin{figure}[H]
 		\centering
