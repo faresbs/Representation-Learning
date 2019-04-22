@@ -18,10 +18,16 @@ In this problem we are using a GAN discriminator to estimate the Jensen Shannon 
 	
 	\lstinputlisting[language=Python]{Q1.1.py}
 	
-	\item In this section, we implement a function to estimate the WD. In this case we use our MLP without activation function, so it has an output of a real valued scalar.
-	will present the implementation of the Wasserstein Distance (WD). Same neural network architecture as above was used also in this case with the exception of replacing the Sigmoid output by a linear output.
-	
-	The following subset of the code shows the implementation of the WD. The full code is also available in our repository~\cite{github}
+	\item In this section, we implement a function to estimate the WD. In this case we use our MLP without activation function, so it has an output of a real valued scalar. Here we optimize the following objective function:
+	\begin{align*}
+	    \arg\max_\theta \mathbf{E}_{x\sim p}[T_\theta(x)]-\mathbf{E}_{y\sim q}[T_\theta(y)] - \lambda \mathbf{E}_{z\sim r} (||\nabla_z T_\theta(z)||_2 - 1)^2.
+	\end{align*}
+	 $r$ is the distribution over $z=ax+(1-a)y$, where $x\sim p$, $y\sim q$ and $a\sim U[0,1]$.
+	 
+	 At it's optimum, this objective function estimates the WD between the distributions given by $p$ and $q$.
+%	will present the implementation of the Wasserstein Distance (WD). Same neural network architecture as above was used also in this case with the exception of replacing the Sigmoid output by a linear output.
+%	
+	The following portion of the code shows the implementation of the optimization. The full code is also available in our repository~\cite{github}
 	
 	\lstinputlisting[language=Python]{Q1.2.py}
 	
