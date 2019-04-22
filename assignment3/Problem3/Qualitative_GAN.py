@@ -78,26 +78,26 @@ def interpolating(z0, z1, method, model):
     if(method=='latent'):
         for a in alpha:
             new_z = a * z0 + (1 - a)*z1
-            sample = model.decode(new_z)
+            sample = model(new_z)
             save_image(sample.view(1, 3, 32, 32),
-					   'Interpolation/latent space/sample_' + str(a) + '.png', normalize=True)
+					   'Interpolation/latent space/GANsample_' + str(a) + '.png', normalize=True)
     #(b)Interpolate image space
     elif(method=='image'):
-        sample0 = model.decode(z0)
+        sample0 = model(z0)
         save_image(sample0.view(1, 3, 32, 32),
-                   'Interpolation/image space/sample0.png', normalize=True)
-        sample1 = model.decode(z1)
+                   'Interpolation/image space/GANsample0.png', normalize=True)
+        sample1 = model(z1)
         save_image(sample1.view(1, 3, 32, 32),
-                   'Interpolation/image space/sample1.png', normalize=True)
+                   'Interpolation/image space/GANsample1.png', normalize=True)
         for a in alpha:
             new_sample = a * sample0 + (1 - a) * sample1
             save_image(new_sample.view(1, 3, 32, 32),
-                       'Interpolation/image space/sample_' + str(a) + '.png', normalize=True)
+                       'Interpolation/image space/GANsample_' + str(a) + '.png', normalize=True)
 
 
 if __name__ == "__main__":
     ###Qualitative Evaluation
-    model_eval = 'VAE'
+    model_eval = 'GAN'
 
     if model_eval=='VAE':
       path_weights = data_path+'weights/weights.h5'
@@ -123,11 +123,11 @@ if __name__ == "__main__":
 
     #Q3.2
     #Sample z from prior p(z)=N(0,1)
-    z = torch.FloatTensor(np.random.normal(0, 1, (1, latent_dim))).to(device)
-    disentangled(z, model, epsilon=90)
+    # z = torch.FloatTensor(np.random.normal(0, 1, (1, latent_dim))).to(device)
+    # disentangled(z, model, epsilon=90)
 
     #Q3.3
     #Sample two z from prior p(z)=N(0,1)
-    z1 = torch.randn(100).to(device)
-    z2 = torch.randn(100).to(device)
-    interpolating(z1, z2, 'image', model)
+    z1 = torch.randn(1,100).to(device)
+    z2 = torch.randn(1,100).to(device)
+    interpolating(z1, z2, 'latent', model)
