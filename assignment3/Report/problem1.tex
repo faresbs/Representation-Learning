@@ -1,18 +1,33 @@
 \section*{Problem 1}
-\begin{enumerate}
-	\item In this section, we will show the implementation of the Jensen Shannon Divergence (JSD). In order to test this function, we have implemented a neural network with the following architecture:
-	\begin{itemize}
-		\item 2 hidden layers, with 64 and 128 output units, respectively, and a ReLu activation function
-		\item Output layer with Sigmoid activation function 
-	\end{itemize}
+In this problem we are using a GAN discriminator to estimate the Jensen Shannon divergence (JSD) and a the Wasserstein Distance (WD). We implement the discriminator/critic using a multi-layer perceptron that we can initialize to either have an output $y\in[0,1]$ (sigmoid activation) or an output $y\in\mathbb{R}$ (no activation). The architecture consists of two hidden layers with 64 and 128 output units respectively. We use ReLU activation function in the hidden layers.
 
-An overview of the implementation can be seen below. The full code is available in the file \textbf{density\_estimation.py} under our github repository~\cite{github}.
+\begin{enumerate}
+	\item In this section, we implement a function to estimate the JSD. Using our MLP with sigmoid activation at the output we optimize the following objective function: 
+	\begin{align*}
+     \arg\max_{\theta}\left\{ \log2 + \dfrac{1}{2}\mathbf{E}_{x\sim p}[\log(D_\theta (x))] + \dfrac{1}{2}\mathbf{E}_{y\sim q}\log(1-D_\theta (y))]\right\}
+	\end{align*}
+	At its optimum, the objective function estimates the JSD between the distributions given by $p$ and $q$.
+%	
+%	In order to test this function, we have implemented a neural network with the following architecture:
+%	\begin{itemize}
+%		\item 2 hidden layers, with 64 and 128 output units, respectively, and a ReLu activation function
+%		\item Output layer with Sigmoid activation function 
+%	\end{itemize}
+%
+	An overview of the implementation can be seen below. The full code is available in the file \textbf{density\_estimation.py} under our github repository~\cite{github}.
 	
 	\lstinputlisting[language=Python]{Q1.1.py}
 	
-	\item In this section, we will present the implementation of the Wasserstein Distance (WD). Same neural network architecture as above was used also in this case with the exception of replacing the Sigmoid output by a linear output.
-	
-	The following subset of the code shows the implementation of the WD. The full code is also available in our repository~\cite{github}
+	\item In this section, we implement a function to estimate the WD. In this case we use our MLP without activation function, so it has an output of a real valued scalar. Here we optimize the following objective function:
+	\begin{align*}
+	    \arg\max_\theta \mathbf{E}_{x\sim p}[T_\theta(x)]-\mathbf{E}_{y\sim q}[T_\theta(y)] - \lambda \mathbf{E}_{z\sim r} (||\nabla_z T_\theta(z)||_2 - 1)^2.
+	\end{align*}
+	 $r$ is the distribution over $z=ax+(1-a)y$, where $x\sim p$, $y\sim q$ and $a\sim U[0,1]$.
+	 
+	 At it's optimum, this objective function estimates the WD between the distributions given by $p$ and $q$.
+%	will present the implementation of the Wasserstein Distance (WD). Same neural network architecture as above was used also in this case with the exception of replacing the Sigmoid output by a linear output.
+%	
+	The following portion of the code shows the implementation of the optimization. The full code is also available in our repository~\cite{github}
 	
 	\lstinputlisting[language=Python]{Q1.2.py}
 	
