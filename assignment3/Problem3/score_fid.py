@@ -162,7 +162,7 @@ if __name__ == "__main__":
         description='Score a directory of images with the FID score.')
     parser.add_argument('--model', type=str, default="svhn_classifier.pt",
                         help='Path to feature extraction model.')
-    parser.add_argument('directory', default="images", type=str,
+    parser.add_argument('directory', type=str, default="Samples",
                         help='Path to image directory')
     args = parser.parse_args()
 
