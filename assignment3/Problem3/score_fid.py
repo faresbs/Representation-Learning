@@ -163,7 +163,7 @@ if __name__ == "__main__":
     parser.add_argument('--model', type=str, default="svhn_classifier.pt",
                         help='Path to feature extraction model.')
     parser.add_argument('directory', type=str, default="Samples",
-                        help='Path to image directory')
+                        help='put FID_samples/GAN or FID_samples/VAE to get the image directory')
     args = parser.parse_args()
 
     quit = False
