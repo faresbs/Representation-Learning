@@ -4,20 +4,67 @@ from torch.nn import functional as F
 from torchvision.utils import save_image
 from vae import *
 
+img_size=32
+channels=3
+latent_dim=100
+
+img_shape = (channels, img_size, img_size)
+data_path='./'
+
 #Disentangled representation Q3.2
 #epsilon is the small perturbation
 #Accepts one sample z (latent_space)
 #Saves 100 (latent_space dimension) images
-def disentangled(z, model, epsilon=5):
-    latent_space = z.shape[0]
-	#Loop over the dimensions of latent space
+def disentangled(z, model, epsilon=3):
+    latent_space = z.shape[1]
+    print("latent_space=",latent_space)
+    model_name = model.__class__.__name__
+    dim1=21
+    dim2=65
+    size=5
+    #Loop over the dimensions of latent space
     new_z = z.clone()
-    for i in range(latent_space):
-        new_z[i] = z[i] + epsilon 
-        sample = model.decode(new_z)
-        save_image(sample.view(1, 3, 32, 32),
-                   'Disentangled representation/sample_' + str(i) + '.png', normalize=True)
-        new_z = z.clone()
+    #sample = torch.empty((1,*img_shape)).to(device)
+
+    print(model_name)
+    for i in range(size):
+      if i==0:
+        if model_name == 'VAE':
+            sample = model.decode(z).view(1,3,32,32)
+        else:
+            sample = model(z)
+        for i in range(size-1):
+          new_z[0][dim2] += epsilon/2.
+          if model_name =='VAE':
+            sample0 = model.decode(new_z).view(1, 3, 32, 32)
+            sample= torch.cat([sample,sample0])
+          else:
+            sample0 = model(new_z)
+            sample= torch.cat([sample,sample0])
+        new_z[0][dim2] = z[0][dim2]
+      else:
+        new_z[0][dim1] += epsilon/2.
+        if model_name=='VAE':
+          sample0 = model.decode(new_z).view(1, 3, 32, 32)
+          sample = torch.cat([sample,sample0])
+        else:
+          sample0 = model(new_z)
+          sample = torch.cat([sample,sample0])
+        for i in range(size-1):
+          new_z[0][dim2] += epsilon/2.
+          if model_name=='VAE':
+            sample0 = model.decode(new_z).view(1, 3, 32, 32)
+            sample= torch.cat([sample,sample0])
+          else:
+            sample0 = model(new_z)
+            sample= torch.cat([sample,sample0])
+
+      new_z[0][dim2] = z[0][dim2]
+
+
+    print(sample.shape)
+    save_image(sample.data[0:25],data_path+'Tests/sample_' + model_name + str(dim1)+'-'+str(dim2) +'_epsilon_' +str(epsilon) +'.png', nrow=5, normalize=True)
+    #new_z = z.clone()
 #Q3.3
 #Accepts one sample z (latent_space)
 #Saves 2+n images (from the two z samples and their (number of alpha) interpolations)
