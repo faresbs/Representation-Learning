@@ -1,5 +1,7 @@
 def calculate_fid_score(sample_feature_iterator,
                         testset_feature_iterator):
+    #Extract the representation features of the generated images
+    #from the given model
     gen_features = np.array([])
     test_features = np.array([])
     
@@ -33,8 +35,8 @@ def calculate_fid_score(sample_feature_iterator,
     mu_test = np.mean(test_features,axis=1).reshape(512,1)
     
     print("Estimating the variance ...")
-    # We use the unbiased variance estimate which
-    #is given by (X-mu)(X-mu)^T/(n-1)
+    # We use the unbiased variance estimate which 
+    # is given by (X-mu)(X-mu)^T/(n-1)
     gen_centered  = gen_features - mu_gen
     test_centered = test_features - mu_test
     
@@ -42,18 +44,20 @@ def calculate_fid_score(sample_feature_iterator,
     sigma_test = np.matmul(test_centered, test_centered.T) / (test_size - 1)
     
     print("Calculating the sqrt of cov matrices product ...")
-    # The sqrt of a matrix A needs A to be symetric, but if A, and B 
-    # are sysmetric A.B is not symeyric necessarly. 
+    # The sqrt of a matrix A needs A to be symetric, but if A, 
+    # and B are sysmetric, A.B is not symeyric necessarly. 
     # To solve that we use this trick:
     # sqrt(sigma1 sigma2) = sqrt(A sigma2 A), where A = sqrt(sigma1)
     # the covariance matrix are by definition symetric
     
     # to prevent negative values in the cov product
-    eps = np.eye(512) * 1e-5
+    eps = np.eye(512) * 1e-3
     
     root_sigma_gen = linalg.sqrtm(sigma_gen + eps)
-    sigmas_prod = np.matmul(root_sigma_gen,np.matmul(sigma_test, root_sigma_gen))
-    # given np.matmul(root_sigma_gen,np.matmul(sigma_test, root_sigma_gen)) is symetric:
+    sigmas_prod = np.matmul(root_sigma_gen,np.matmul(sigma_test, 
+                                                     root_sigma_gen))
+    # given np.matmul(root_sigma_gen,np.matmul(sigma_test, 
+    #root_sigma_gen)) is symetric:
     root_sigmas_prod = linalg.sqrtm(sigmas_prod + eps)
     
     print("Calculating the FID score ...")
@@ -65,5 +69,5 @@ def calculate_fid_score(sample_feature_iterator,
 
     # Calculate the fid score
     fid = squared_norm + trace
-
+    
     return fid
